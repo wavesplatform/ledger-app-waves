@@ -1,7 +1,9 @@
 # nanos-app-burst
+
 Burstcoin wallet application for Ledger Nano S
 
 # Introduction
+
 This is a proof-of concept Ledger Nano S wallet app for Burstcoin.  I say that
 it is proof of concept for a few reasons:
 
@@ -13,6 +15,14 @@ it is proof of concept for a few reasons:
   "technical details" section below.
 
 - Just in general, you shouldn't trust others with your crypto-currency.
+
+Do not use this on your production Ledger Wallet.  I'm not responsible if you
+lose your BURST or your other crypto-currencies on the same Ledger device. 
+
+**I recommend using this only on a Ledger Nano explicitly earmarked for
+'development' and one that does not contain keys for any crypto-currentcy you
+care about.  Furthermore, I recommend it only for use on the Burstcoin
+testnet**
 
 As such, you agree to use this code AT YOUR OWN RISK:
 

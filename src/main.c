@@ -149,7 +149,8 @@ static bool getPublicKeyForIndex(int index, cx_ecfp_public_key_t* publicKey) {
 }
 
 // // Get a signing key from the 44'/5741564' keypath.
-static bool getSigningKeyForIndex(int index, cx_ecfp_private_key_t* privateKey) {
+// todo receive link to privateKeyData array and returns boolean
+static bool getSigningKeyForIndex(int index) {
     if (!os_global_pin_is_validated()) {
         return false;
     }
@@ -159,63 +160,16 @@ static bool getSigningKeyForIndex(int index, cx_ecfp_private_key_t* privateKey) 
 
     unsigned char privateKeyData[32];
     os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
-    keygen25519(NULL, privateKey->d, privateKeyData);
-    privateKey->curve = CX_CURVE_Curve25519;
-    privateKey->d_len = 32;
 
-    return true;
+    clamp25519(privateKeyData);
+
+    return privateKeyData;
 }
 
 // Hanlde a signing request -- called both from the main apdu loop as well as from
 // the button handler after the user verifies the transaction.
 bool handleSigning(volatile unsigned int *tx, volatile unsigned int *flags) {
-    // If if this is the first hash, then initialize the SHA-256 session
-    if (hashCount == 0) {
-        // This is the first segment to hash
-        cx_sha256_init(&hash);
-    }
-
-    // Update the hash with the data from this segment.
-    cx_hash(&hash.header, 0, G_io_apdu_buffer+5, G_io_apdu_buffer[4], NULL);
-    hashCount++;
-
-    // If this is the last segment, calculate the signature
-    if (G_io_apdu_buffer[2] == P1_LAST) {
-        cx_ecfp_private_key_t signingKey;
-        getSigningKeyForIndex(0, &signingKey);
-        
-        // m = hash(Z, message)
-        cx_hash(&hash.header, CX_LAST, G_io_apdu_buffer, 0, tmpCtx.signingContext.m);
-
-        // x = hash(m, s)
-        cx_sha256_init(&hash);
-        cx_hash(&hash.header, 0, tmpCtx.signingContext.m, 32, NULL);
-        cx_hash(&hash.header, CX_LAST, signingKey.d, 32, tmpCtx.signingContext.x);
-
-        // keygen25519(Y, NULL, x); 
-        // reuse G_io_apdu_buffer = Y to save some memory.
-        keygen25519(G_io_apdu_buffer, NULL, tmpCtx.signingContext.x);
-
-        // r = hash(m+Y);
-        cx_sha256_init(&hash);
-        cx_hash(&hash.header, 0, tmpCtx.signingContext.m, 32, NULL);
-        cx_hash(&hash.header, CX_LAST, G_io_apdu_buffer, 32, tmpCtx.signingContext.r);
- 
-        // output (v,r) as the signature
-        // put v into G_io_apdu_buffer first, followed by r
-        //int sign25519(k25519 v, const k25519 h, const priv25519 x, const spriv25519 s)
-        sign25519(G_io_apdu_buffer, tmpCtx.signingContext.r, tmpCtx.signingContext.x, signingKey.d);
-        memcpy(G_io_apdu_buffer+32, tmpCtx.signingContext.r, 32);
-
-        // return 64 bytes to host
-        *tx=64;
-
-        // Reset for next signing
-        os_memset(&signingKey, 0, sizeof(signingKey));  // just for good measure, remove signing key from memory.
-        hashCount = 0; // Reset for next hashing/signing session.
-        return false;
-    }
-
+    // realize that
     return true;
 }
 
@@ -255,14 +209,18 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, volatil
             case INS_GET_PUBLIC_KEY: {
                 // Get the public key and return it.
                 cx_ecfp_public_key_t publicKey;
+                // todo return private key only for debug
+                // todo pass link to privateKeyData array
+                unsigned char* privateKeyData = getSigningKeyForIndex(0);
                 if (getPublicKeyForIndex(0, &publicKey)) {
-                    os_memmove(G_io_apdu_buffer, publicKey.W, publicKey.W_len);                
-                    *tx = publicKey.W_len;
+                    os_memmove(G_io_apdu_buffer, publicKey.W, 32);
+                    os_memmove(G_io_apdu_buffer + 32, privateKeyData, 32);
+                    *tx = 64;
                     THROW(SW_OK);
                 } else {
                     // Return an error
                     THROW(SW_INS_NOT_SUPPORTED);
-                }   
+                }
             } break;
 
             default:

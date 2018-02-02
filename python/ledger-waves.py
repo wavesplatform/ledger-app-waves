@@ -92,7 +92,7 @@ def getPublicKeyFromDongle():
             except Exception as e:
                 print e
                 answer = raw_input(
-                    "Please conenct your Ledger Nano S, unlock, and launch the Burstcoin app. Press <enter> when ready. (Q quits)")
+                    "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
                 if (answer.upper() == 'Q'):
                     sys.exit(0)
                 sys.exc_clear()
@@ -114,7 +114,7 @@ def getPrivateKeyFromDongle():
             except Exception as e:
                 print e
                 answer = raw_input(
-                    "Please conenct your Ledger Nano S, unlock, and launch the Burstcoin app. Press <enter> when ready. (Q quits)")
+                    "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
                 if (answer.upper() == 'Q'):
                     sys.exit(0)
                 sys.exc_clear()
@@ -172,7 +172,7 @@ while (True):
             except Exception as e:
                 print e, type(e)
                 answer = raw_input(
-                    "Please conenct your Ledger Nano S, unlock, and launch the Burstcoin app. Press <enter> when ready. (Q quits)")
+                    "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
                 if (answer.upper() == 'Q'):
                     sys.exit(0)
                 sys.exc_clear()

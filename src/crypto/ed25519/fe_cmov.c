@@ -19,6 +19,7 @@ void fe_cmov(fe f,const fe g,unsigned int b)
   crypto_int32 f7 = f[7];
   crypto_int32 f8 = f[8];
   crypto_int32 f9 = f[9];
+  // todo looks like g address is wrong here due PIC
   crypto_int32 g0 = g[0];
   crypto_int32 g1 = g[1];
   crypto_int32 g2 = g[2];
@@ -50,6 +51,7 @@ void fe_cmov(fe f,const fe g,unsigned int b)
   x7 &= b;
   x8 &= b;
   x9 &= b;
+  // todo looks like PIC crash here: http://ledger.readthedocs.io/en/latest/userspace/memory.html#pic-and-model-implications
   f[0] = f0 ^ x0;
   f[1] = f1 ^ x1;
   f[2] = f2 ^ x2;

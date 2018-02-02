@@ -8,6 +8,16 @@ This is a proof-of concept Ledger Nano S wallet app for Waves platform.
 
 Special thanks to Jake B. for his support and advices.
 
+# Building
+
+You'll need a Ledger Nano S development environment.  More information can be 
+found here: https://github.com/LedgerHQ/blue-devenv/ or in our wiki https://github.com/wavesplatform/nanos-app-waves/wiki
+
+A modification to the current version of the python loader app may be required
+depending on whether Ledger has released a new version or not.  More on this here:
+https://github.com/lenondupe/ledger-app-stellar#troubleshooting
+
+
 ## Original description of Burst wallet
 
 I say that it is proof of concept for a few reasons:
@@ -58,15 +68,6 @@ the Apache License, Version 2.0 and I have maintained this license for this app.
 
 Other public domain materials, such as the Curve25519 sources, or implementations 
 of known algorithms are also included.
-
-# Building
-
-You'll need a Ledger Nano S development environment.  More information can be 
-found here: https://github.com/LedgerHQ/blue-devenv/
-
-A modification to the current version of the python loader app may be required
-depending on whether Ledger has released a new version or not.  More on this here:
-https://github.com/lenondupe/ledger-app-stellar#troubleshooting
 
 # Technical Details
 

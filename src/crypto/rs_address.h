@@ -1,5 +1,5 @@
 /*******************************************************************************
-*   Burstcoin Wallet App for Nano Ledger S.
+*   Burstcoin Wallet App for Nano Ledger S. Updated By Waves community.
 *   Copyright (c) 2017-2018 Jake B.
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");

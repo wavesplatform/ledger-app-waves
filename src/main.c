@@ -150,7 +150,7 @@ static bool getPublicKeyForIndex(int index, cx_ecfp_public_key_t* publicKey) {
 
 // // Get a signing key from the 44'/5741564' keypath.
 // todo receive link to privateKeyData array and returns boolean
-static bool getSigningKeyForIndex(int index) {
+static unsigned char* getSigningKeyForIndex(int index) {
     if (!os_global_pin_is_validated()) {
         return false;
     }

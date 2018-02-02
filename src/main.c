@@ -116,7 +116,7 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
     return 0;
 }
 
-// Get a public key from the 44'/30' keypath.
+// Get a public key from the 44'/5741564' keypath.
 static bool getPublicKeyForIndex(int index, cx_ecfp_public_key_t* publicKey) {
     if (!os_global_pin_is_validated()) {
         return false;
@@ -129,8 +129,8 @@ static bool getPublicKeyForIndex(int index, cx_ecfp_public_key_t* publicKey) {
         return true;
     }
 
-    // BURST keypath of 44'/30'/n'/0'/0'
-    uint32_t path[] = {44 | 0x80000000, 30 | 0x80000000, index | 0x80000000, 0x80000000, 0x80000000};
+    // BURST keypath of 44'/5741564'0'/0'/n' https://github.com/satoshilabs/slips/pull/189/
+    uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, index | 0x80000000};
 
     unsigned char privateKeyData[32];
     os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
@@ -148,14 +148,14 @@ static bool getPublicKeyForIndex(int index, cx_ecfp_public_key_t* publicKey) {
     return true;
 }
 
-// // Get a signing key from the 44'/30' keypath.
+// // Get a signing key from the 44'/5741564' keypath.
 static bool getSigningKeyForIndex(int index, cx_ecfp_private_key_t* privateKey) {
     if (!os_global_pin_is_validated()) {
         return false;
     }
 
-    // BURST keypath of 44'/30'/n'/0'/0'
-    uint32_t path[] = {44 | 0x80000000, 30 | 0x80000000, index | 0x80000000, 0x80000000, 0x80000000};
+    // BURST keypath of 44'/5741564'/n'/0'/0'
+    uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, index | 0x80000000};
 
     unsigned char privateKeyData[32];
     os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);

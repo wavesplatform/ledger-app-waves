@@ -75,7 +75,7 @@ const ux_menu_entry_t menu_about[] = {
     UX_MENU_END};
 
 const ux_menu_entry_t menu_main[] = {
-    {NULL, NULL, 0, &C_icon_burst, "Use wallet to", "view accounts", 33, 12},
+    {NULL, NULL, 0, &C_icon_waves, "Use wallet to", "view accounts", 33, 12},
 #ifdef HAVE_U2F
     {menu_settings, NULL, 0, NULL, "Settings", NULL, 0, 0},
 #endif

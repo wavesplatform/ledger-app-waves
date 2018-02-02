@@ -20,8 +20,10 @@
 #include <stdbool.h>
 
 #include "main.h"
+#include "constants.h"
 #include "crypto/curve25519_i64.h"
 #include "crypto/rs_address.h"
+#include "crypto/ed25519/additions/curve_sigs.h"
 
 // Ledger Stuff
 #include "ui.h"
@@ -65,7 +67,8 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 // Stuff for the SHA-256 hashing
 volatile unsigned int hashCount;     // notification to restart the hash
-cx_sha256_t hash;
+volatile unsigned int bufferUsed;
+unsigned char buffer[MAX_DATA_SIZE];
 
 // Supported device errors for preprocessor
 #ifdef TARGET_BLUE
@@ -214,15 +217,16 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, volatil
                     THROW(SW_INCORRECT_P1_P2);
                 }
 
-                if (hashCount == 0) {
+                if (false) {
+                    // todo fix UI to Waves Transactions
                     if (G_io_apdu_buffer)
                     ui_verify();
                     *flags |= IO_ASYNCH_REPLY;
                 } else {
                     bool more = handleSigning(tx, flags);
-                    THROW(SW_OK);    
+                    THROW(SW_OK);
                 }
-                
+
             } break;
 
             case INS_GET_PUBLIC_KEY: {
@@ -406,6 +410,7 @@ __attribute__((section(".boot"))) int main(void) {
     // current_text_pos = 0;
     // text_y = 60;
     hashCount = 0;
+    bufferUsed = 0;
     uiState = UI_IDLE;
 
     for (;;) {

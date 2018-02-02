@@ -12,29 +12,32 @@ int curve25519_sign(unsigned char* signature_out,
 {
   ge_p3 ed_pubkey_point; /* Ed25519 pubkey point */
   unsigned char ed_pubkey[32]; /* Ed25519 encoded pubkey */
-  unsigned char *sigbuf; /* working buffer */
+  // todo fix it
+  unsigned char sigbuf[msg_len + 128]; /* working buffer */
   unsigned char sign_bit = 0;
 
-  if ((sigbuf = malloc(msg_len + 128)) == 0) {
-    memset(signature_out, 0, 64);
-    return -1;
-  }
+//  if ((sigbuf = malloc(msg_len + 128)) == 0) {
+//    memset(signature_out, 0, 64);
+//    return -1;
+//  }
 
   /* Convert the Curve25519 privkey to an Ed25519 public key */
   ge_scalarmult_base(&ed_pubkey_point, curve25519_privkey);
-  ge_p3_tobytes(ed_pubkey, &ed_pubkey_point);
-  sign_bit = ed_pubkey[31] & 0x80;
+//  ge_p3_tobytes(ed_pubkey, &ed_pubkey_point);
+//  sign_bit = ed_pubkey[31] & 0x80;
+//
+//  /* Perform an Ed25519 signature with explicit private key */
+//  crypto_sign_modified(sigbuf, msg, msg_len, curve25519_privkey,
+//                       ed_pubkey, random);
+//  memmove(signature_out, sigbuf, 64);
 
-  /* Perform an Ed25519 signature with explicit private key */
-  crypto_sign_modified(sigbuf, msg, msg_len, curve25519_privkey,
-                       ed_pubkey, random);
-  memmove(signature_out, sigbuf, 64);
+  memset(signature_out, 0, 64);
 
   /* Encode the sign bit into signature (in unused high bit of S) */
    signature_out[63] &= 0x7F; /* bit should be zero already, but just in case */
    signature_out[63] |= sign_bit;
 
-   free(sigbuf);
+//   free(sigbuf);
    return 0;
 }
 
@@ -49,15 +52,15 @@ int curve25519_verify(const unsigned char* signature,
   unsigned char *verifybuf2 = NULL; /* working buffer #2 */
   int result;
 
-  if ((verifybuf = malloc(msg_len + 64)) == 0) {
-   result = -1;
-   goto err;
-  }
+//  if ((verifybuf = malloc(msg_len + 64)) == 0) {
+//   result = -1;
+//   goto err;
+//  }
 
-  if ((verifybuf2 = malloc(msg_len + 64)) == 0) {
-    result = -1;
-    goto err;
-  }
+//  if ((verifybuf2 = malloc(msg_len + 64)) == 0) {
+//    result = -1;
+//    goto err;
+//  }
 
   /* Convert the Curve25519 public key into an Ed25519 public key.  In
      particular, convert Curve25519's "montgomery" x-coordinate (u) into an

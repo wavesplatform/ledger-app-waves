@@ -19,15 +19,17 @@ static unsigned char negative(signed char b)
   return x;
 }
 
-static void cmov(ge_precomp *t,ge_precomp *u,unsigned char b)
+static void cmov(ge_precomp *t, const crypto_int32 *u1, const crypto_int32 *u2, const crypto_int32 *u3,unsigned char b)
 {
-  fe_cmov(t->yplusx,u->yplusx,b);
-  fe_cmov(t->yminusx,u->yminusx,b);
-  fe_cmov(t->xy2d,u->xy2d,b);
+  fe_cmov(t->yplusx, u1, b);
+  fe_cmov(t->yminusx, u2, b);
+  fe_cmov(t->xy2d, u3, b);
 }
 
+unsigned int B_COUNT = 32;
+unsigned int C_COUNT = 3;
 /* base[i][j] = (j+1)*256^i*B */
-static ge_precomp base[32][8] = {
+static const ge_precomp base[768] = {
 #include "base.h"
 } ;
 
@@ -38,18 +40,19 @@ static void select(ge_precomp *t,int pos,signed char b)
   unsigned char babs = b - (((-bnegative) & b) << 1);
 
   ge_precomp_0(t);
-  cmov(t,&base[pos][0],equal(babs,1));
-  cmov(t,&base[pos][1],equal(babs,2));
-  cmov(t,&base[pos][2],equal(babs,3));
-  cmov(t,&base[pos][3],equal(babs,4));
-  cmov(t,&base[pos][4],equal(babs,5));
-  cmov(t,&base[pos][5],equal(babs,6));
-  cmov(t,&base[pos][6],equal(babs,7));
-  cmov(t,&base[pos][7],equal(babs,8));
-  fe_copy(minust.yplusx,t->yminusx);
-  fe_copy(minust.yminusx,t->yplusx);
-  fe_neg(minust.xy2d,t->xy2d);
-  cmov(t,&minust,bnegative);
+  // todo how to solve this PIC shit ?!
+  cmov(t,&base[B_COUNT * pos + 0 * C_COUNT + 0], &base[B_COUNT * pos + 0 * C_COUNT + 1], &base[B_COUNT * pos + 0 * C_COUNT + 2],equal(babs,1));
+  cmov(t,&base[B_COUNT * pos + 1 * C_COUNT + 0], &base[B_COUNT * pos + 1 * C_COUNT + 1], &base[B_COUNT * pos + 1 * C_COUNT + 2],equal(babs,2));
+  cmov(t,&base[B_COUNT * pos + 2 * C_COUNT + 0], &base[B_COUNT * pos + 2 * C_COUNT + 1], &base[B_COUNT * pos + 2 * C_COUNT + 2],equal(babs,3));
+  cmov(t,&base[B_COUNT * pos + 3 * C_COUNT + 0], &base[B_COUNT * pos + 3 * C_COUNT + 1], &base[B_COUNT * pos + 3 * C_COUNT + 2],equal(babs,4));
+  cmov(t,&base[B_COUNT * pos + 4 * C_COUNT + 0], &base[B_COUNT * pos + 4 * C_COUNT + 1], &base[B_COUNT * pos + 4 * C_COUNT + 2],equal(babs,5));
+  cmov(t,&base[B_COUNT * pos + 5 * C_COUNT + 0], &base[B_COUNT * pos + 5 * C_COUNT + 1], &base[B_COUNT * pos + 5 * C_COUNT + 2],equal(babs,6));
+  cmov(t,&base[B_COUNT * pos + 6 * C_COUNT + 0], &base[B_COUNT * pos + 6 * C_COUNT + 1], &base[B_COUNT * pos + 6 * C_COUNT + 2],equal(babs,7));
+  cmov(t,&base[B_COUNT * pos + 7 * C_COUNT + 0], &base[B_COUNT * pos + 7 * C_COUNT + 1], &base[B_COUNT * pos + 7 * C_COUNT + 2],equal(babs,8));
+//  fe_copy(minust.yplusx,t->yminusx);
+//  fe_copy(minust.yminusx,t->yplusx);
+//  fe_neg(minust.xy2d,t->xy2d);
+//  cmov(t,&minust,bnegative);
 }
 
 /*
@@ -93,13 +96,13 @@ void ge_scalarmult_base(ge_p3 *h,const unsigned char *a)
     ge_madd(&r,h,&t); ge_p1p1_to_p3(h,&r);
   }
 
-  ge_p3_dbl(&r,h);  ge_p1p1_to_p2(&s,&r);
-  ge_p2_dbl(&r,&s); ge_p1p1_to_p2(&s,&r);
-  ge_p2_dbl(&r,&s); ge_p1p1_to_p2(&s,&r);
-  ge_p2_dbl(&r,&s); ge_p1p1_to_p3(h,&r);
-
-  for (i = 0;i < 64;i += 2) {
-    select(&t,i / 2,e[i]);
-    ge_madd(&r,h,&t); ge_p1p1_to_p3(h,&r);
-  }
+//  ge_p3_dbl(&r,h);  ge_p1p1_to_p2(&s,&r);
+//  ge_p2_dbl(&r,&s); ge_p1p1_to_p2(&s,&r);
+//  ge_p2_dbl(&r,&s); ge_p1p1_to_p2(&s,&r);
+//  ge_p2_dbl(&r,&s); ge_p1p1_to_p3(h,&r);
+//
+//  for (i = 0;i < 64;i += 2) {
+//    select(&t,i / 2,e[i]);
+//    ge_madd(&r,h,&t); ge_p1p1_to_p3(h,&r);
+//  }
 }

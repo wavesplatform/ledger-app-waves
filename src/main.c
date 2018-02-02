@@ -169,7 +169,26 @@ static unsigned char* getSigningKeyForIndex(int index) {
 // Hanlde a signing request -- called both from the main apdu loop as well as from
 // the button handler after the user verifies the transaction.
 bool handleSigning(volatile unsigned int *tx, volatile unsigned int *flags) {
-    // realize that
+    // Update the data from this segment.
+    os_memmove(buffer, G_io_apdu_buffer+5, G_io_apdu_buffer[4]);
+    bufferUsed = bufferUsed + G_io_apdu_buffer[4];
+
+    // If this is the last segment, calculate the signature
+    if (G_io_apdu_buffer[2] == P1_LAST) {
+        unsigned char signature[64];
+        unsigned char random[32];
+        unsigned char* privateKeyData = getSigningKeyForIndex(0);
+        cx_rng(random, sizeof(random));
+
+        curve25519_sign(signature, privateKeyData, buffer, bufferUsed, random);
+
+        memcpy(G_io_apdu_buffer, signature, sizeof(signature));
+
+        *tx = sizeof(signature);
+        bufferUsed = 0;
+        return false;
+    }
+
     return true;
 }
 

@@ -1,11 +1,14 @@
-# nanos-app-burst
+# nanos-app-waves
 
-Burstcoin wallet application for Ledger Nano S
+Waves wallet application for Ledger Nano S
 
 # Introduction
 
-This is a proof-of concept Ledger Nano S wallet app for Burstcoin.  I say that
-it is proof of concept for a few reasons:
+This is a proof-of concept Ledger Nano S wallet app for Waves platform.
+
+## Original description of Burst wallet
+
+I say that it is proof of concept for a few reasons:
 
 - I am not a cryptography or crypto-currency expert, and I could have introduced
   errors or security flaws into the code unintentionally. 
@@ -46,7 +49,7 @@ advised of the possibility of such damages.
 
 # License
 
-Copyright (c) 2017-2018 Jake B.
+Copyright (c) 2017-2018 Jake B. Updated by Waves community.
 
 This application is based on example sources from Ledger that were released under
 the Apache License, Version 2.0 and I have maintained this license for this app.

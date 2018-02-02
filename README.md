@@ -6,6 +6,8 @@ Waves wallet application for Ledger Nano S
 
 This is a proof-of concept Ledger Nano S wallet app for Waves platform.
 
+Special thanks to Jake B. for his support and advices.
+
 ## Original description of Burst wallet
 
 I say that it is proof of concept for a few reasons:

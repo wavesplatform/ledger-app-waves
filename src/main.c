@@ -129,7 +129,7 @@ static bool getPublicKeyForIndex(int index, cx_ecfp_public_key_t* publicKey) {
         return true;
     }
 
-    // BURST keypath of 44'/5741564'0'/0'/n' https://github.com/satoshilabs/slips/pull/189/
+    // WAVES keypath of 44'/5741564'0'/0'/n' https://github.com/satoshilabs/slips/pull/189/
     uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, index | 0x80000000};
 
     unsigned char privateKeyData[32];
@@ -155,7 +155,7 @@ static bool getSigningKeyForIndex(int index) {
         return false;
     }
 
-    // BURST keypath of 44'/5741564'/n'/0'/0'
+    // WAVES keypath of 44'/5741564'0'/0'/n' https://github.com/satoshilabs/slips/pull/189/
     uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, index | 0x80000000};
 
     unsigned char privateKeyData[32];

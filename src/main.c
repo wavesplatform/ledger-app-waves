@@ -125,48 +125,63 @@ static bool getPublicKeyForIndex(int index, cx_ecfp_public_key_t* publicKey) {
         return false;
     }
 
-    if ((N_storage.keyIndex != NO_KEY_STORED) && (N_storage.keyIndex == index)) {
-        publicKey->W_len = 32;
-        publicKey->curve = CX_CURVE_Curve25519;
-        os_memmove(publicKey->W, N_storage.publicKey, 32);
-        return true;
-    }
-
-    // WAVES keypath of 44'/5741564'0'/0'/n' https://github.com/satoshilabs/slips/pull/189/
-    uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, index | 0x80000000};
-
-    unsigned char privateKeyData[32];
-    os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
-    keygen25519(publicKey->W, NULL, privateKeyData);
-    publicKey->W_len = 32;
-    publicKey->curve = CX_CURVE_Curve25519;
-    
-    // Store the computed key in flash
-    internalStorage_t storage;
-    os_memmove(&storage, &N_storage, sizeof(internalStorage_t));
-    storage.keyIndex = index;
-    os_memmove(storage.publicKey, publicKey->W, 32);
-    nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
+//    if ((N_storage.keyIndex != NO_KEY_STORED) && (N_storage.keyIndex == index)) {
+//        publicKey->W_len = 32;
+//        publicKey->curve = CX_CURVE_Ed25519;
+//        os_memmove(publicKey->W, N_storage.publicKey, 32);
+//        return true;
+//    }
+//
+//    // WAVES keypath of 44'/5741564'0'/0'/n' https://github.com/satoshilabs/slips/pull/189/
+//    uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, index | 0x80000000};
+//
+////    cx_ecfp_public_key_t publicKey;
+//    cx_ecfp_private_key_t privateKey;
+//
+//    unsigned char privateKeyData[32];
+//    os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
+//    cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, &privateKey);
+//
+//    // generate the public key.
+//    cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, &publicKey);
+//    cx_ecfp_generate_pair(CX_CURVE_Ed25519, &publicKey, &privateKey, 1);
+//
+//    // Store the computed key in flash
+//    internalStorage_t storage;
+//    os_memmove(&storage, &N_storage, sizeof(internalStorage_t));
+//    storage.keyIndex = index;
+//    os_memmove(storage.publicKey, publicKey->W, 32);
+//    nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
 
     return true;
 }
 
 // // Get a signing key from the 44'/5741564' keypath.
 // todo receive link to privateKeyData array and returns boolean
-static unsigned char* getSigningKeyForIndex(int index) {
+static bool getSigningKeyForIndex(int index, cx_ecfp_private_key_t* privateKey) {
     if (!os_global_pin_is_validated()) {
         return false;
     }
 
-    // WAVES keypath of 44'/5741564'0'/0'/n' https://github.com/satoshilabs/slips/pull/189/
-    uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, index | 0x80000000};
+//    // WAVES keypath of 44'/5741564'0'/0'/n' https://github.com/satoshilabs/slips/pull/189/
+//    uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, index | 0x80000000};
+//
+//    unsigned char privateKeyData[32];
+//    cx_ecfp_public_key_t publicKey;
+//
+//    os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
+//    cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, &privateKey);
+//
+//    // generate the public key.
+//    cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, &publicKey);
+//    cx_ecfp_generate_pair(CX_CURVE_Ed25519, &publicKey, &privateKey, 1);
+//
+////    keygen25519(NULL, privateKey->d, privateKeyData);
+//    os_memmove(storage.publicKey, publicKey->d, 32);
+//    privateKey->curve = CX_CURVE_Curve25519;
+//    privateKey->d_len = 32;
 
-    unsigned char privateKeyData[32];
-    os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
-
-    clamp25519(privateKeyData);
-
-    return privateKeyData;
+    return true;
 }
 
 // Hanlde a signing request -- called both from the main apdu loop as well as from
@@ -180,10 +195,11 @@ bool handleSigning(volatile unsigned int *tx, volatile unsigned int *flags) {
     if (G_io_apdu_buffer[2] == P1_LAST) {
         unsigned char signature[64];
         unsigned char random[32];
-        unsigned char* privateKeyData = getSigningKeyForIndex(0);
+        cx_ecfp_private_key_t signingKey;
+        getSigningKeyForIndex(0, &signingKey);
         cx_rng(random, sizeof(random));
 
-        curve25519_sign(signature, privateKeyData, buffer, bufferUsed, random);
+        curve25519_sign(signature, NULL, buffer, bufferUsed, random);
 
         memcpy(G_io_apdu_buffer, signature, sizeof(signature));
 
@@ -231,19 +247,48 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, volatil
 
             case INS_GET_PUBLIC_KEY: {
                 // Get the public key and return it.
-                cx_ecfp_public_key_t publicKey;
+//                cx_ecfp_public_key_t publicKey;
+//                cx_ecfp_private_key_t privateKey;
                 // todo return private key only for debug
                 // todo pass link to privateKeyData array
-                unsigned char* privateKeyData = getSigningKeyForIndex(0);
-                if (getPublicKeyForIndex(0, &publicKey)) {
-                    os_memmove(G_io_apdu_buffer, publicKey.W, 32);
-                    os_memmove(G_io_apdu_buffer + 32, privateKeyData, 32);
-                    *tx = 64;
+//                if (getPublicKeyForIndex(0, &publicKey) && getSigningKeyForIndex(0, &privateKey)) {
+                    cx_ecfp_public_key_t publicKey;
+                    cx_ecfp_private_key_t privateKey;
+
+                    int index = 0;
+
+                    uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, index | 0x80000000};
+
+                    unsigned char privateKeyData[32];
+                    os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
+                    cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, &privateKey);
+                    cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, &publicKey);
+                    cx_ecfp_generate_pair(CX_CURVE_Ed25519, &publicKey, &privateKey, 1);
+
+                    uint8_t publicKey_be[32];
+                    // copy public key little endian to big endian
+                    for (uint8_t i = 0; i < 32; i++) {
+                        publicKey_be[i] = publicKey.W[64 - i];
+                    }
+                    if ((publicKey.W[32] & 1) != 0) {
+                        publicKey_be[31] |= 0x80;
+                    }
+
+
+                    uint8_t signature[64];
+                    uint8_t msg[1] = {1};
+                    cx_eddsa_sign(&privateKey, NULL, CX_LAST, CX_SHA512, msg, sizeof(msg), signature);
+
+                    os_memmove(G_io_apdu_buffer, publicKey_be, sizeof(publicKey_be));
+                    os_memmove(G_io_apdu_buffer + sizeof(publicKey_be), privateKey.d, sizeof(privateKey.d));
+                    os_memmove(G_io_apdu_buffer + sizeof(publicKey_be) + sizeof(privateKey.d), signature, sizeof(signature));
+
+                    *tx = sizeof(publicKey_be) + sizeof(privateKey.d) + sizeof(signature);
                     THROW(SW_OK);
-                } else {
-                    // Return an error
-                    THROW(SW_INS_NOT_SUPPORTED);
-                }
+//                } else {
+//                    // Return an error
+//                    THROW(SW_INS_NOT_SUPPORTED);
+//                }
             } break;
 
             default:

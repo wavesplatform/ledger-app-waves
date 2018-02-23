@@ -66,7 +66,7 @@ WIDE internalStorage_t N_storage_real;
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 // Stuff for the SHA-256 hashing
-volatile unsigned int hashCount;     // notification to restart the hash
+// Curve25519 support only full message hash
 volatile unsigned int bufferUsed;
 unsigned char buffer[MAX_DATA_SIZE];
 
@@ -474,7 +474,6 @@ __attribute__((section(".boot"))) int main(void) {
 
     // current_text_pos = 0;
     // text_y = 60;
-    hashCount = 0;
     bufferUsed = 0;
     uiState = UI_IDLE;
 

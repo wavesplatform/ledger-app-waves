@@ -193,13 +193,32 @@ bool handleSigning(volatile unsigned int *tx, volatile unsigned int *flags) {
 
     // If this is the last segment, calculate the signature
     if (G_io_apdu_buffer[2] == P1_LAST) {
-        unsigned char signature[64];
-        unsigned char random[32];
-        cx_ecfp_private_key_t signingKey;
-        getSigningKeyForIndex(0, &signingKey);
-        cx_rng(random, sizeof(random));
+        cx_ecfp_public_key_t publicKey;
+        cx_ecfp_private_key_t privateKey;
 
-        curve25519_sign(signature, NULL, buffer, bufferUsed, random);
+        int index = 0;
+
+        uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, index | 0x80000000};
+
+        unsigned char privateKeyData[32];
+        os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
+        cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, &privateKey);
+        cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, &publicKey);
+        cx_ecfp_generate_pair(CX_CURVE_Ed25519, &publicKey, &privateKey, 1);
+
+        uint8_t publicKey_be[32];
+        // copy public key little endian to big endian
+        for (uint8_t i = 0; i < 32; i++) {
+            publicKey_be[i] = publicKey.W[64 - i];
+        }
+        if ((publicKey.W[32] & 1) != 0) {
+            publicKey_be[31] |= 0x80;
+        }
+
+
+        uint8_t signature[64];
+        uint8_t msg[1] = {1};
+        cx_eddsa_sign(&privateKey, NULL, CX_LAST, CX_SHA512, buffer, bufferUsed, signature);
 
         memcpy(G_io_apdu_buffer, signature, sizeof(signature));
 
@@ -233,15 +252,15 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, volatil
                     THROW(SW_INCORRECT_P1_P2);
                 }
 
-                if (false) {
-                    // todo fix UI to Waves Transactions
-                    if (G_io_apdu_buffer)
-                    ui_verify();
-                    *flags |= IO_ASYNCH_REPLY;
-                } else {
+//                if (hashCount == 0) {
+//                     todo fix UI to Waves Transactions
+//                    if (G_io_apdu_buffer)
+//                    ui_verify();
+//                    *flags |= IO_ASYNCH_REPLY;
+//                } else {
                     bool more = handleSigning(tx, flags);
                     THROW(SW_OK);
-                }
+//                }
 
             } break;
 

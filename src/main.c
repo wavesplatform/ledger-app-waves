@@ -186,9 +186,11 @@ static bool getSigningKeyForIndex(int index, cx_ecfp_private_key_t* privateKey) 
 
 // Hanlde a signing request -- called both from the main apdu loop as well as from
 // the button handler after the user verifies the transaction.
+
+// like https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
 bool handleSigning(volatile unsigned int *tx, volatile unsigned int *flags) {
     // Update the data from this segment.
-    os_memmove(buffer, G_io_apdu_buffer+5, G_io_apdu_buffer[4]);
+    os_memmove(buffer + bufferUsed, G_io_apdu_buffer+5, G_io_apdu_buffer[4]);
     bufferUsed = bufferUsed + G_io_apdu_buffer[4];
 
     // If this is the last segment, calculate the signature
@@ -217,7 +219,6 @@ bool handleSigning(volatile unsigned int *tx, volatile unsigned int *flags) {
 
 
         uint8_t signature[64];
-        uint8_t msg[1] = {1};
         cx_eddsa_sign(&privateKey, NULL, CX_LAST, CX_SHA512, buffer, bufferUsed, signature);
 
         memcpy(G_io_apdu_buffer, signature, sizeof(signature));

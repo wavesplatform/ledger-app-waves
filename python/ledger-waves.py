@@ -76,7 +76,7 @@ publicKey = None
 privateKey = None
 
 
-def getPublicKeyFromDongle():
+def getKeysFromDongle():
     global publicKey
     global dongle
     if (publicKey):
@@ -87,8 +87,7 @@ def getPublicKeyFromDongle():
                 if (dongle == None):
                     dongle = getDongle(True)
                 data = dongle.exchange(bytes("8004000000".decode('hex')))
-                publicKey = data[0:32]
-                return publicKey
+                return [data[0:32], data[32:64], data[64:128]]
             except Exception as e:
                 print e
                 answer = raw_input(
@@ -96,29 +95,6 @@ def getPublicKeyFromDongle():
                 if (answer.upper() == 'Q'):
                     sys.exit(0)
                 sys.exc_clear()
-
-
-def getPrivateKeyFromDongle():
-    global privateKey
-    global dongle
-    if (privateKey):
-        return privateKey
-    else:
-        while (True):
-            try:
-                if (dongle == None):
-                    dongle = getDongle(True)
-                data = dongle.exchange(bytes("8004000000".decode('hex')))
-                privateKey = data[32:64]
-                return privateKey
-            except Exception as e:
-                print e
-                answer = raw_input(
-                    "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
-                if (answer.upper() == 'Q'):
-                    sys.exit(0)
-                sys.exc_clear()
-
 
 CHUNK_SIZE = 128
 
@@ -131,13 +107,16 @@ while (True):
     select = raw_input(colors.fg.cyan + "Please select> " + colors.reset)
 
     if (select == "1"):
-        publicKey = getPublicKeyFromDongle()
-        pKey = getPrivateKeyFromDongle()
+        keys = getKeysFromDongle()
+        publicKey = keys[0]
+        privateKey = keys[1]
+        signature = keys[2]
 
         print colors.fg.blue + "publicKey: " + colors.reset + str(publicKey).encode('hex')
-        print colors.fg.blue + "privateKey: " + colors.reset + str(pKey).encode('hex')
+        print colors.fg.blue + "privateKey: " + colors.reset + str(privateKey).encode('hex')
+        print colors.fg.blue + "signature: " + colors.reset + str(signature).encode('hex')
     elif (select == "2"):
-        binary_data = bytes("31".decode('hex'))
+        binary_data = bytes("a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad0311111111".decode('hex'))
         signature = None
         while (True):
             try:

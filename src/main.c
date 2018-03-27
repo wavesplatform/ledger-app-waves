@@ -126,7 +126,7 @@ static void getKeypairByPath(const uint32_t* path, cx_ecfp_public_key_t* publicK
 }
 
 // Get a public key from the 44'/5741564' keypath.
-static void getPublicKeyForIndex(uint32_t* path, cx_ecfp_public_key_t* publicKey) {
+static bool getPublicKeyForIndex(uint32_t* path, cx_ecfp_public_key_t* publicKey) {
     if (!os_global_pin_is_validated()) {
         return false;
     }
@@ -136,20 +136,24 @@ static void getPublicKeyForIndex(uint32_t* path, cx_ecfp_public_key_t* publicKey
     uint8_t publicKey_be[32];
     // copy public key little endian to big endian
     for (uint8_t i = 0; i < 32; i++) {
-        publicKey_be[i] = publicKey.W[64 - i];
+        publicKey_be[i] = publicKey->W[64 - i];
     }
-    if ((publicKey.W[32] & 1) != 0) {
+    if ((publicKey->W[32] & 1) != 0) {
         publicKey_be[31] |= 0x80;
     }
-    os_memmove(publicKey->d, publicKey_be, 32);
+    os_memmove(publicKey->W, publicKey_be, 32);
+
+    return true;
 }
 
-static void getPrivateKeyForIndex(uint32_t* path, cx_ecfp_private_key_t* privateKey) {
+static bool getPrivateKeyForIndex(uint32_t* path, cx_ecfp_private_key_t* privateKey) {
     if (!os_global_pin_is_validated()) {
         return false;
     }
 
     getKeypairByPath(path, NULL, privateKey);
+
+    return true;
 }
 
 // // Get a signing key from the 44'/5741564' keypath.
@@ -214,7 +218,7 @@ bool handleSigning(volatile unsigned int *tx, volatile unsigned int *flags) {
         }
 
         uint8_t signature[64];
-        cx_eddsa_sign(&privateKey, NULL, CX_LAST, CX_SHA512, buffer, bufferUsed, signature);
+        cx_eddsa_sign(&privateKey, NULL, CX_LAST, CX_SHA512, CX_SHA512_SIZE, buffer, bufferUsed, signature, NULL);
 
         memcpy(G_io_apdu_buffer, signature, sizeof(signature));
 
@@ -281,14 +285,14 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, volatil
                 // Get the public key and return it.
                 cx_ecfp_public_key_t publicKey;
 
-                uint32_t path[] = G_io_apdu_buffer[5];
+                uint32_t* path = G_io_apdu_buffer[5];
                 getPublicKeyForIndex(path, &publicKey);
 
-                char address[] = new char[35];
-                waves_public_key_to_address(publicKey->d, 'W', address);
+                char address[35];
+                waves_public_key_to_address(publicKey.W, 'W', address);
 
-                os_memmove(G_io_apdu_buffer, publicKey->d, 32);
-                os_memmove(G_io_apdu_buffer + 32, address, 35;
+                os_memmove(G_io_apdu_buffer, publicKey.W, 32);
+                os_memmove(G_io_apdu_buffer + 32, address, 35);
 
                 *tx = 67;
                 THROW(SW_OK);

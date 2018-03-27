@@ -22,7 +22,6 @@
 #include <stdbool.h>
 #include "glyphs.h"
 #include "main.h"
-#include "crypto/rs_address.h"
 
 ux_state_t ux;
 

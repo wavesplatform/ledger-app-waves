@@ -21,9 +21,7 @@
 
 #include "main.h"
 #include "constants.h"
-#include "crypto/curve25519_i64.h"
-#include "crypto/rs_address.h"
-#include "crypto/ed25519/additions/curve_sigs.h"
+#include "crypto/waves.h"
 
 // Ledger Stuff
 #include "ui.h"
@@ -119,41 +117,39 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
     return 0;
 }
 
+static void getKeypairByPath(const uint32_t* path, cx_ecfp_public_key_t* publicKey, cx_ecfp_private_key_t* privateKey) {
+    unsigned char privateKeyData[32];
+    os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
+    cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, &privateKey);
+    cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, &publicKey);
+    cx_ecfp_generate_pair(CX_CURVE_Ed25519, publicKey, privateKey, 1);
+}
+
 // Get a public key from the 44'/5741564' keypath.
-static bool getPublicKeyForIndex(int index, cx_ecfp_public_key_t* publicKey) {
+static void getPublicKeyForIndex(uint32_t* path, cx_ecfp_public_key_t* publicKey) {
     if (!os_global_pin_is_validated()) {
         return false;
     }
 
-//    if ((N_storage.keyIndex != NO_KEY_STORED) && (N_storage.keyIndex == index)) {
-//        publicKey->W_len = 32;
-//        publicKey->curve = CX_CURVE_Ed25519;
-//        os_memmove(publicKey->W, N_storage.publicKey, 32);
-//        return true;
-//    }
-//
-//    // WAVES keypath of 44'/5741564'0'/0'/n' https://github.com/satoshilabs/slips/pull/189/
-//    uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, index | 0x80000000};
-//
-////    cx_ecfp_public_key_t publicKey;
-//    cx_ecfp_private_key_t privateKey;
-//
-//    unsigned char privateKeyData[32];
-//    os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
-//    cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, &privateKey);
-//
-//    // generate the public key.
-//    cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, &publicKey);
-//    cx_ecfp_generate_pair(CX_CURVE_Ed25519, &publicKey, &privateKey, 1);
-//
-//    // Store the computed key in flash
-//    internalStorage_t storage;
-//    os_memmove(&storage, &N_storage, sizeof(internalStorage_t));
-//    storage.keyIndex = index;
-//    os_memmove(storage.publicKey, publicKey->W, 32);
-//    nvm_write(&N_storage, (void *)&storage, sizeof(internalStorage_t));
+    getKeypairByPath(path, publicKey, NULL);
 
-    return true;
+    uint8_t publicKey_be[32];
+    // copy public key little endian to big endian
+    for (uint8_t i = 0; i < 32; i++) {
+        publicKey_be[i] = publicKey.W[64 - i];
+    }
+    if ((publicKey.W[32] & 1) != 0) {
+        publicKey_be[31] |= 0x80;
+    }
+    os_memmove(publicKey->d, publicKey_be, 32);
+}
+
+static void getPrivateKeyForIndex(uint32_t* path, cx_ecfp_private_key_t* privateKey) {
+    if (!os_global_pin_is_validated()) {
+        return false;
+    }
+
+    getKeypairByPath(path, NULL, privateKey);
 }
 
 // // Get a signing key from the 44'/5741564' keypath.
@@ -217,7 +213,6 @@ bool handleSigning(volatile unsigned int *tx, volatile unsigned int *flags) {
             publicKey_be[31] |= 0x80;
         }
 
-
         uint8_t signature[64];
         cx_eddsa_sign(&privateKey, NULL, CX_LAST, CX_SHA512, buffer, bufferUsed, signature);
 
@@ -229,6 +224,18 @@ bool handleSigning(volatile unsigned int *tx, volatile unsigned int *flags) {
     }
 
     return true;
+}
+
+uint32_t deserialize_uint32_t(unsigned char *buffer)
+{
+    uint32_t value = 0;
+
+    value |= buffer[0] << 24;
+    value |= buffer[1] << 16;
+    value |= buffer[2] << 8;
+    value |= buffer[3];
+    return value;
+
 }
 
 // Called by both the U2F and the standard communications channel
@@ -266,49 +273,25 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, volatil
             } break;
 
             case INS_GET_PUBLIC_KEY: {
+                if (G_io_apdu_buffer[4] != rx - 5 || G_io_apdu_buffer[4] != 20) {
+                    // the length of the APDU should match what's int he 5-byte header.
+                    // If not fail.  Don't want to buffer overrun or anything.
+                    THROW(SW_CONDITIONS_NOT_SATISFIED);
+                }
                 // Get the public key and return it.
-//                cx_ecfp_public_key_t publicKey;
-//                cx_ecfp_private_key_t privateKey;
-                // todo return private key only for debug
-                // todo pass link to privateKeyData array
-//                if (getPublicKeyForIndex(0, &publicKey) && getSigningKeyForIndex(0, &privateKey)) {
-                    cx_ecfp_public_key_t publicKey;
-                    cx_ecfp_private_key_t privateKey;
+                cx_ecfp_public_key_t publicKey;
 
-                    int index = 0;
+                uint32_t path[] = G_io_apdu_buffer[5];
+                getPublicKeyForIndex(path, &publicKey);
 
-                    uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, index | 0x80000000};
+                char address[] = new char[35];
+                waves_public_key_to_address(publicKey->d, 'W', address);
 
-                    unsigned char privateKeyData[32];
-                    os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
-                    cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, &privateKey);
-                    cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, &publicKey);
-                    cx_ecfp_generate_pair(CX_CURVE_Ed25519, &publicKey, &privateKey, 1);
+                os_memmove(G_io_apdu_buffer, publicKey->d, 32);
+                os_memmove(G_io_apdu_buffer + 32, address, 35;
 
-                    uint8_t publicKey_be[32];
-                    // copy public key little endian to big endian
-                    for (uint8_t i = 0; i < 32; i++) {
-                        publicKey_be[i] = publicKey.W[64 - i];
-                    }
-                    if ((publicKey.W[32] & 1) != 0) {
-                        publicKey_be[31] |= 0x80;
-                    }
-
-
-                    uint8_t signature[64];
-                    uint8_t msg[1] = {1};
-                    cx_eddsa_sign(&privateKey, NULL, CX_LAST, CX_SHA512, msg, sizeof(msg), signature);
-
-                    os_memmove(G_io_apdu_buffer, publicKey_be, sizeof(publicKey_be));
-                    os_memmove(G_io_apdu_buffer + sizeof(publicKey_be), privateKey.d, sizeof(privateKey.d));
-                    os_memmove(G_io_apdu_buffer + sizeof(publicKey_be) + sizeof(privateKey.d), signature, sizeof(signature));
-
-                    *tx = sizeof(publicKey_be) + sizeof(privateKey.d) + sizeof(signature);
-                    THROW(SW_OK);
-//                } else {
-//                    // Return an error
-//                    THROW(SW_INS_NOT_SUPPORTED);
-//                }
+                *tx = 67;
+                THROW(SW_OK);
             } break;
 
             default:

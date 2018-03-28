@@ -218,8 +218,11 @@ bool handleSigning(volatile unsigned int *tx, volatile unsigned int *flags) {
         }
 
         uint8_t signature[64];
-        cx_eddsa_sign(&privateKey, NULL, CX_LAST, CX_SHA512, CX_SHA512_SIZE, buffer, bufferUsed, signature, NULL);
-
+        #if CX_APILEVEL >= 8
+        cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, buffer, bufferUsed, NULL, 0, signature, NULL);
+        #else
+        cx_eddsa_sign(&privateKey, NULL, CX_LAST, CX_SHA512, msg, sizeof(msg), signature);
+        #endif
         memcpy(G_io_apdu_buffer, signature, sizeof(signature));
 
         *tx = sizeof(signature);

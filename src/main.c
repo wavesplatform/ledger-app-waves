@@ -120,8 +120,8 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
 static void getKeypairByPath(const uint32_t* path, cx_ecfp_public_key_t* publicKey, cx_ecfp_private_key_t* privateKey) {
     unsigned char privateKeyData[32];
     os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
-    cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, &privateKey);
-    cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, &publicKey);
+    cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
+    cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, publicKey);
     cx_ecfp_generate_pair(CX_CURVE_Ed25519, publicKey, privateKey, 1);
 }
 

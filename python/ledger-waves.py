@@ -86,8 +86,9 @@ def getKeysFromDongle(path):
             try:
                 if (dongle == None):
                     dongle = getDongle(True)
-                data = dongle.exchange(bytes("8004800014".decode('hex')) + path_to_bytes(path))
-                return [data[0:32], data[32:64]]
+                data_bytes = bytes("8004800014".decode('hex')) + path_to_bytes(path)
+                data = dongle.exchange(data_bytes)
+                return [data[0:32], data[32:67]]
             except Exception as e:
                 print e
                 answer = raw_input(

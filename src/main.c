@@ -126,13 +126,15 @@ static void getKeypairByPath(const uint32_t* path, cx_ecfp_public_key_t* publicK
 }
 
 // Get a public key from the 44'/5741564' keypath.
-static bool getPublicKeyForPath(const uint32_t* path, cx_ecfp_public_key_t* publicKey) {
+static bool getCurve25519PublicKeyForPath(const uint32_t* path, cx_ecfp_public_key_t* publicKey) {
     if (!os_global_pin_is_validated()) {
         return false;
     }
 
     cx_ecfp_private_key_t privateKey;
+    // derive the ed25519 keys by that BIP32 path from the device
     getKeypairByPath(path, publicKey, &privateKey);
+    // clean private key
     os_memset(privateKey.d, 0, 32);
 
     uint8_t publicKey_be[32];
@@ -140,6 +142,7 @@ static bool getPublicKeyForPath(const uint32_t* path, cx_ecfp_public_key_t* publ
     for (uint8_t i = 0; i < 32; i++) {
         publicKey_be[i] = publicKey->W[64 - i];
     }
+    // set the sign bit from ed25519 public key (using 31 byte) for curve25519 validation used in waves
     if ((publicKey->W[32] & 1) != 0) {
         publicKey_be[31] |= 0x80;
     }
@@ -148,13 +151,15 @@ static bool getPublicKeyForPath(const uint32_t* path, cx_ecfp_public_key_t* publ
     return true;
 }
 
-static bool getPrivateKeyForPath(uint32_t* path, cx_ecfp_private_key_t* privateKey) {
+static bool getEd25519PrivateKeyForPath(uint32_t* path, cx_ecfp_private_key_t* privateKey) {
     if (!os_global_pin_is_validated()) {
         return false;
     }
 
     cx_ecfp_public_key_t publicKey;
+    // derive the ed25519 keys by that BIP32 path from the device
     getKeypairByPath(path, &publicKey, privateKey);
+    // clean public key
     os_memset(publicKey.W, 0, 32);
 
     return true;
@@ -296,7 +301,7 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, volatil
                 path[3] = deserialize_uint32_t(&G_io_apdu_buffer[17]);
                 path[4] = deserialize_uint32_t(&G_io_apdu_buffer[21]);
 
-                getPublicKeyForPath(path, &publicKey);
+                getCurve25519PublicKeyForPath(path, &publicKey);
 
                 char address[35];
                 waves_public_key_to_address(publicKey.W, 'W', address);

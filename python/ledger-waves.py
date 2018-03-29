@@ -17,6 +17,7 @@
 # ********************************************************************************
 from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
+import base58
 import hashlib
 import struct
 import sys
@@ -70,32 +71,22 @@ class colors:
         cyan = '\033[46m'
         lightgrey = '\033[47m'
 
-
-global publicKey, privateKey
-publicKey = None
-privateKey = None
-
-
 def getKeysFromDongle(path):
-    global publicKey
     global dongle
-    if (publicKey):
-        return publicKey
-    else:
-        while (True):
-            try:
-                if (dongle == None):
-                    dongle = getDongle(True)
-                data_bytes = bytes("8004800014".decode('hex')) + path_to_bytes(path)
-                data = dongle.exchange(data_bytes)
-                return [data[0:32], data[32:67]]
-            except Exception as e:
-                print e
-                answer = raw_input(
-                    "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
-                if (answer.upper() == 'Q'):
-                    sys.exit(0)
-                sys.exc_clear()
+    while (True):
+        try:
+            if (dongle == None):
+                dongle = getDongle(True)
+            data_bytes = bytes("8004800014".decode('hex')) + path_to_bytes(path)
+            data = dongle.exchange(data_bytes)
+            return [data[0:32], data[32:67]]
+        except Exception as e:
+            print e
+            answer = raw_input(
+                "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
+            if (answer.upper() == 'Q'):
+                sys.exit(0)
+            sys.exc_clear()
 
 CHUNK_SIZE = 128
 PRIME_DERIVATION_FLAG = 0x80000000
@@ -146,12 +137,13 @@ while (True):
     select = raw_input(colors.fg.cyan + "Please select> " + colors.reset)
 
     if (select == "1"):
-        keys = getKeysFromDongle(expand_path("m/44'/5741564'/0'/0'/1'"))
+        path = raw_input(colors.fg.lightblue + "Please input BIP-32 path (for example \"44'/5741564'/0'/0'/1'\")> " + colors.reset)
+        keys = getKeysFromDongle(expand_path(path))
         publicKey = keys[0]
         address = keys[1]
 
-        print colors.fg.blue + "publicKey: " + colors.reset + str(publicKey).encode('hex')
-        print colors.fg.blue + "address: " + colors.reset + str(address).encode('hex')
+        print colors.fg.blue + "publicKey (base58): " + colors.reset + base58.b58encode(str(publicKey))
+        print colors.fg.blue + "address: " + colors.reset + address
     elif (select == "2"):
         binary_data = bytes("a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad03a548b271aaec21b6297e381f22e69327c4cb135087c93683e60a1cf820d4c52a0619d4ef7330f9cedd69eda092839d21c8cee1891025e760c8aaab57b4a6ad0311111111".decode('hex'))
         signature = None

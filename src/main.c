@@ -120,19 +120,20 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
 static void getKeypairByPath(const uint32_t* path, cx_ecfp_public_key_t* publicKey, cx_ecfp_private_key_t* privateKey) {
     unsigned char privateKeyData[32];
     os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
-//    if (privateKey)
-//        cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
-//    cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, publicKey);
-//    cx_ecfp_generate_pair(CX_CURVE_Ed25519, publicKey, privateKey, 1);
+    cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
+    cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, publicKey);
+    cx_ecfp_generate_pair(CX_CURVE_Ed25519, publicKey, privateKey, 1);
 }
 
 // Get a public key from the 44'/5741564' keypath.
-static bool getPublicKeyForIndex(const uint32_t* path, cx_ecfp_public_key_t* publicKey) {
+static bool getPublicKeyForPath(const uint32_t* path, cx_ecfp_public_key_t* publicKey) {
     if (!os_global_pin_is_validated()) {
         return false;
     }
 
-//    getKeypairByPath(path, publicKey, NULL);
+    cx_ecfp_private_key_t privateKey;
+    getKeypairByPath(path, publicKey, &privateKey);
+    os_memset(privateKey.d, 0, 32);
 
     uint8_t publicKey_be[32];
     // copy public key little endian to big endian
@@ -147,12 +148,14 @@ static bool getPublicKeyForIndex(const uint32_t* path, cx_ecfp_public_key_t* pub
     return true;
 }
 
-static bool getPrivateKeyForIndex(uint32_t* path, cx_ecfp_private_key_t* privateKey) {
+static bool getPrivateKeyForPath(uint32_t* path, cx_ecfp_private_key_t* privateKey) {
     if (!os_global_pin_is_validated()) {
         return false;
     }
 
-    getKeypairByPath(path, NULL, privateKey);
+    cx_ecfp_public_key_t publicKey;
+    getKeypairByPath(path, &publicKey, privateKey);
+    os_memset(publicKey.W, 0, 32);
 
     return true;
 }
@@ -286,14 +289,14 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, volatil
                 // Get the public key and return it.
                 cx_ecfp_public_key_t publicKey;
 
-//                uint32_t path[5];
-//                deserialize_uint32_t(&G_io_apdu_buffer[5]);
-//                path[1] = deserialize_uint32_t(&G_io_apdu_buffer[9]);
-//                path[2] = deserialize_uint32_t(&G_io_apdu_buffer[13]);
-//                path[3] = deserialize_uint32_t(&G_io_apdu_buffer[17]);
-//                path[4] = deserialize_uint32_t(&G_io_apdu_buffer[20]);
-                uint32_t path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, 1 | 0x80000000};
-                getPublicKeyForIndex(path, &publicKey);
+                uint32_t path[5];
+                path[0] = deserialize_uint32_t(&G_io_apdu_buffer[5]);
+                path[1] = deserialize_uint32_t(&G_io_apdu_buffer[9]);
+                path[2] = deserialize_uint32_t(&G_io_apdu_buffer[13]);
+                path[3] = deserialize_uint32_t(&G_io_apdu_buffer[17]);
+                path[4] = deserialize_uint32_t(&G_io_apdu_buffer[21]);
+
+                getPublicKeyForPath(path, &publicKey);
 
                 char address[35];
                 waves_public_key_to_address(publicKey.W, 'W', address);

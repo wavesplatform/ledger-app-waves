@@ -26,7 +26,7 @@
 ux_state_t ux;
 
 // UI currently displayed
-enum UI_STATE uiState;
+enum UI_STATE ui_state;
 
 //ux_state_t ux;
 //unsigned int current_text_pos; // parsing cursor in the text to display
@@ -40,10 +40,10 @@ void print_amount(uint64_t amount, char *out, uint8_t len);
 
 // change the setting
 void menu_settings_browser_change(unsigned int enabled) {
-    uint8_t fidoTransport = enabled;
-    nvm_write(&N_storage.fidoTransport, (void *)&fidoTransport, sizeof(uint8_t));
+    uint8_t fido_transport = enabled;
+    nvm_write(&N_storage.fido_transport, (void *)&fido_transport, sizeof(uint8_t));
     USB_power_U2F(0, 0);
-    USB_power_U2F(1, N_storage.fidoTransport);
+    USB_power_U2F(1, N_storage.fido_transport);
     // go back to the menu entry
     UX_MENU_DISPLAY(1, menu_settings, NULL);
 }
@@ -51,7 +51,7 @@ void menu_settings_browser_change(unsigned int enabled) {
 // show the currently activated entry
 void menu_settings_browser_init(unsigned int ignored) {
     UNUSED(ignored);
-    UX_MENU_DISPLAY(N_storage.fidoTransport ? 1 : 0, menu_settings_browser, NULL);
+    UX_MENU_DISPLAY(N_storage.fido_transport ? 1 : 0, menu_settings_browser, NULL);
 }
 
 #endif
@@ -144,7 +144,7 @@ const bagl_element_t ui_verify_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     tmpCtx.transactionContext.fullAmount,
+     tmp_ctx.transaction_context.fullAmount,
      0,
      0,
      0,
@@ -163,7 +163,7 @@ const bagl_element_t ui_verify_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x03, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     tmpCtx.transactionContext.fullAddress,
+     tmp_ctx.transaction_context.fullAddress,
      0,
      0,
      0,
@@ -182,7 +182,7 @@ const bagl_element_t ui_verify_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x04, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     tmpCtx.transactionContext.feesAmount,
+     tmp_ctx.transaction_context.feesAmount,
      0,
      0,
      0,
@@ -197,21 +197,21 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
     unsigned int tx = 0;
     unsigned short sw = SW_OK;
     
-    bool more = handleSigning(&tx, NULL);
+    handle_signing(&tx, NULL);
 
     G_io_apdu_buffer[tx++] = sw >> 8;
     G_io_apdu_buffer[tx++] = sw;
 
 
 #if HAVE_U2F
-    if (fidoActivated) {
+    if (fido_activated) {
         u2f_proxy_response((u2f_service_t *)&u2fService, tx);
     } else {
 #endif
         // Send back the response, do not restart the event loop
         io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
 #if HAVE_U2F
-    } // close fidoActivated if statement
+    } // close fido_activated if statement
 #endif 
 
     //if (more) {
@@ -224,13 +224,11 @@ io_seproxyhal_touch_approve(const bagl_element_t *e) {
 }
 
 static const bagl_element_t *io_seproxyhal_touch_deny(const bagl_element_t *e) {
-    hashCount = 0;
-
     G_io_apdu_buffer[0] = 0x69;
     G_io_apdu_buffer[1] = 0x85;
 
 #ifdef HAVE_U2F
-    if (fidoActivated) {
+    if (fido_activated) {
         u2f_proxy_response((u2f_service_t *)&u2fService, 2);
     } else {
 #endif
@@ -286,7 +284,7 @@ const bagl_element_t * ui_verify_prepro(const bagl_element_t *element) {
 // Idle state, sow the menu
 void ui_idle(void) {
     ux_step = 0; ux_step_count = 0;
-    uiState = UI_IDLE;
+    ui_state = UI_IDLE;
     UX_MENU_DISPLAY(0, menu_main, NULL);
 }
 
@@ -296,19 +294,19 @@ void ui_verify(void) {
     // Recipient
     uint64_t recipient;
     os_memmove(&recipient, G_io_apdu_buffer + 5 + 40, 8);
-    addressFromAccountNumber(tmpCtx.transactionContext.fullAddress, recipient, true);
+//    addressFromAccountNumber(tmp_ctx.transaction_context.fullAddress, recipient, true);
     uint64_t amount, fee;
     os_memmove(&amount, G_io_apdu_buffer + 5 + 48, 8);
     os_memmove(&fee, G_io_apdu_buffer + 5 + 56, 8);
 
-    print_amount(amount+fee, (char*)tmpCtx.transactionContext.fullAmount, 
-                 sizeof(tmpCtx.transactionContext.fullAmount));
-    print_amount(fee, (char*)tmpCtx.transactionContext.feesAmount, 
-                 sizeof(tmpCtx.transactionContext.feesAmount));
+    print_amount(amount+fee, (char*)tmp_ctx.transaction_context.fullAmount,
+                 sizeof(tmp_ctx.transaction_context.fullAmount));
+    print_amount(fee, (char*)tmp_ctx.transaction_context.feesAmount,
+                 sizeof(tmp_ctx.transaction_context.feesAmount));
 
-    // Set the step/step count, and uiState before requesting the UI
+    // Set the step/step count, and ui_state before requesting the UI
     ux_step = 0; ux_step_count = 4;
-    uiState = UI_VERIFY;    
+    ui_state = UI_VERIFY;    
     UX_DISPLAY(ui_verify_nanos, ui_verify_prepro);
 }
 

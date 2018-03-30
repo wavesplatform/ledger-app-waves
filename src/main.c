@@ -256,7 +256,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 uint32_t path[5];
                 read_path_from_bytes(G_io_apdu_buffer + 5, &path);
 
-                if (!get_curve25519_public_key_for_path(path, &public_key)) {
+                if (get_curve25519_public_key_for_path(path, &public_key) != 0) {
                     THROW(INVALID_PARAMETER);
                 }
 

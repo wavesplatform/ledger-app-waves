@@ -161,7 +161,10 @@ static bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_pub
     if ((public_key->W[32] & 1) != 0) {
         public_key_be[31] |= 0x80;
     }
-    return ed25519_pk_to_curve25519(public_key->W, public_key_be);
+    uint8_t public_key_res[32];
+    int res = ed25519_pk_to_curve25519(public_key_res, public_key_be);
+    os_memmove(public_key->W, public_key_res, 32);
+    return res;
 }
 
 // Hanlde a signing request -- called both from the main apdu loop as well as from

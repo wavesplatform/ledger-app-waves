@@ -158,18 +158,10 @@ static bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_pub
     for (uint8_t i = 0; i < 32; i++) {
         public_key_be[i] = public_key->W[64 - i];
     }
-    if ((publicKey.W[32] & 1) != 0) {
-        publicKey_be[31] |= 0x80;
+    if ((public_key->W[32] & 1) != 0) {
+        public_key_be[31] |= 0x80;
     }
-    ed25519_pk_to_curve25519(public_key->W, &public_key_be);
-//    os_memmove(publicKey->W, publicKey_be, 32);
-
-    // set the sign bit from ed25519 public key (using 31 byte) for curve25519 validation used in waves
-//    if ((public_key_be[32] & 1) != 0) {
-//        public_key->W[31] |= 0x80;
-//    }
-
-    return true;
+    return ed25519_pk_to_curve25519(public_key->W, public_key_be);
 }
 
 // Hanlde a signing request -- called both from the main apdu loop as well as from
@@ -262,9 +254,11 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 cx_ecfp_public_key_t public_key;
 
                 uint32_t path[5];
-                read_path_from_bytes(&G_io_apdu_buffer[5], &path);
+                read_path_from_bytes(G_io_apdu_buffer + 5, &path);
 
-                get_curve25519_public_key_for_path(path, &public_key);
+                if (!get_curve25519_public_key_for_path(path, &public_key)) {
+                    THROW(INVALID_PARAMETER);
+                }
 
                 char address[35];
                 waves_public_key_to_address(public_key.W, 'W', address);

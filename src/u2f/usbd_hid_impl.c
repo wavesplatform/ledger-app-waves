@@ -199,7 +199,7 @@ const uint8_t const HID_ReportDesc[] = {
 #define PAGE_GENERIC 0xFFA0
 
 uint8_t HID_DynReportDesc[sizeof(HID_ReportDesc)];
-bool fidoActivated;
+bool fido_activated;
 
 /* USB HID device Configuration Descriptor */
 __ALIGN_BEGIN const uint8_t const USBD_HID_CfgDesc[] __ALIGN_END = {
@@ -453,7 +453,7 @@ uint8_t USBD_HID_DataOut_impl(USBD_HandleTypeDef *pdev, uint8_t epnum,
     // prepare receiving the next chunk (masked time)
     USBD_LL_PrepareReceive(pdev, HID_EPOUT_ADDR, HID_EPOUT_SIZE);
 
-    if (fidoActivated) {
+    if (fido_activated) {
 #ifdef HAVE_U2F
         u2f_transport_handle(&u2fService, buffer,
                              io_seproxyhal_get_ep_rx_size(HID_EPOUT_ADDR),
@@ -505,7 +505,7 @@ void USB_power_U2F(unsigned char enabled, unsigned char fido) {
     os_memmove(HID_DynReportDesc, HID_ReportDesc, sizeof(HID_ReportDesc));
     HID_DynReportDesc[1] = (page & 0xff);
     HID_DynReportDesc[2] = ((page >> 8) & 0xff);
-    fidoActivated = (fido ? true : false);
+    fido_activated = (fido ? true : false);
 
     os_memset(&USBD_Device, 0, sizeof(USBD_Device));
 

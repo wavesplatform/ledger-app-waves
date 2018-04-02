@@ -22,6 +22,7 @@
 #define __MAIN_H__
 #include "os.h"
 #include "cx.h"
+#include "constants.h"
 
 #ifdef HAVE_U2F
 
@@ -30,7 +31,7 @@
 
 extern volatile unsigned char u2fMessageBuffer[U2F_MAX_MESSAGE_SIZE];
 extern volatile u2f_service_t u2fService;
-extern bool fidoActivated;
+extern bool fido_activated;
 extern void USB_power_U2F(unsigned char enabled, unsigned char fido);
 void u2f_proxy_response(u2f_service_t *service, unsigned int tx);
 
@@ -54,46 +55,41 @@ void u2f_proxy_response(u2f_service_t *service, unsigned int tx);
 #define SW_SECURITY_STATUS_NOT_SATISFIED 0x6982
 
 #define KEEP_PRIVATE_KEY 1
-
-
-extern volatile unsigned int hashCount;     // notification to restart the hash
-extern cx_sha256_t hash;
-
 #define NO_KEY_STORED -1
 
-typedef struct internalStorage_t {
-    uint8_t 			 fidoTransport;
+typedef struct internal_storage_t {
+    uint8_t 			 fido_transport;
     uint8_t 			 initialized;
-    int	    		     keyIndex;
-    unsigned char		 publicKey[32];
-} internalStorage_t;
+} internal_storage_t;
 
-extern WIDE internalStorage_t N_storage_real;
-#define N_storage (*(WIDE internalStorage_t *)PIC(&N_storage_real))
+extern WIDE internal_storage_t N_storage_real;
+#define N_storage (*(WIDE internal_storage_t *)PIC(&N_storage_real))
 
-bool handleSigning(volatile unsigned int *tx, volatile unsigned int *flags);
+void handle_signing(volatile unsigned int *tx, volatile unsigned int *flags);
 
 // A place to store information about the transaction
 // for displaying to the user when requesting approval
-typedef struct transactionContext_t {
+typedef struct transactionSignContext_t {
 	char feesAmount[32];
 	char fullAddress[32]; 
 	char fullAmount[32];
 } transactionContext_t;
 
-// A place to store data during hte signing (various)
-// hashes and keys.
+// A place to store data during the signing
 typedef struct signingContext_t {
-	unsigned char m[32];
-	unsigned char x[32];
-	unsigned char r[32];
-} messageSigningContext_t;
+    // bip32 path
+	volatile uint32_t bip32[5];
+	// Stuff for the SHA-256 hashing
+    // Curve25519 support only full message hash
+	volatile unsigned char buffer[MAX_DATA_SIZE];
+	volatile unsigned int buffer_used;
+} signingContext_t;
 
 typedef union {
-    transactionContext_t    transactionContext;
-    messageSigningContext_t signingContext;
+    transactionContext_t    transaction_context;
+    signingContext_t signing_context;
 } tmpContext_t;
 
-extern tmpContext_t tmpCtx; // Temporary area to sore stuff
+extern tmpContext_t tmp_ctx; // Temporary area to store stuff
 
 #endif 

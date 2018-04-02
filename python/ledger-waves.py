@@ -147,7 +147,7 @@ while (True):
     elif (select == "2"):
         path = raw_input(colors.fg.lightblue + "Please input BIP-32 path (for example \"44'/5741564'/0'/0'/1'\")> " + colors.reset)
         binary_data = path_to_bytes(expand_path(path))
-        binary_data += bytes("30".decode('hex'))
+        binary_data += bytearray(raw_input(colors.fg.lightblue + "Please input message to sign (for example \"test\")> " + colors.reset), 'utf-8')
         signature = None
         while (True):
             try:

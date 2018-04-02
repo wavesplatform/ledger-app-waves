@@ -141,6 +141,20 @@ static void get_keypair_by_path(const uint32_t* path, cx_ecfp_public_key_t* publ
     cx_ecfp_generate_pair(CX_CURVE_Ed25519, public_key, private_key, 1);
 }
 
+// converts little endian 65 byte (0x4 32X 32Y) public key to 32 byte Y big endian form (for other applications)
+static void public_key_le_to_be(cx_ecfp_public_key_t* public_key) {
+    uint8_t public_key_be[32];
+    // copy public key little endian to big endian
+    for (uint8_t i = 0; i < 32; i++) {
+        public_key_be[i] = public_key->W[64 - i];
+    }
+    // set sign bit
+    if ((public_key->W[32] & 1) != 0) {
+        public_key_be[31] |= 0x80;
+    }
+    os_memmove(public_key->W, public_key_be, 32);
+}
+
 // Get a public key from the 44'/5741564' keypath.
 static bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_public_key_t* public_key) {
     if (!os_global_pin_is_validated()) {
@@ -153,15 +167,9 @@ static bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_pub
     // clean private key
     os_memset(private_key.d, 0, 32);
 
-    uint8_t public_key_be[32];
-    // copy public key little endian to big endian
-    for (uint8_t i = 0; i < 32; i++) {
-        public_key_be[i] = public_key->W[64 - i];
-    }
-    if ((public_key->W[32] & 1) != 0) {
-        public_key_be[31] |= 0x80;
-    }
-    return ed25519_pk_to_curve25519(public_key->W, public_key_be);
+    public_key_le_to_be(public_key);
+
+    return ed25519_pk_to_curve25519(public_key->W, public_key->W);
 }
 
 // Hanlde a signing request -- called both from the main apdu loop as well as from
@@ -169,8 +177,9 @@ static bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_pub
 
 // like https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
 void handle_signing(volatile unsigned int *tx, volatile unsigned int *flags) {
-    if (!tmp_ctx.signing_context.buffer_used) {
-        // there're the bip32 path in the first chunk - first 20 bytes of data
+    // if this is a first chunk
+    if (tmp_ctx.signing_context.buffer_used == 0) {
+        // then there're the bip32 path in the first chunk - first 20 bytes of data
         read_path_from_bytes(G_io_apdu_buffer + 5, tmp_ctx.signing_context.bip32);
 
         // Update the other data from this segment
@@ -178,9 +187,9 @@ void handle_signing(volatile unsigned int *tx, volatile unsigned int *flags) {
         os_memmove(tmp_ctx.signing_context.buffer, G_io_apdu_buffer + 25, data_size);
         tmp_ctx.signing_context.buffer_used += data_size;
     } else {
-//         Update the data from this segment.
+        // else update the data from entire segment.
         os_memmove(tmp_ctx.signing_context.buffer + tmp_ctx.signing_context.buffer_used, G_io_apdu_buffer + 5, G_io_apdu_buffer[4]);
-        tmp_ctx.signing_context.buffer_used = G_io_apdu_buffer[4];
+        tmp_ctx.signing_context.buffer_used += G_io_apdu_buffer[4];
     }
 
     // If this is the last segment, calculate the signature
@@ -192,17 +201,9 @@ void handle_signing(volatile unsigned int *tx, volatile unsigned int *flags) {
         uint8_t signature[64];
         cx_eddsa_sign(&private_key, CX_LAST, CX_SHA512, tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, NULL, 0, signature, NULL);
 
-        // todo extract as function!
-        uint8_t public_key_be[32];
-        // copy public key little endian to big endian
-        for (uint8_t i = 0; i < 32; i++) {
-            public_key_be[i] = public_key.W[64 - i];
-        }
-        if ((public_key.W[32] & 1) != 0) {
-            public_key_be[31] |= 0x80;
-        }
+        public_key_le_to_be(&public_key);
 
-        unsigned char sign_bit = public_key_be[31] & 0x80;
+        unsigned char sign_bit = public_key.W[31] & 0x80;
         signature[63] |= sign_bit;
 
         os_memmove(G_io_apdu_buffer, signature, sizeof(signature));

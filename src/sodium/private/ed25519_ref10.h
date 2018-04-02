@@ -63,8 +63,6 @@ int ge25519_frombytes_negate_vartime(ge25519_p3 *h, const unsigned char *s);
 
 void ge25519_p3_to_cached(ge25519_cached *r, const ge25519_p3 *p);
 
-void ge25519_p1p1_to_p2(ge25519_p2 *r, const ge25519_p1p1 *p);
-
 void ge25519_p1p1_to_p3(ge25519_p3 *r, const ge25519_p1p1 *p);
 
 void ge25519_add(ge25519_p1p1 *r, const ge25519_p3 *p, const ge25519_cached *q);

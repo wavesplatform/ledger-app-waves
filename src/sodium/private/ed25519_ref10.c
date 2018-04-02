@@ -198,19 +198,6 @@ ge25519_frombytes_negate_vartime(ge25519_p3 *h, const unsigned char *s)
     return 0;
 }
 
-
-/*
- r = p
- */
-
-void
-ge25519_p1p1_to_p2(ge25519_p2 *r, const ge25519_p1p1 *p)
-{
-    fe25519_mul(r->X, p->X, p->T);
-    fe25519_mul(r->Y, p->Y, p->Z);
-    fe25519_mul(r->Z, p->Z, p->T);
-}
-
 /*
  r = p
  */
@@ -450,7 +437,7 @@ ge25519_mul_l(ge25519_p3 *r, const ge25519_p3 *A)
             ge25519_sub(&t, &u, &Ai[(-aslide[i]) / 2]);
         }
 
-        ge25519_p1p1_to_p3(r, &t);
+//        ge25519_p1p1_to_p3(r, &t);
     }
 }
 

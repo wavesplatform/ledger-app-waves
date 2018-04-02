@@ -192,7 +192,17 @@ void handle_signing(volatile unsigned int *tx, volatile unsigned int *flags) {
         uint8_t signature[64];
         cx_eddsa_sign(&private_key, CX_LAST, CX_SHA512, tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, NULL, 0, signature, NULL);
 
-        unsigned char sign_bit = public_key.W[31] & 0x80;
+        // todo extract as function!
+        uint8_t public_key_be[32];
+        // copy public key little endian to big endian
+        for (uint8_t i = 0; i < 32; i++) {
+            public_key_be[i] = public_key.W[64 - i];
+        }
+        if ((public_key.W[32] & 1) != 0) {
+            public_key_be[31] |= 0x80;
+        }
+
+        unsigned char sign_bit = public_key_be[31] & 0x80;
         signature[63] |= sign_bit;
 
         os_memmove(G_io_apdu_buffer, signature, sizeof(signature));

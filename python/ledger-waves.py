@@ -75,18 +75,14 @@ def getKeysFromDongle(path):
     global dongle
     while (True):
         try:
-            if (dongle == None):
-                dongle = getDongle(True)
             data_bytes = bytes("8004800014".decode('hex')) + path_to_bytes(path)
             data = dongle.exchange(data_bytes)
             return [data[0:32], data[32:67]]
         except Exception as e:
-            print e
-            answer = raw_input(
-                "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
-            if (answer.upper() == 'Q'):
-                sys.exit(0)
+            raw_input(
+                "An error occurred while processing the request, repeat or correct your request (note what all the bip32 path parts should be hardened)")
             sys.exc_clear()
+            break
 
 CHUNK_SIZE = 128
 PRIME_DERIVATION_FLAG = 0x80000000
@@ -129,6 +125,16 @@ def expand_path(n):
     return path
 
 while (True):
+    while (dongle == None):
+            try:
+                dongle = getDongle(True)
+            except Exception as e:
+                answer = raw_input(
+                    "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
+                if (answer.upper() == 'Q'):
+                    sys.exit(0)
+                sys.exc_clear()
+
     print("")
     print(colors.fg.lightcyan + colors.bold + "Ledger Nano S - Waves proof of concept" + colors.reset)
     print(colors.fg.white + "\t 1. Get PublicKey/Address from Ledger Nano S" + colors.reset)
@@ -139,11 +145,12 @@ while (True):
     if (select == "1"):
         path = raw_input(colors.fg.lightblue + "Please input BIP-32 path (for example \"44'/5741564'/0'/0'/1'\")> " + colors.reset)
         keys = getKeysFromDongle(expand_path(path))
-        publicKey = keys[0]
-        address = keys[1]
+        if keys:
+            publicKey = keys[0]
+            address = keys[1]
 
-        print colors.fg.blue + "publicKey (base58): " + colors.reset + base58.b58encode(str(publicKey))
-        print colors.fg.blue + "address: " + colors.reset + address
+            print colors.fg.blue + "publicKey (base58): " + colors.reset + base58.b58encode(str(publicKey))
+            print colors.fg.blue + "address: " + colors.reset + address
     elif (select == "2"):
         path = raw_input(colors.fg.lightblue + "Please input BIP-32 path (for example \"44'/5741564'/0'/0'/1'\")> " + colors.reset)
         binary_data = path_to_bytes(expand_path(path))
@@ -171,14 +178,12 @@ while (True):
                         sys.exit(1)
                     signature = dongle.exchange(apdu)
                     offset += len(chunk)
-                print "signature " + str(signature).encode('hex')
+                print "signature " + base58.b58encode(str(signature))
                 break
             except CommException as e:
                 print e.sw
                 if (e.sw == 0x6985):
                     print(colors.fg.red + "User denied signing request on Ledger Nano S device." + colors.reset)
-
-                sys.exit(1)
             except Exception as e:
                 print e, type(e)
                 answer = raw_input(

@@ -56,55 +56,6 @@ void menu_settings_browser_init(unsigned int ignored) {
 
 #endif
 
-void menu_address_init(/*uint32_t *waves_bip32_path*/) {
-    uint32_t waves_bip32_path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, 1 | 0x80000000};
-    cx_ecfp_public_key_t public_key;
-
-    if (get_curve25519_public_key_for_path(waves_bip32_path, &public_key) != 0) {
-        THROW(INVALID_PARAMETER);
-    }
-
-    char address[35];
-    waves_public_key_to_address(public_key.W, 'W', address);
-    os_memmove(tmp_ctx.address_context.address, address, 35);
-    tmp_ctx.address_context.address[35] = '\0';
-
-    ux_step = 0;
-    ux_step_count = 2;
-    UX_DISPLAY(&ui_address_nanos, ui_address_prepro);
-}
-
-uint32_t set_result_get_publicKey() {
-    uint32_t tx = 0;
-//    G_io_apdu_buffer[tx++] = 65;
-//    os_memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.publicKey.W, 65);
-//    tx += 65;
-//    G_io_apdu_buffer[tx++] = 40;
-//    os_memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.address, 40);
-//    tx += 40;
-    return tx;
-}
-
-unsigned int io_seproxyhal_touch_address_ok(const bagl_element_t *e) {
-    uint32_t tx = set_result_get_publicKey();
-    G_io_apdu_buffer[tx++] = 0x90;
-    G_io_apdu_buffer[tx++] = 0x00;
-    // Send back the response, do not restart the event loop
-    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-    // Display back the original UX
-    ui_idle();
-    return 0; // do not redraw the widget
-}
-
-unsigned int io_seproxyhal_touch_address_cancel(const bagl_element_t *e) {
-    G_io_apdu_buffer[0] = 0x69;
-    G_io_apdu_buffer[1] = 0x85;
-    // Send back the response, do not restart the event loop
-    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 2);
-    // Display back the original UX
-    ui_idle();
-    return 0; // do not redraw the widget
-}
 
 unsigned int ui_address_nanos_button(unsigned int button_mask,
                                      unsigned int button_mask_counter) {
@@ -195,7 +146,57 @@ const bagl_element_t ui_address_nanos[] = {
      NULL},
 };
 
-unsigned int ui_address_prepro(const bagl_element_t *element) {
+void menu_address_init(/*uint32_t *waves_bip32_path*/) {
+    uint32_t waves_bip32_path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, 1 | 0x80000000};
+    cx_ecfp_public_key_t public_key;
+
+    if (get_curve25519_public_key_for_path(waves_bip32_path, &public_key) != 0) {
+        THROW(INVALID_PARAMETER);
+    }
+
+    char address[35];
+    waves_public_key_to_address(public_key.W, 'W', address);
+    os_memmove(tmp_ctx.address_context.address, address, 35);
+    tmp_ctx.address_context.address[35] = '\0';
+
+    ux_step = 0;
+    ux_step_count = 2;
+    UX_DISPLAY(ui_address_nanos, ui_address_prepro);
+}
+
+uint32_t set_result_get_publicKey() {
+    uint32_t tx = 0;
+//    G_io_apdu_buffer[tx++] = 65;
+//    os_memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.publicKey.W, 65);
+//    tx += 65;
+//    G_io_apdu_buffer[tx++] = 40;
+//    os_memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.address, 40);
+//    tx += 40;
+    return tx;
+}
+
+unsigned int io_seproxyhal_touch_address_ok(const bagl_element_t *e) {
+    uint32_t tx = set_result_get_publicKey();
+    G_io_apdu_buffer[tx++] = 0x90;
+    G_io_apdu_buffer[tx++] = 0x00;
+    // Send back the response, do not restart the event loop
+    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
+    // Display back the original UX
+    ui_idle();
+    return 0; // do not redraw the widget
+}
+
+unsigned int io_seproxyhal_touch_address_cancel(const bagl_element_t *e) {
+    G_io_apdu_buffer[0] = 0x69;
+    G_io_apdu_buffer[1] = 0x85;
+    // Send back the response, do not restart the event loop
+    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 2);
+    // Display back the original UX
+    ui_idle();
+    return 0; // do not redraw the widget
+}
+
+const bagl_element_t * ui_address_prepro(const bagl_element_t *element) {
     if (element->component.userid > 0) {
         unsigned int display = (ux_step == element->component.userid - 1);
         if (display) {
@@ -209,9 +210,10 @@ unsigned int ui_address_prepro(const bagl_element_t *element) {
                 break;
             }
         }
-        return display;
+        if (!display)
+             return NULL;
     }
-    return 1;
+    return element;
 }
 
 #ifdef HAVE_U2F

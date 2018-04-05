@@ -22,13 +22,13 @@
 #include <stdbool.h>
 #include "glyphs.h"
 #include "main.h"
+#include "crypto/waves.h"
 
 ux_state_t ux;
 
 // UI currently displayed
 enum UI_STATE ui_state;
 
-//ux_state_t ux;
 //unsigned int current_text_pos; // parsing cursor in the text to display
 int ux_step, ux_step_count;
 //unsigned int text_y;           // current location of the displayed text
@@ -56,7 +56,166 @@ void menu_settings_browser_init(unsigned int ignored) {
 
 #endif
 
+void menu_address_init(/*uint32_t *waves_bip32_path*/) {
+    uint32_t waves_bip32_path[] = {44 | 0x80000000, 5741564 | 0x80000000, 0x80000000, 0x80000000, 1 | 0x80000000};
+    cx_ecfp_public_key_t public_key;
+
+    if (get_curve25519_public_key_for_path(waves_bip32_path, &public_key) != 0) {
+        THROW(INVALID_PARAMETER);
+    }
+
+    char address[35];
+    waves_public_key_to_address(public_key.W, 'W', address);
+    os_memmove(tmp_ctx.address_context.address, address, 35);
+    tmp_ctx.address_context.address[35] = '\0';
+
+    ux_step = 0;
+    ux_step_count = 2;
+    UX_DISPLAY(&ui_address_nanos, ui_address_prepro);
+}
+
+uint32_t set_result_get_publicKey() {
+    uint32_t tx = 0;
+//    G_io_apdu_buffer[tx++] = 65;
+//    os_memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.publicKey.W, 65);
+//    tx += 65;
+//    G_io_apdu_buffer[tx++] = 40;
+//    os_memmove(G_io_apdu_buffer + tx, tmpCtx.publicKeyContext.address, 40);
+//    tx += 40;
+    return tx;
+}
+
+unsigned int io_seproxyhal_touch_address_ok(const bagl_element_t *e) {
+    uint32_t tx = set_result_get_publicKey();
+    G_io_apdu_buffer[tx++] = 0x90;
+    G_io_apdu_buffer[tx++] = 0x00;
+    // Send back the response, do not restart the event loop
+    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
+    // Display back the original UX
+    ui_idle();
+    return 0; // do not redraw the widget
+}
+
+unsigned int io_seproxyhal_touch_address_cancel(const bagl_element_t *e) {
+    G_io_apdu_buffer[0] = 0x69;
+    G_io_apdu_buffer[1] = 0x85;
+    // Send back the response, do not restart the event loop
+    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, 2);
+    // Display back the original UX
+    ui_idle();
+    return 0; // do not redraw the widget
+}
+
+unsigned int ui_address_nanos_button(unsigned int button_mask,
+                                     unsigned int button_mask_counter) {
+    switch (button_mask) {
+    case BUTTON_EVT_RELEASED | BUTTON_LEFT: // CANCEL
+        io_seproxyhal_touch_address_cancel(NULL);
+        break;
+
+    case BUTTON_EVT_RELEASED | BUTTON_RIGHT: { // OK
+        io_seproxyhal_touch_address_ok(NULL);
+        break;
+    }
+    }
+    return 0;
+}
+
+const bagl_element_t ui_address_nanos[] = {
+    // type                               userid    x    y   w    h  str rad
+    // fill      fg        bg      fid iid  txt   touchparams...       ]
+    {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
+      0, 0},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_ICON, 0x00, 3, 12, 7, 7, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+      BAGL_GLYPH_ICON_CROSS},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    {{BAGL_ICON, 0x00, 117, 13, 8, 6, 0, 0, 0, 0xFFFFFF, 0x000000, 0,
+      BAGL_GLYPH_ICON_CHECK},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    //{{BAGL_ICON                           , 0x01,  31,   9,  14,  14, 0, 0, 0
+    //, 0xFFFFFF, 0x000000, 0, BAGL_GLYPH_ICON_EYE_BADGE  }, NULL, 0, 0, 0,
+    //NULL, NULL, NULL },
+    {{BAGL_LABELINE, 0x01, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+     "Confirm",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    {{BAGL_LABELINE, 0x01, 0, 26, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+     "address",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABELINE, 0x02, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+     "Address",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
+     (char *)tmp_ctx.address_context.address,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+};
+
+unsigned int ui_address_prepro(const bagl_element_t *element) {
+    if (element->component.userid > 0) {
+        unsigned int display = (ux_step == element->component.userid - 1);
+        if (display) {
+            switch (element->component.userid) {
+            case 1:
+                UX_CALLBACK_SET_INTERVAL(2000);
+                break;
+            case 2:
+                UX_CALLBACK_SET_INTERVAL(MAX(
+                    3000, 1000 + bagl_label_roundtrip_duration_ms(element, 7)));
+                break;
+            }
+        }
+        return display;
+    }
+    return 1;
+}
+
 #ifdef HAVE_U2F
+
 const ux_menu_entry_t menu_settings_browser[] = {
     {NULL, menu_settings_browser_change, 0, NULL, "No", NULL, 0, 0},
     {NULL, menu_settings_browser_change, 1, NULL, "Yes", NULL, 0, 0},
@@ -79,6 +238,7 @@ const ux_menu_entry_t menu_main[] = {
     {menu_settings, NULL, 0, NULL, "Settings", NULL, 0, 0},
 #endif
     {menu_about, NULL, 0, NULL, "About", NULL, 0, 0},
+    {NULL, menu_address_init, 5, NULL, "Addresses", NULL, 0, 0},
     {NULL, os_sched_exit, 0, &C_icon_dashboard, "Quit app", NULL, 50, 29},
     UX_MENU_END};
 

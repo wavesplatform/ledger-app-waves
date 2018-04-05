@@ -50,7 +50,16 @@ extern int ux_step_count;
 extern const ux_menu_entry_t menu_main[];
 extern const ux_menu_entry_t menu_settings[];
 extern const ux_menu_entry_t menu_settings_browser[];
+extern const bagl_element_t ui_address_nanos[];
 
+unsigned int io_seproxyhal_touch_tx_ok(const bagl_element_t *e);
+unsigned int io_seproxyhal_touch_tx_cancel(const bagl_element_t *e);
+unsigned int io_seproxyhal_touch_address_ok(const bagl_element_t *e);
+unsigned int io_seproxyhal_touch_address_cancel(const bagl_element_t *e);
+
+unsigned int ui_address_nanos_button(unsigned int button_mask,
+                                     unsigned int button_mask_counter);
+unsigned int ui_address_prepro(const bagl_element_t *element);
 
 #define MAX_CHARS_PER_LINE 49
 #define DEFAULT_FONT BAGL_FONT_OPEN_SANS_LIGHT_16px | BAGL_FONT_ALIGNMENT_LEFT

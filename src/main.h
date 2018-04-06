@@ -41,7 +41,6 @@ void u2f_proxy_response(u2f_service_t *service, unsigned int tx);
 #define CLA 0x80                // CLASS? 
 #define INS_SIGN 0x02           // Sign Instruction
 #define INS_GET_PUBLIC_KEY 0x04 // Get Public Key Instruction
-#define INS_PING 0x06           // Respond with PONG
 #define P1_LAST 0x80            // Parameter 1 = End of Bytes to Sign (finalize)
 #define P1_MORE 0x00            // Parameter 1 = More bytes coming
 
@@ -49,13 +48,9 @@ void u2f_proxy_response(u2f_service_t *service, unsigned int tx);
 #define SW_OK 0x9000
 #define SW_CONDITIONS_NOT_SATISFIED 0x6985
 #define SW_INCORRECT_P1_P2 0x6A86
-#define SW_WRONG_P1_P2 0x6B00
 #define SW_INS_NOT_SUPPORTED 0x6D00
 #define SW_CLA_NOT_SUPPORTED  0x6E00
 #define SW_SECURITY_STATUS_NOT_SATISFIED 0x6982
-
-#define KEEP_PRIVATE_KEY 1
-#define NO_KEY_STORED -1
 
 typedef struct internal_storage_t {
     uint8_t 			 fido_transport;
@@ -70,6 +65,7 @@ void handle_signing(volatile unsigned int *tx, volatile unsigned int *flags);
 // A place to store information about the transaction
 // for displaying to the user when requesting approval
 typedef struct transactionSignContext_t {
+    // todo change
 	char feesAmount[32];
 	char fullAddress[32]; 
 	char fullAmount[32];
@@ -85,11 +81,22 @@ typedef struct signingContext_t {
 	volatile unsigned int buffer_used;
 } signingContext_t;
 
+// A place to store data during the confirming the address
+typedef struct addressesContext_t {
+	volatile char address[36];
+	volatile char public_key[32];
+} addressesContext_t;
+
 typedef union {
     transactionContext_t    transaction_context;
     signingContext_t signing_context;
+    addressesContext_t address_context;
 } tmpContext_t;
 
 extern tmpContext_t tmp_ctx; // Temporary area to store stuff
+
+bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_public_key_t* public_key);
+
+uint32_t set_result_get_address();
 
 #endif 

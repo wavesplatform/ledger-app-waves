@@ -1,8 +1,8 @@
 /*******************************************************************************
-*   Burstcoin Wallet App for Nano Ledger S. Updated By Waves community.
-*   Copyright (c) 2017-2018 Jake B.
+*   Waves platform Wallet App for Nano Ledger S. Updated By Waves community.
+*   Copyright (c) 2017-2018 Sergey Tolmachev (Tolsi) <tolsi.ru@gmail.com>
 * 
-*   Based on Sample code provided and (c) 2016 Ledger
+*   Based on Sample code provided and (c) 2016 Ledger and 2017-2018 Jake B. (Burstcoin)
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ void read_path_from_bytes(unsigned char *buffer, uint32_t *path) {
     path[4] = deserialize_uint32_t(buffer + 16);
 }
 
-static void get_keypair_by_path(const uint32_t* path, cx_ecfp_public_key_t* public_key, cx_ecfp_private_key_t* private_key) {
+void get_keypair_by_path(const uint32_t* path, cx_ecfp_public_key_t* public_key, cx_ecfp_private_key_t* private_key) {
     unsigned char privateKeyData[32];
     os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
     cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, private_key);
@@ -142,7 +142,7 @@ static void get_keypair_by_path(const uint32_t* path, cx_ecfp_public_key_t* publ
 }
 
 // converts little endian 65 byte (0x4 32X 32Y) public key to 32 byte Y big endian form (for other applications)
-static void public_key_le_to_be(cx_ecfp_public_key_t* public_key) {
+void public_key_le_to_be(cx_ecfp_public_key_t* public_key) {
     uint8_t public_key_be[32];
     // copy public key little endian to big endian
     for (uint8_t i = 0; i < 32; i++) {
@@ -156,7 +156,7 @@ static void public_key_le_to_be(cx_ecfp_public_key_t* public_key) {
 }
 
 // Get a public key from the 44'/5741564' keypath.
-static bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_public_key_t* public_key) {
+bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_public_key_t* public_key) {
     if (!os_global_pin_is_validated()) {
         return false;
     }
@@ -220,6 +220,12 @@ void handle_signing(volatile unsigned int *tx, volatile unsigned int *flags) {
     // else wait for more data
 }
 
+uint32_t set_result_get_address() {
+    os_memmove(G_io_apdu_buffer, tmp_ctx.address_context.public_key, 32);
+    os_memmove(G_io_apdu_buffer + 32, tmp_ctx.address_context.address, 35);
+    return 67;
+}
+
 // Called by both the U2F and the standard communications channel
 void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volatile unsigned int rx) {
     unsigned short sw = 0;
@@ -265,7 +271,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 cx_ecfp_public_key_t public_key;
 
                 uint32_t path[5];
-                read_path_from_bytes(G_io_apdu_buffer + 5, &path);
+                read_path_from_bytes(G_io_apdu_buffer + 5, path);
 
                 if (get_curve25519_public_key_for_path(path, &public_key) != 0) {
                     THROW(INVALID_PARAMETER);
@@ -274,11 +280,14 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 char address[35];
                 waves_public_key_to_address(public_key.W, 'W', address);
 
-                os_memmove(G_io_apdu_buffer, public_key.W, 32);
-                os_memmove(G_io_apdu_buffer + 32, address, 35);
+                os_memmove(tmp_ctx.address_context.public_key, public_key.W, 32);
+                os_memmove(tmp_ctx.address_context.address, address, 35);
+                // term byte for string shown
+                tmp_ctx.address_context.address[35] = '\0';
 
-                *tx = 67;
-                THROW(SW_OK);
+                *flags |= IO_ASYNCH_REPLY;
+
+                menu_address_init(path);
             } break;
 
             default:

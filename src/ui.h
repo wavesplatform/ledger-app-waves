@@ -51,6 +51,11 @@ extern const ux_menu_entry_t menu_main[];
 extern const ux_menu_entry_t menu_settings[];
 extern const ux_menu_entry_t menu_settings_browser[];
 
+unsigned int ui_address_nanos_button(unsigned int button_mask,
+                                     unsigned int button_mask_counter);
+const bagl_element_t * ui_address_prepro(const bagl_element_t *element);
+
+void menu_address_init(uint32_t *waves_bip32_path);
 
 #define MAX_CHARS_PER_LINE 49
 #define DEFAULT_FONT BAGL_FONT_OPEN_SANS_LIGHT_16px | BAGL_FONT_ALIGNMENT_LEFT

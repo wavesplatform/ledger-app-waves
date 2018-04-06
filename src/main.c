@@ -1,8 +1,8 @@
 /*******************************************************************************
-*   Burstcoin Wallet App for Nano Ledger S. Updated By Waves community.
-*   Copyright (c) 2017-2018 Jake B.
+*   Waves platform Wallet App for Nano Ledger S. Updated By Waves community.
+*   Copyright (c) 2017-2018 Sergey Tolmachev (Tolsi) <tolsi.ru@gmail.com>
 * 
-*   Based on Sample code provided and (c) 2016 Ledger
+*   Based on Sample code provided and (c) 2016 Ledger and 2017-2018 Jake B. (Burstcoin)
 *
 *  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
@@ -220,6 +220,12 @@ void handle_signing(volatile unsigned int *tx, volatile unsigned int *flags) {
     // else wait for more data
 }
 
+uint32_t set_result_get_address() {
+    os_memmove(G_io_apdu_buffer, tmp_ctx.address_context.public_key, 32);
+    os_memmove(G_io_apdu_buffer + 32, tmp_ctx.address_context.address, 35);
+    return 67;
+}
+
 // Called by both the U2F and the standard communications channel
 void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volatile unsigned int rx) {
     unsigned short sw = 0;
@@ -265,7 +271,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 cx_ecfp_public_key_t public_key;
 
                 uint32_t path[5];
-                read_path_from_bytes(G_io_apdu_buffer + 5, &path);
+                read_path_from_bytes(G_io_apdu_buffer + 5, path);
 
                 if (get_curve25519_public_key_for_path(path, &public_key) != 0) {
                     THROW(INVALID_PARAMETER);
@@ -274,11 +280,14 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 char address[35];
                 waves_public_key_to_address(public_key.W, 'W', address);
 
-                os_memmove(G_io_apdu_buffer, public_key.W, 32);
-                os_memmove(G_io_apdu_buffer + 32, address, 35);
+                os_memmove(tmp_ctx.address_context.public_key, public_key.W, 32);
+                os_memmove(tmp_ctx.address_context.address, address, 35);
+                // term byte for string shown
+                tmp_ctx.address_context.address[35] = '\0';
 
-                *tx = 67;
-                THROW(SW_OK);
+                *flags |= IO_ASYNCH_REPLY;
+
+                menu_address_init(path);
             } break;
 
             default:

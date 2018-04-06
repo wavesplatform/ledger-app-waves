@@ -81,9 +81,10 @@ typedef struct signingContext_t {
 	volatile unsigned int buffer_used;
 } signingContext_t;
 
-// A place to store data during the selecting the address
+// A place to store data during the confirming the address
 typedef struct addressesContext_t {
 	volatile char address[36];
+	volatile char public_key[32];
 } addressesContext_t;
 
 typedef union {
@@ -95,5 +96,7 @@ typedef union {
 extern tmpContext_t tmp_ctx; // Temporary area to store stuff
 
 bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_public_key_t* public_key);
+
+uint32_t set_result_get_address();
 
 #endif 

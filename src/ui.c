@@ -200,7 +200,7 @@ const ux_menu_entry_t menu_main[] = {
     UX_MENU_END};
 
 
-const bagl_element_t ui_verify_nanos[] = {
+const bagl_element_t ui_verify_transfer_nanos[] = {
     // type                               userid    x    y   w    h  str rad
     // fill      fg        bg      fid iid  txt   touchparams...       ]
     {{BAGL_RECTANGLE, 0x00, 0, 0, 128, 32, 0, 0, BAGL_FILL, 0x000000, 0xFFFFFF,
@@ -242,7 +242,7 @@ const bagl_element_t ui_verify_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x01, 0, 26, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "transaction",
+     "transfer",
      0,
      0,
      0,
@@ -261,7 +261,26 @@ const bagl_element_t ui_verify_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     tmp_ctx.transaction_context.fullAmount,
+     tmp_ctx.transaction_context.amount,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABELINE, 0x02, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+     "Asset",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
+     tmp_ctx.transaction_context.amount_asset_id,
      0,
      0,
      0,
@@ -271,7 +290,7 @@ const bagl_element_t ui_verify_nanos[] = {
 
     {{BAGL_LABELINE, 0x03, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "Address",
+     "From",
      0,
      0,
      0,
@@ -280,7 +299,64 @@ const bagl_element_t ui_verify_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x03, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     tmp_ctx.transaction_context.fullAddress,
+     tmp_ctx.transaction_context.sender_address,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABELINE, 0x03, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+     "To",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    {{BAGL_LABELINE, 0x03, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
+     tmp_ctx.transaction_context.recipient_address,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+     {{BAGL_LABELINE, 0x04, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
+       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+      "Attachment",
+      0,
+      0,
+      0,
+      NULL,
+      NULL,
+      NULL},
+     {{BAGL_LABELINE, 0x04, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
+       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
+      tmp_ctx.transaction_context.attachment,
+      0,
+      0,
+      0,
+      NULL,
+      NULL,
+      NULL},
+
+    {{BAGL_LABELINE, 0x04, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+     "Fee",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    {{BAGL_LABELINE, 0x04, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
+     tmp_ctx.transaction_context.fee,
      0,
      0,
      0,
@@ -290,7 +366,7 @@ const bagl_element_t ui_verify_nanos[] = {
 
     {{BAGL_LABELINE, 0x04, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "Fees",
+     "Fee asset",
      0,
      0,
      0,
@@ -299,13 +375,13 @@ const bagl_element_t ui_verify_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x04, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     tmp_ctx.transaction_context.feesAmount,
+     tmp_ctx.transaction_context.fee_asset_id,
      0,
      0,
      0,
      NULL,
      NULL,
-     NULL},
+     NULL}
 };
 
 static const bagl_element_t* io_seproxyhal_touch_approve(const bagl_element_t *e) {
@@ -406,29 +482,52 @@ void ui_idle(void) {
 
 // Show the transaction details for the user to approve
 void ui_verify(void) {
-    
-    // Recipient
-    uint64_t recipient;
-    os_memmove(&recipient, G_io_apdu_buffer + 5 + 40, 8);
-//    addressFromAccountNumber(tmp_ctx.transaction_context.fullAddress, recipient, true);
-    uint64_t amount, fee;
-    os_memmove(&amount, G_io_apdu_buffer + 5 + 48, 8);
-    os_memmove(&fee, G_io_apdu_buffer + 5 + 56, 8);
+    bagl_element_t* menu;
+    const bagl_element_t * prepro;
+    switch( tmp_ctx.signing_context.buffer[0] ) {
+        // genesis, payment and exchange transactions are not supported
+        case 3: // issue
+            break;
+        case 4: // transfer
 
-    print_amount(amount+fee, (char*)tmp_ctx.transaction_context.fullAmount,
-                 sizeof(tmp_ctx.transaction_context.fullAmount));
-    print_amount(fee, (char*)tmp_ctx.transaction_context.feesAmount,
-                 sizeof(tmp_ctx.transaction_context.feesAmount));
+            // Recipient
+            uint64_t recipient;
+            os_memmove(&recipient, G_io_apdu_buffer + 5 + 40, 8);
+            uint64_t amount, fee;
+            os_memmove(&amount, G_io_apdu_buffer + 5 + 48, 8);
+            os_memmove(&fee, G_io_apdu_buffer + 5 + 56, 8);
 
-    // Set the step/step count, and ui_state before requesting the UI
-    ux_step = 0; ux_step_count = 4;
+            print_amount(amount, 8, (char*)tmp_ctx.transaction_context.amount,
+                         sizeof(tmp_ctx.transaction_context.amount));
+            print_amount(fee, 8, (char*)tmp_ctx.transaction_context.amount,
+                         sizeof(tmp_ctx.transaction_context.amount));
+
+            // Set the step/step count, and ui_state before requesting the UI
+            ux_step = 0; ux_step_count = 4;
+            menu = ui_verify_transfer_nanos;
+            prepro = ui_verify_prepro;
+            break;
+        case 5: // reissue
+            break;
+        case 6: // burn
+            break;
+        case 8: // lease
+            break;
+        case 10: // create alias
+            break;
+        case 11: // mass transfer
+            break;
+        default :
+            break;
+    }
+
     ui_state = UI_VERIFY;    
-    UX_DISPLAY(ui_verify_nanos, ui_verify_prepro);
+    UX_DISPLAY(menu, prepro);
 }
 
 
 // borrowed from the Stellar wallet code, slgithly modified for BURST
-void print_amount(uint64_t amount, char *out, uint8_t len) {
+void print_amount(uint64_t amount, int decimals, char *out, uint8_t len) {
     char buffer[len];
     uint64_t dVal = amount;
     int i, j;
@@ -441,7 +540,7 @@ void print_amount(uint64_t amount, char *out, uint8_t len) {
         } else {
             buffer[i] = '0';
         }
-        if (i == 7) { // 1 BURST = 100000000 quants
+        if (i == decimals - 1) { // 1 BURST = 100000000 quants
             i += 1;
             buffer[i] = '.';
         }

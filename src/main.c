@@ -237,6 +237,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
             }
 
             switch (G_io_apdu_buffer[1]) {
+            // todo sign order
             case INS_SIGN: {
                 if (G_io_apdu_buffer[4] != rx - 5) {
                     // the length of the APDU should match what's int he 5-byte header.
@@ -248,16 +249,15 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                     THROW(SW_INCORRECT_P1_P2);
                 }
 
-//                if (G_io_apdu_buffer[2] == P1_LAST) {
-//                     todo fix UI to Waves Transactions
-//                    if (G_io_apdu_buffer)
-//                        ui_verify();
+                if (G_io_apdu_buffer[2] == P1_LAST) {
+                    if (G_io_apdu_buffer)
+                        ui_verify();
 
-//                    *flags |= IO_ASYNCH_REPLY;
-//                } else {
+                    *flags |= IO_ASYNCH_REPLY;
+                } else {
                     handle_signing(tx, flags);
                     THROW(SW_OK);
-//                }
+                }
 
             } break;
 

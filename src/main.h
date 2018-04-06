@@ -65,10 +65,27 @@ void handle_signing(volatile unsigned int *tx, volatile unsigned int *flags);
 // A place to store information about the transaction
 // for displaying to the user when requesting approval
 typedef struct transactionSignContext_t {
-    // todo change
-	char feesAmount[32];
-	char fullAddress[32]; 
-	char fullAmount[32];
+	char sender_address[36];
+	char recipient_address[36];
+	char matcher_address[36];
+//	char timestamp[11];
+	char amount[19];
+	char amount_asset_id[45];
+	char price[19];
+	char price_asset_id[45];
+	char order_type[17];
+	char expiration[11];
+	char name[17];
+	char description[1001];
+	char quantity[9];
+	char decimals[2];
+	char reissuable[15];
+	char fee[19];
+	char fee_asset_id[45];
+	char attachment[141];
+	char transfers[4];
+	char script_size[4];
+	char proofs_size[4];
 } transactionContext_t;
 
 // A place to store data during the signing
@@ -99,4 +116,4 @@ bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_public_key
 
 uint32_t set_result_get_address();
 
-#endif 
+#endif

@@ -60,7 +60,7 @@ typedef struct internal_storage_t {
 extern WIDE internal_storage_t N_storage_real;
 #define N_storage (*(WIDE internal_storage_t *)PIC(&N_storage_real))
 
-void handle_signing(volatile unsigned int *tx, volatile unsigned int *flags);
+void handle_signing(volatile unsigned int *tx);
 
 // A place to store information about the transaction
 // for displaying to the user when requesting approval
@@ -95,7 +95,7 @@ typedef struct signingContext_t {
 	// Stuff for the SHA-256 hashing
     // Curve25519 support only full message hash
 	volatile unsigned char buffer[MAX_DATA_SIZE];
-	volatile unsigned int buffer_used;
+	volatile int buffer_used;
 } signingContext_t;
 
 // A place to store data during the confirming the address

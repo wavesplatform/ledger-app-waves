@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include "os_io_seproxyhal.h"
 #include "main.h"
+#include "ui_logic.h"
 
 extern ux_state_t ux;
 
@@ -34,6 +35,7 @@ enum UI_STATE { UI_IDLE, UI_VERIFY };
 #define UI_AMOUNT    1
 #define UI_FEE       2
 #define UI_TRANSACTION_PART_MAX 3;
+#define SPRINTF(strbuf, ...) snprintf(strbuf, sizeof(strbuf), __VA_ARGS__)
 
 extern enum UI_STATE ui_state;
 

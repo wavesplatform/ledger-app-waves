@@ -32,5 +32,4 @@ void waves_public_key_to_address(const ed25519_public_key public_key, const char
 
     size_t length = 36;
     b58enc(output, &length, address, 26);
-    output[length] = 0;
 }

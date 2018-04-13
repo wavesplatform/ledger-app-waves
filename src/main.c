@@ -77,7 +77,7 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 // Function to respond to a u2f request.  Similar to the io_exchange function
 void u2f_proxy_response(u2f_service_t *service, unsigned int tx) {
     os_memset(service->messageBuffer, 0, 5);
-    os_memmove(service->messageBuffer + 5, G_io_apdu_buffer, tx);
+    os_memmove((char *) service->messageBuffer + 5, G_io_apdu_buffer, tx);
     service->messageBuffer[tx + 5] = 0x90;
     service->messageBuffer[tx + 6] = 0x00;
     u2f_send_fragmented_response(service, U2F_CMD_MSG, service->messageBuffer,
@@ -174,55 +174,52 @@ bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_public_key
 
 // Hanlde a signing request -- called both from the main apdu loop as well as from
 // the button handler after the user verifies the transaction.
-
-// like https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
-void handle_signing(volatile unsigned int *tx, volatile unsigned int *flags) {
+void add_chunk_data() {
     // if this is a first chunk
     if (tmp_ctx.signing_context.buffer_used == 0) {
         // then there're the bip32 path in the first chunk - first 20 bytes of data
-        read_path_from_bytes(G_io_apdu_buffer + 5, tmp_ctx.signing_context.bip32);
+        read_path_from_bytes(G_io_apdu_buffer + 5, (uint32_t *) tmp_ctx.signing_context.bip32);
 
         // Update the other data from this segment
         int data_size = G_io_apdu_buffer[4] - 20;
-        os_memmove(tmp_ctx.signing_context.buffer, G_io_apdu_buffer + 25, data_size);
+        os_memmove((char *) tmp_ctx.signing_context.buffer, G_io_apdu_buffer + 25, data_size);
         tmp_ctx.signing_context.buffer_used += data_size;
     } else {
         // else update the data from entire segment.
-        os_memmove(tmp_ctx.signing_context.buffer + tmp_ctx.signing_context.buffer_used, G_io_apdu_buffer + 5, G_io_apdu_buffer[4]);
+        os_memmove((char *) tmp_ctx.signing_context.buffer + tmp_ctx.signing_context.buffer_used, G_io_apdu_buffer + 5, G_io_apdu_buffer[4]);
         tmp_ctx.signing_context.buffer_used += G_io_apdu_buffer[4];
     }
+}
 
-    // If this is the last segment, calculate the signature
-    if (G_io_apdu_buffer[2] == P1_LAST) {
-        cx_ecfp_public_key_t public_key;
-        cx_ecfp_private_key_t private_key;
-        get_keypair_by_path(tmp_ctx.signing_context.bip32, &public_key, &private_key);
+// like https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
+void handle_signing(volatile unsigned int *tx) {
+    cx_ecfp_public_key_t public_key;
+    cx_ecfp_private_key_t private_key;
+    get_keypair_by_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key, &private_key);
 
-        uint8_t signature[64];
-        cx_eddsa_sign(&private_key, CX_LAST, CX_SHA512, tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, NULL, 0, signature, NULL);
+    uint8_t signature[64];
+    cx_eddsa_sign(&private_key, CX_LAST, CX_SHA512, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, NULL, 0, signature, NULL);
 
-        public_key_le_to_be(&public_key);
+    public_key_le_to_be(&public_key);
 
-        unsigned char sign_bit = public_key.W[31] & 0x80;
-        signature[63] |= sign_bit;
+    unsigned char sign_bit = public_key.W[31] & 0x80;
+    signature[63] |= sign_bit;
 
-        os_memmove(G_io_apdu_buffer, signature, sizeof(signature));
+    os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
 
-        // reset all saved stuff
+    // reset all saved stuff
 //        os_memset(&private_key.d, 0, 32);
 //        os_memset(&public_key.W, 0, 32);
 //        os_memset(tmp_ctx.signing_context.bip32, 0, 20);
 //        os_memset(tmp_ctx.signing_context.buffer_used, 0, MAX_DATA_SIZE);
-        tmp_ctx.signing_context.buffer_used = 0;
+    tmp_ctx.signing_context.buffer_used = 0;
 
-        *tx = sizeof(signature);
-    }
-    // else wait for more data
+    *tx = sizeof(signature);
 }
 
 uint32_t set_result_get_address() {
-    os_memmove(G_io_apdu_buffer, tmp_ctx.address_context.public_key, 32);
-    os_memmove(G_io_apdu_buffer + 32, tmp_ctx.address_context.address, 35);
+    os_memmove((char *) G_io_apdu_buffer, (char *) tmp_ctx.address_context.public_key, 32);
+    os_memmove((char *) G_io_apdu_buffer + 32, (char *) tmp_ctx.address_context.address, 35);
     return 67;
 }
 
@@ -250,12 +247,24 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 }
 
                 if (G_io_apdu_buffer[2] == P1_LAST) {
-                    if (G_io_apdu_buffer)
-                        ui_verify();
+                    add_chunk_data();
+//                    ui_verify();
+                    unsigned int tx = 0;
+                    unsigned short sw = SW_OK;
 
+                    handle_signing(&tx);
+
+                    G_io_apdu_buffer[tx++] = sw >> 8;
+                    G_io_apdu_buffer[tx++] = sw;
+
+                    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
+
+                    ui_idle();
+
+                    return 0; // do not redraw the widget
                     *flags |= IO_ASYNCH_REPLY;
                 } else {
-                    handle_signing(tx, flags);
+                    add_chunk_data();
                     THROW(SW_OK);
                 }
 
@@ -280,8 +289,8 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 char address[35];
                 waves_public_key_to_address(public_key.W, 'W', address);
 
-                os_memmove(tmp_ctx.address_context.public_key, public_key.W, 32);
-                os_memmove(tmp_ctx.address_context.address, address, 35);
+                os_memmove((char *) tmp_ctx.address_context.public_key, public_key.W, 32);
+                os_memmove((char *) tmp_ctx.address_context.address, address, 35);
                 // term byte for string shown
                 tmp_ctx.address_context.address[35] = '\0';
 

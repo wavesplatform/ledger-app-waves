@@ -182,23 +182,25 @@ void add_chunk_data() {
 
         // Update the other data from this segment
         int data_size = G_io_apdu_buffer[4] - 20;
-        os_memmove((char *) tmp_ctx.signing_context.buffer, G_io_apdu_buffer + 25, data_size);
+        os_memmove((char *) tmp_ctx.signing_context.buffer, &G_io_apdu_buffer[25], data_size);
         tmp_ctx.signing_context.buffer_used += data_size;
     } else {
         // else update the data from entire segment.
-        os_memmove((char *) tmp_ctx.signing_context.buffer + tmp_ctx.signing_context.buffer_used, G_io_apdu_buffer + 5, G_io_apdu_buffer[4]);
-        tmp_ctx.signing_context.buffer_used += G_io_apdu_buffer[4];
+        int data_size = G_io_apdu_buffer[4];
+        os_memmove((char *) &tmp_ctx.signing_context.buffer[tmp_ctx.signing_context.buffer_used], &G_io_apdu_buffer[5], data_size);
+        tmp_ctx.signing_context.buffer_used += data_size;
     }
 }
 
 // like https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
-void handle_signing(volatile unsigned int *tx) {
+uint32_t handle_signing() {
     cx_ecfp_public_key_t public_key;
     cx_ecfp_private_key_t private_key;
     get_keypair_by_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key, &private_key);
 
+    // todo use waves_message_sign?
     uint8_t signature[64];
-    cx_eddsa_sign(&private_key, CX_LAST, CX_SHA512, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, NULL, 0, signature, NULL);
+    cx_eddsa_sign(&private_key, CX_LAST, CX_SHA512, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, NULL, 0, signature, 64, NULL);
 
     public_key_le_to_be(&public_key);
 
@@ -207,14 +209,11 @@ void handle_signing(volatile unsigned int *tx) {
 
     os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
 
-    // reset all saved stuff
-//        os_memset(&private_key.d, 0, 32);
-//        os_memset(&public_key.W, 0, 32);
-//        os_memset(tmp_ctx.signing_context.bip32, 0, 20);
-//        os_memset(tmp_ctx.signing_context.buffer_used, 0, MAX_DATA_SIZE);
-    tmp_ctx.signing_context.buffer_used = 0;
+    // reset all private stuff
+    os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
+    os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
 
-    *tx = sizeof(signature);
+    return 64;
 }
 
 uint32_t set_result_get_address() {
@@ -263,6 +262,9 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                     // If not fail.  Don't want to buffer overrun or anything.
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
+
+                init_context();
+
                 // Get the public key and return it.
                 cx_ecfp_public_key_t public_key;
 
@@ -319,6 +321,10 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
         }
     END_TRY;
     }
+}
+
+void init_context() {
+    os_memset(&tmp_ctx, 0, sizeof(tmpContext_t));
 }
 
 static void waves_main(void) {
@@ -447,7 +453,7 @@ __attribute__((section(".boot"))) int main(void) {
 
     //init_canary();
 
-    tmp_ctx.signing_context.buffer_used = 0;
+    init_context();
     // current_text_pos = 0;
     // text_y = 60;
     ui_state = UI_IDLE;

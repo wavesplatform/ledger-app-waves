@@ -186,13 +186,15 @@ while (True):
         if len(path) == 0:
             path = "44'/5741564'/0'/0'/1'"
         binary_data = path_to_bytes(expand_path(path))
-        print(pw.Address(publicKey='9HJ1XTSDJyrxTXj6WaePx9Ukddp4kgmm86XbySxeZS5Z').address)
-        # todo address bytes?!
+        print("path bytes " + base58.b58encode(str(path_to_bytes(expand_path(path)))))
+        # 9HJ1XTSDJyrxTXj6WaePx9Ukddp4kgmm86XbySxeZS5Z = 3PAoWH8v4hPNTCrL5sCfrN3GRznfXmjLTfv
+        print("From: " + pw.Address(publicKey='9HJ1XTSDJyrxTXj6WaePx9Ukddp4kgmm86XbySxeZS5Z').address)
         some_transfer_bytes = build_transfer_bytes('9HJ1XTSDJyrxTXj6WaePx9Ukddp4kgmm86XbySxeZS5Z',
                                                    # Vk2K XWhAu... O_O
                                                    pw.Address('3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK'),
                                                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 1,
                                                    'privet')
+        print("tx bytes " + base58.b58encode(str(some_transfer_bytes)))
         input = raw_input(colors.fg.lightblue + "Please input message to sign (for example \"" + base58.b58encode(
             str(some_transfer_bytes)) + "\")> " + colors.reset)
         if len(input) == 0:

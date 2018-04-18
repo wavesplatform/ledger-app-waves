@@ -60,32 +60,33 @@ typedef struct internal_storage_t {
 extern WIDE internal_storage_t N_storage_real;
 #define N_storage (*(WIDE internal_storage_t *)PIC(&N_storage_real))
 
-void handle_signing(volatile unsigned int *tx);
+uint32_t handle_signing();
+void init_context();
 
 // A place to store information about the transaction
 // for displaying to the user when requesting approval
 typedef struct transactionSignContext_t {
-	char sender_address[36];
-	char recipient_address[36];
-	char matcher_address[36];
+	volatile char sender_address[36];
+	volatile char recipient_address[36];
+	volatile char matcher_address[36];
 //	char timestamp[11];
-	char amount[19];
-	char amount_asset_id[45];
-	char price[19];
-	char price_asset_id[45];
-	char order_type[17];
-	char expiration[11];
-	char name[17];
-	char description[1001];
-	char quantity[9];
-	char decimals[2];
-	char reissuable[15];
-	char fee[19];
-	char fee_asset_id[45];
-	char attachment[141];
-	char transfers[4];
-	char script_size[4];
-	char proofs_size[4];
+	volatile char amount[19];
+	volatile char amount_asset_id[45];
+	volatile char price[19];
+	volatile char price_asset_id[45];
+	volatile char order_type[17];
+	volatile char expiration[11];
+	volatile char name[17];
+	volatile char description[1001];
+	volatile char quantity[9];
+	volatile char decimals[2];
+	volatile char reissuable[15];
+	volatile char fee[19];
+	volatile char fee_asset_id[45];
+	volatile char attachment[141];
+	volatile char transfers[4];
+	volatile char script_size[4];
+	volatile char proofs_size[4];
 } transactionContext_t;
 
 // A place to store data during the signing
@@ -94,8 +95,8 @@ typedef struct signingContext_t {
 	volatile uint32_t bip32[5];
 	// Stuff for the SHA-256 hashing
     // Curve25519 support only full message hash
-	volatile unsigned char buffer[MAX_DATA_SIZE];
-	volatile int buffer_used;
+	volatile char buffer[MAX_DATA_SIZE];
+	volatile unsigned int buffer_used;
 } signingContext_t;
 
 // A place to store data during the confirming the address

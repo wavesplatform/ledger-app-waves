@@ -512,14 +512,14 @@ void ui_verify(void) {
 
             tmp_ctx.transaction_context.attachment[0] = '\0';
 
-//            uint16_t attachment_size;
-//            os_memmove(&attachment_size, tmp_ctx.signing_context.buffer + processed, 2);
-//            processed += 2;
-//
-//            char attachment[attachment_size];
-//            os_memmove(tmp_ctx.transaction_context.attachment, tmp_ctx.signing_context.buffer + processed, attachment_size);
-//            tmp_ctx.transaction_context.attachment[attachment_size] = '\0';
-//            processed += attachment_size;
+            uint16_t attachment_size;
+            os_memmove(&attachment_size, tmp_ctx.signing_context.buffer + processed, 2);
+            processed += 2;
+
+            char attachment[attachment_size];
+            os_memmove(tmp_ctx.transaction_context.attachment, tmp_ctx.signing_context.buffer + processed, attachment_size);
+            tmp_ctx.transaction_context.attachment[attachment_size] = '\0';
+            processed += attachment_size;
 
 //            todo print with decimals?!
 //            print_amount(amount, 8, (char*)tmp_ctx.transaction_context.amount,

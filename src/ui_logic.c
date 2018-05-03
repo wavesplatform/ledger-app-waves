@@ -39,11 +39,7 @@ unsigned int io_seproxyhal_touch_verify_transfer_approve(const bagl_element_t *e
     unsigned short sw = SW_OK;
 
     // first 64 byte - signature
-//  tx = handle_signing();
-    os_memmove((char *) G_io_apdu_buffer, tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used);
-    tx = tmp_ctx.signing_context.buffer_used;
-    G_io_apdu_buffer[tx++] = sw >> 8;
-    G_io_apdu_buffer[tx++] = sw;
+    tx = handle_signing();
 
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
 

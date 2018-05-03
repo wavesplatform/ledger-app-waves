@@ -66,27 +66,13 @@ void init_context();
 // A place to store information about the transaction
 // for displaying to the user when requesting approval
 typedef struct transactionSignContext_t {
-	volatile char sender_address[36];
-	volatile char recipient_address[36];
-	volatile char matcher_address[36];
-//	char timestamp[11];
-	volatile char amount[19];
-	volatile char amount_asset_id[45];
-	volatile char price[19];
-	volatile char price_asset_id[45];
-	volatile char order_type[17];
-	volatile char expiration[11];
-	volatile char name[17];
-	volatile char description[1001];
-	volatile char quantity[9];
-	volatile char decimals[2];
-	volatile char reissuable[15];
-	volatile char fee[19];
-	volatile char fee_asset_id[45];
-	volatile char attachment[141];
-	volatile char transfers[4];
-	volatile char script_size[4];
-	volatile char proofs_size[4];
+	volatile char line1[141];
+	volatile char line2[141];
+	volatile char line3[141];
+	volatile char line4[141];
+	volatile char line5[141];
+	volatile char line6[141];
+	volatile char line7[141];
 } transactionContext_t;
 
 // A place to store data during the signing

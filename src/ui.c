@@ -260,7 +260,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.transaction_context.amount,
+     (char *)tmp_ctx.transaction_context.line1,
      0,
      0,
      0,
@@ -279,7 +279,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x03, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.transaction_context.amount_asset_id,
+     (char *)tmp_ctx.transaction_context.line2,
      0,
      0,
      0,
@@ -298,7 +298,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x04, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.transaction_context.sender_address,
+     (char *)tmp_ctx.transaction_context.line3,
      0,
      0,
      0,
@@ -317,7 +317,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x05, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.transaction_context.recipient_address,
+     (char *)tmp_ctx.transaction_context.line4,
      0,
      0,
      0,
@@ -336,7 +336,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
       NULL},
      {{BAGL_LABELINE, 0x06, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
        BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-      (char *)tmp_ctx.transaction_context.attachment,
+      (char *)tmp_ctx.transaction_context.line5,
       0,
       0,
       0,
@@ -355,7 +355,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x07, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.transaction_context.fee,
+     (char *)tmp_ctx.transaction_context.line6,
      0,
      0,
      0,
@@ -374,7 +374,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x08, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.transaction_context.fee_asset_id,
+     (char *)tmp_ctx.transaction_context.line7,
      0,
      0,
      0,
@@ -441,7 +441,7 @@ void ui_verify(void) {
         case 4: {// transfer
             // Sender public key 32 bytes
 //            memset(tmp_ctx.transaction_context.sender_address, 0, sizeof(tmp_ctx.transaction_context.sender_address));
-            waves_public_key_to_address(&tmp_ctx.signing_context.buffer[processed], 'W', tmp_ctx.transaction_context.sender_address);
+            waves_public_key_to_address(&tmp_ctx.signing_context.buffer[processed], 'W', tmp_ctx.transaction_context.line3);
             processed += 32;
 
             // amount asset flag
@@ -450,13 +450,13 @@ void ui_verify(void) {
 
 //            memset(tmp_ctx.transaction_context.amount_asset_id, 0, sizeof(tmp_ctx.transaction_context.amount_asset_id));
             if (is_amount_in_asset) {
-                size_t length = sizeof(tmp_ctx.transaction_context.amount_asset_id);
-                if (!b58enc(tmp_ctx.transaction_context.amount_asset_id, &length, &tmp_ctx.signing_context.buffer[processed], 32)) {
+                size_t length = sizeof(tmp_ctx.transaction_context.line2);
+                if (!b58enc(tmp_ctx.transaction_context.line2, &length, &tmp_ctx.signing_context.buffer[processed], 32)) {
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
                 processed += 32;
             } else {
-                SPRINTF(tmp_ctx.transaction_context.amount_asset_id, "%s", "WAVES");
+                SPRINTF(tmp_ctx.transaction_context.line2, "%s", "WAVES");
             }
 
             // fee asset flag
@@ -464,13 +464,14 @@ void ui_verify(void) {
             processed += 1;
 //            memset(tmp_ctx.transaction_context.fee_asset_id, 0, sizeof(tmp_ctx.transaction_context.fee_asset_id));
             if (is_fee_in_asset) {
-                size_t length = sizeof(tmp_ctx.transaction_context.fee_asset_id);
-                if (!b58enc(tmp_ctx.transaction_context.fee_asset_id, &length, &tmp_ctx.signing_context.buffer[processed], 32)) {
+                size_t length = sizeof(tmp_ctx.transaction_context.line7);
+                if (!b58enc(tmp_ctx.transaction_context.line7, &length, &tmp_ctx.signing_context.buffer[processed], 32)) {
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
+                tmp_ctx.transaction_context.line7[length] = '\0';
                 processed += 32;
             } else {
-                SPRINTF(tmp_ctx.transaction_context.fee_asset_id, "%s", "WAVES");
+                SPRINTF(tmp_ctx.transaction_context.line7, "%s", "WAVES");
             }
 
 //            uint64_t timestamp;
@@ -483,20 +484,21 @@ void ui_verify(void) {
 //            print_amount(amount, -1, tmp_ctx.transaction_context.amount, sizeof(tmp_ctx.transaction_context.amount));
             processed += 8;
 
-            tmp_ctx.transaction_context.fee[0] = '\0';
+            tmp_ctx.transaction_context.line6[0] = '\0';
 //            uint64_t fee;
 //            os_memmove(&fee, tmp_ctx.signing_context.buffer + processed, 8);
 //            print_amount(fee, -1, tmp_ctx.transaction_context.fee, sizeof(tmp_ctx.transaction_context.fee));
             processed += 8;
 
-            SPRINTF(tmp_ctx.transaction_context.amount, "%d", processed);
+            SPRINTF(tmp_ctx.transaction_context.line1, "%d", processed);
 
             // address or alias flag is a part of address
             if (tmp_ctx.signing_context.buffer[processed] == 1) {
-                size_t length = sizeof(tmp_ctx.transaction_context.recipient_address);
-                if (!b58enc(tmp_ctx.transaction_context.recipient_address, &length, &tmp_ctx.signing_context.buffer[processed], 26)) {
+                size_t length = sizeof(tmp_ctx.transaction_context.line4);
+                if (!b58enc(tmp_ctx.transaction_context.line4, &length, &tmp_ctx.signing_context.buffer[processed], 26)) {
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
+                tmp_ctx.transaction_context.line4[length] = '\0';
                 processed += 26;
             } else {
                 // also skip address scheme byte
@@ -505,20 +507,18 @@ void ui_verify(void) {
                 os_memmove(&alias_size, &tmp_ctx.signing_context.buffer[processed], 2);
                 processed += 2;
 
-                os_memmove(tmp_ctx.transaction_context.recipient_address, &tmp_ctx.signing_context.buffer[processed], alias_size);
-                tmp_ctx.transaction_context.recipient_address[alias_size] = '\0';
+                os_memmove(tmp_ctx.transaction_context.line4, &tmp_ctx.signing_context.buffer[processed], alias_size);
+                tmp_ctx.transaction_context.line4[alias_size] = '\0';
                 processed += alias_size;
             }
-
-            tmp_ctx.transaction_context.attachment[0] = '\0';
 
             uint16_t attachment_size;
             os_memmove(&attachment_size, tmp_ctx.signing_context.buffer + processed, 2);
             processed += 2;
 
             char attachment[attachment_size];
-            os_memmove(tmp_ctx.transaction_context.attachment, tmp_ctx.signing_context.buffer + processed, attachment_size);
-            tmp_ctx.transaction_context.attachment[attachment_size] = '\0';
+            os_memmove(tmp_ctx.transaction_context.line5, tmp_ctx.signing_context.buffer + processed, attachment_size);
+            tmp_ctx.transaction_context.line5[attachment_size] = '\0';
             processed += attachment_size;
 
 //            todo print with decimals?!

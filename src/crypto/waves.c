@@ -1,4 +1,5 @@
 #include "waves.h"
+#include "sha3.h"
 
 void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[32])
 {
@@ -6,11 +7,11 @@ void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[
     keccak_256(hash, 32, hash);
 }
 
-void waves_message_sign(const cx_ecfp_private_key_t *private_key, const ed25519_public_key *public_key, const unsigned char *message, const size_t message_size, ed25519_signature signature) {
+void waves_message_sign(const cx_ecfp_private_key_t *private_key, const ed25519_public_key public_key, const unsigned char *message, const size_t message_size, ed25519_signature signature) {
     // ed25519 signature with the sha512 hashing
     cx_eddsa_sign(private_key, CX_LAST, CX_SHA512, message, message_size, NULL, 0, signature, 64, NULL);
     // set the sign bit from ed25519 public key (using 31 byte) for curve25519 validation used in waves (this makes the ed25519 signature invalid)
-    unsigned char sign_bit = *public_key[32] & 0x80;
+    unsigned char sign_bit = public_key[32] & 0x80;
     signature[63] |= sign_bit;
 }
 
@@ -31,7 +32,7 @@ void waves_public_key_to_address(const ed25519_public_key public_key, const unsi
     os_memmove(&address[22], checksum, 4);
 
     size_t length = 36;
-    b58enc(output, &length, address, 26);
+    b58enc((char *) output, &length, address, 26);
 }
 
 void copy_in_reverse_order(unsigned char *to, const unsigned char *from, const unsigned int len) {

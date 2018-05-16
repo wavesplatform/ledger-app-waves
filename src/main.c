@@ -200,14 +200,14 @@ uint32_t handle_signing() {
 
     // todo use waves_message_sign?
     uint8_t signature[64];
-    waves_message_sign(&private_key, &public_key, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, signature);
+    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, signature);
 
     public_key_le_to_be(&public_key);
 
     unsigned char sign_bit = public_key.W[31] & 0x80;
     signature[63] |= sign_bit;
 
-    os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
+    os_memmove((char *) G_io_apdu_buffer + 2, signature, sizeof(signature));
 
     // reset all private stuff
     os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
@@ -275,7 +275,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                     THROW(INVALID_PARAMETER);
                 }
 
-                char address[35];
+                unsigned char address[35];
                 waves_public_key_to_address(public_key.W, 'W', address);
 
                 os_memmove((char *) tmp_ctx.address_context.public_key, public_key.W, 32);

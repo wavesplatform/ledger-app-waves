@@ -41,6 +41,9 @@ unsigned int io_seproxyhal_touch_verify_transfer_approve(const bagl_element_t *e
     // first 64 byte - signature
     tx = handle_signing();
 
+    G_io_apdu_buffer[tx++] = sw >> 8;
+    G_io_apdu_buffer[tx++] = sw;
+
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
 
     init_context();

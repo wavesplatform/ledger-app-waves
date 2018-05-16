@@ -44,7 +44,7 @@ void check_canary() {
 }
 
 // Temporary area to sore stuff and reuse the same memory
-tmpContext_t tmp_ctx;
+`volatile tmpContext_t tmp_ctx;
 
 #ifdef HAVE_U2F
 
@@ -207,7 +207,7 @@ uint32_t handle_signing() {
     unsigned char sign_bit = public_key.W[31] & 0x80;
     signature[63] |= sign_bit;
 
-    os_memmove((char *) G_io_apdu_buffer + 2, signature, sizeof(signature));
+    os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
 
     // reset all private stuff
     os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));

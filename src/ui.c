@@ -440,7 +440,7 @@ void ui_verify(void) {
 //            break;}
         case 4: {// transfer
             // Sender public key 32 bytes
-//            memset(tmp_ctx.transaction_context.sender_address, 0, sizeof(tmp_ctx.transaction_context.sender_address));
+            os_memset(&tmp_ctx.transaction_context, 0, sizeof(transactionContext_t));
             waves_public_key_to_address(&tmp_ctx.signing_context.buffer[processed], 'W', tmp_ctx.transaction_context.line3);
             processed += 32;
 
@@ -448,9 +448,8 @@ void ui_verify(void) {
             bool is_amount_in_asset = tmp_ctx.signing_context.buffer[processed] == 1;
             processed += 1;
 
-//            memset(tmp_ctx.transaction_context.amount_asset_id, 0, sizeof(tmp_ctx.transaction_context.amount_asset_id));
             if (is_amount_in_asset) {
-                size_t length = sizeof(tmp_ctx.transaction_context.line2);
+                size_t length = 141;
                 if (!b58enc(tmp_ctx.transaction_context.line2, &length, &tmp_ctx.signing_context.buffer[processed], 32)) {
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
@@ -462,9 +461,8 @@ void ui_verify(void) {
             // fee asset flag
             bool is_fee_in_asset = tmp_ctx.signing_context.buffer[processed] == 1;
             processed += 1;
-//            memset(tmp_ctx.transaction_context.fee_asset_id, 0, sizeof(tmp_ctx.transaction_context.fee_asset_id));
             if (is_fee_in_asset) {
-                size_t length = sizeof(tmp_ctx.transaction_context.line7);
+                size_t length = 141;
                 if (!b58enc(tmp_ctx.transaction_context.line7, &length, &tmp_ctx.signing_context.buffer[processed], 32)) {
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
@@ -474,27 +472,25 @@ void ui_verify(void) {
                 SPRINTF(tmp_ctx.transaction_context.line7, "%s", "WAVES");
             }
 
+//            todo print with decimals?!
+            // copy little endian to big endian bytes
 //            uint64_t timestamp;
-//            os_memmove(&timestamp, tmp_ctx.signing_context.buffer + processed, 8);
+//            copy_in_reverse_order(&tmp_ctx.signing_context.buffer[processed], (unsigned char *) &timestamp, 8);
             processed += 8;
 
-//            tmp_ctx.transaction_context.amount[0] = '\0';
-//            uint64_t amount;
-//            os_memmove(&amount, tmp_ctx.signing_context.buffer + processed, 8);
-//            print_amount(amount, -1, tmp_ctx.transaction_context.amount, sizeof(tmp_ctx.transaction_context.amount));
+            uint64_t amount = 0;
+            copy_in_reverse_order(&tmp_ctx.signing_context.buffer[processed], (unsigned char *) &amount, 8);
+            print_amount(amount, 8, (char*)tmp_ctx.transaction_context.line1, 141);
             processed += 8;
 
-            tmp_ctx.transaction_context.line6[0] = '\0';
-//            uint64_t fee;
-//            os_memmove(&fee, tmp_ctx.signing_context.buffer + processed, 8);
-//            print_amount(fee, -1, tmp_ctx.transaction_context.fee, sizeof(tmp_ctx.transaction_context.fee));
+            uint64_t fee = 0;
+            copy_in_reverse_order(&tmp_ctx.signing_context.buffer[processed], (unsigned char *) &fee, 8);
+            print_amount(fee, 8, (char*)tmp_ctx.transaction_context.line6, 141);
             processed += 8;
-
-            SPRINTF(tmp_ctx.transaction_context.line1, "%d", processed);
 
             // address or alias flag is a part of address
             if (tmp_ctx.signing_context.buffer[processed] == 1) {
-                size_t length = sizeof(tmp_ctx.transaction_context.line4);
+                size_t length = 141;
                 if (!b58enc(tmp_ctx.transaction_context.line4, &length, &tmp_ctx.signing_context.buffer[processed], 26)) {
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
@@ -503,8 +499,8 @@ void ui_verify(void) {
             } else {
                 // also skip address scheme byte
                 processed += 2;
-                uint16_t alias_size;
-                os_memmove(&alias_size, &tmp_ctx.signing_context.buffer[processed], 2);
+                uint16_t alias_size = 0;
+                copy_in_reverse_order(&alias_size, &tmp_ctx.signing_context.buffer[processed], 2);
                 processed += 2;
 
                 os_memmove(tmp_ctx.transaction_context.line4, &tmp_ctx.signing_context.buffer[processed], alias_size);
@@ -512,12 +508,11 @@ void ui_verify(void) {
                 processed += alias_size;
             }
 
-            uint16_t attachment_size;
-            os_memmove(&attachment_size, tmp_ctx.signing_context.buffer + processed, 2);
+            uint16_t attachment_size = 0;
+            copy_in_reverse_order(&attachment_size, &tmp_ctx.signing_context.buffer[processed], 2);
             processed += 2;
 
-            char attachment[attachment_size];
-            os_memmove(tmp_ctx.transaction_context.line5, tmp_ctx.signing_context.buffer + processed, attachment_size);
+            os_memmove(tmp_ctx.transaction_context.line5, &tmp_ctx.signing_context.buffer[processed], attachment_size);
             tmp_ctx.transaction_context.line5[attachment_size] = '\0';
             processed += attachment_size;
 

@@ -200,7 +200,7 @@ uint32_t handle_signing() {
 
     // todo use waves_message_sign?
     uint8_t signature[64];
-    cx_eddsa_sign(&private_key, CX_LAST, CX_SHA512, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, NULL, 0, signature, 64, NULL);
+    waves_message_sign(&private_key, &public_key, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, signature);
 
     public_key_le_to_be(&public_key);
 

@@ -187,7 +187,12 @@ while (True):
             path = "44'/5741564'/0'/0'/1'"
         binary_data = path_to_bytes(expand_path(path))
         print("path bytes " + base58.b58encode(str(path_to_bytes(expand_path(path)))))
-        some_transfer_bytes = base58.b58decode("Ht7FtLJBrnukwWtywum4o1PbQSNyDWMgb4nXR5ZkV78krj9qVt17jz74XYSrKSTQe6wXuPdt3aCvmnF5hfjhnd1gyij36hN1zSDaiDg3TFi7c7RbXTHDDUbRgGajXci8PJB3iJM1tZvh8AL5wD4o4DCo1VJoKk2PUWX3cUydB7brxWGUxC6mPxKMdXefXwHeB4khwugbvcsPgk8F6YB")
+        # 9HJ1XTSDJyrxTXj6WaePx9Ukddp4kgmm86XbySxeZS5Z = 3PAoWH8v4hPNTCrL5sCfrN3GRznfXmjLTfv
+        print("From: " + pw.Address(publicKey='9HJ1XTSDJyrxTXj6WaePx9Ukddp4kgmm86XbySxeZS5Z').address)
+        some_transfer_bytes = build_transfer_bytes('9HJ1XTSDJyrxTXj6WaePx9Ukddp4kgmm86XbySxeZS5Z',
+                                                   pw.Address('3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK'),
+                                                   pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 1,
+                                                   'privet')
         print("tx bytes " + base58.b58encode(str(some_transfer_bytes)))
         input = raw_input(colors.fg.lightblue + "Please input message to sign (for example \"" + base58.b58encode(
             str(some_transfer_bytes)) + "\")> " + colors.reset)

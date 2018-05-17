@@ -11,7 +11,7 @@ void waves_message_sign(const cx_ecfp_private_key_t *private_key, const ed25519_
     // ed25519 signature with the sha512 hashing
     cx_eddsa_sign(private_key, CX_LAST, CX_SHA512, message, message_size, NULL, 0, signature, 64, NULL);
     // set the sign bit from ed25519 public key (using 31 byte) for curve25519 validation used in waves (this makes the ed25519 signature invalid)
-    unsigned char sign_bit = public_key[32] & 0x80;
+    unsigned char sign_bit = public_key[31] & 0x80;
     signature[63] |= sign_bit;
 }
 

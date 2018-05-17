@@ -35,7 +35,7 @@ unsigned int io_seproxyhal_touch_address_cancel(const bagl_element_t *e) {
 }
 
 unsigned int io_seproxyhal_touch_verify_transfer_approve(const bagl_element_t *e) {
-    unsigned int tx = 0;
+    uint32_t tx = 0;
     unsigned short sw = SW_OK;
 
     // first 64 byte - signature

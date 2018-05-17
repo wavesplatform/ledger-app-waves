@@ -260,7 +260,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.transaction_context.line1,
+     (char *)ui_context.line1,
      0,
      0,
      0,
@@ -279,7 +279,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x03, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.transaction_context.line2,
+     (char *)ui_context.line2,
      0,
      0,
      0,
@@ -298,7 +298,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x04, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.transaction_context.line3,
+     (char *)ui_context.line3,
      0,
      0,
      0,
@@ -317,7 +317,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x05, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.transaction_context.line4,
+     (char *)ui_context.line4,
      0,
      0,
      0,
@@ -336,7 +336,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
       NULL},
      {{BAGL_LABELINE, 0x06, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
        BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-      (char *)tmp_ctx.transaction_context.line5,
+      (char *)ui_context.line5,
       0,
       0,
       0,
@@ -355,7 +355,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x07, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.transaction_context.line6,
+     (char *)ui_context.line6,
      0,
      0,
      0,
@@ -374,7 +374,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x08, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.transaction_context.line7,
+     (char *)ui_context.line7,
      0,
      0,
      0,
@@ -433,6 +433,7 @@ void ui_idle(void) {
 
 // Show the transaction details for the user to approve
 void ui_verify(void) {
+    os_memset((unsigned char *) &ui_context, 0, sizeof(uiContext_t));
     unsigned int processed = 1;
     switch( tmp_ctx.signing_context.buffer[0] ) {
         // genesis, payment and exchange transactions are not supported
@@ -440,8 +441,7 @@ void ui_verify(void) {
 //            break;}
         case 4: {// transfer
             // Sender public key 32 bytes
-            os_memset((unsigned char *) &tmp_ctx.transaction_context, 0, sizeof(transactionContext_t));
-            waves_public_key_to_address((const unsigned char *) &tmp_ctx.signing_context.buffer[processed], 'W', (unsigned char *) tmp_ctx.transaction_context.line3);
+            waves_public_key_to_address((const unsigned char *) &tmp_ctx.signing_context.buffer[processed], 'W', (unsigned char *) ui_context.line3);
             processed += 32;
 
             // amount asset flag
@@ -449,52 +449,49 @@ void ui_verify(void) {
             processed += 1;
 
             if (is_amount_in_asset) {
-                size_t length = 141;
-                if (!b58enc((char *) tmp_ctx.transaction_context.line2, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
+                size_t length = 91;
+                if (!b58enc((char *) ui_context.line2, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
                 processed += 32;
             } else {
-                SPRINTF((char *) tmp_ctx.transaction_context.line2, "%s", "WAVES");
+                snprintf((char *) ui_context.line2, 91, "%s", WAVES_CONST);
             }
 
             // fee asset flag
             bool is_fee_in_asset = tmp_ctx.signing_context.buffer[processed] == 1;
             processed += 1;
             if (is_fee_in_asset) {
-                size_t length = 141;
-                if (!b58enc((char *) tmp_ctx.transaction_context.line7, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
+                size_t length = 91;
+                if (!b58enc((char *) ui_context.line7, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
-                tmp_ctx.transaction_context.line7[length] = '\0';
+                ui_context.line7[length] = '\0';
                 processed += 32;
             } else {
-                SPRINTF((char *) tmp_ctx.transaction_context.line7, "%s", "WAVES");
+                snprintf((char *) ui_context.line7, 91, "%s", WAVES_CONST);
             }
 
-//            todo print with decimals?!
-            // copy little endian to big endian bytes
-//            uint64_t timestamp;
-//            copy_in_reverse_order(&tmp_ctx.signing_context.buffer[processed], (unsigned char *) &timestamp, 8);
+            // timestamp;
             processed += 8;
 
             uint64_t amount = 0;
-            copy_in_reverse_order((unsigned char *) &tmp_ctx.signing_context.buffer[processed], (unsigned char *) &amount, 8);
-            print_amount(amount, 8, (unsigned char*) tmp_ctx.transaction_context.line1, 141);
+            copy_in_reverse_order((unsigned char *) &amount, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], 8);
+            print_amount(amount, 8, (unsigned char*) ui_context.line1, 91);
             processed += 8;
 
             uint64_t fee = 0;
-            copy_in_reverse_order((unsigned char *)&tmp_ctx.signing_context.buffer[processed], (unsigned char *) &fee, 8);
-            print_amount(fee, 8, (unsigned char*) tmp_ctx.transaction_context.line6, 141);
+            copy_in_reverse_order((unsigned char *) &fee, (unsigned char *)&tmp_ctx.signing_context.buffer[processed], 8);
+            print_amount(fee, 8, (unsigned char*) ui_context.line6, 91);
             processed += 8;
 
             // address or alias flag is a part of address
             if (tmp_ctx.signing_context.buffer[processed] == 1) {
-                size_t length = 141;
-                if (!b58enc((char *) tmp_ctx.transaction_context.line4, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 26)) {
+                size_t length = 91;
+                if (!b58enc((char *) ui_context.line4, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 26)) {
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
-                tmp_ctx.transaction_context.line4[length] = '\0';
+                ui_context.line4[length] = '\0';
                 processed += 26;
             } else {
                 // also skip address scheme byte
@@ -503,26 +500,23 @@ void ui_verify(void) {
                 copy_in_reverse_order((unsigned char *) &alias_size, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 2);
                 processed += 2;
 
-                os_memmove((unsigned char *) tmp_ctx.transaction_context.line4, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], alias_size);
-                tmp_ctx.transaction_context.line4[alias_size] = '\0';
+                os_memmove((unsigned char *) ui_context.line4, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], alias_size);
+                ui_context.line4[alias_size] = '\0';
                 processed += alias_size;
             }
 
+            // in bytes
             uint16_t attachment_size = 0;
             copy_in_reverse_order((unsigned char *) &attachment_size, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 2);
             processed += 2;
 
-            os_memmove((unsigned char *) tmp_ctx.transaction_context.line5, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], attachment_size);
-            tmp_ctx.transaction_context.line5[attachment_size] = '\0';
-            processed += attachment_size;
+            if (attachment_size > 87) {
+                os_memmove((unsigned char *) &ui_context.line5[87], &"...\0", 4);
+                attachment_size = 87;
+            }
 
-//            todo print with decimals?!
-//            print_amount(amount, 8, (char*)tmp_ctx.transaction_context.amount,
-//                         sizeof(tmp_ctx.transaction_context.amount));
-//            print_amount(fee, 8, (char*)tmp_ctx.transaction_context.amount,
-//                         sizeof(tmp_ctx.transaction_context.amount));
-//            print_amount(fee, 8, (char*)tmp_ctx.transaction_context.amount,
-//                         sizeof(tmp_ctx.transaction_context.amount));
+            os_memmove((unsigned char *) ui_context.line5, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], attachment_size);
+            processed += attachment_size;
 
             // Set the step/step count, and ui_state before requesting the UI
             ux_step = 0; ux_step_count = 8;
@@ -548,7 +542,7 @@ void ui_verify(void) {
 }
 
 
-// borrowed from the Stellar wallet code, slgithly modified for BURST
+// borrowed from the Stellar wallet code and slightly modified
 void print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len) {
     char buffer[len];
     uint64_t dVal = amount;
@@ -562,7 +556,7 @@ void print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
         } else {
             buffer[i] = '0';
         }
-        if (i == decimals - 1) { // 1 BURST = 100000000 quants
+        if (i == decimals - 1) {
             i += 1;
             buffer[i] = '.';
         }
@@ -579,9 +573,6 @@ void print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
         if (out[j] != '0') break;
     }
     j += 2;
-
-    // strip trailing .
-    //if (out[j-1] == '.') j -= 1;
 
     out[j] = '\0';
 }

@@ -45,6 +45,7 @@ void check_canary() {
 
 // Temporary area to sore stuff and reuse the same memory
 tmpContext_t tmp_ctx;
+uiContext_t ui_context;
 
 #ifdef HAVE_U2F
 
@@ -281,7 +282,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
 }
 
 void init_context() {
-    os_memset(&tmp_ctx, 0, sizeof(tmpContext_t));
+    os_memset(&tmp_ctx, 0, sizeof(tmp_ctx));
 }
 
 static void waves_main(void) {

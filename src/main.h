@@ -65,15 +65,15 @@ void init_context();
 
 // A place to store information about the transaction
 // for displaying to the user when requesting approval
-typedef struct transactionSignContext_t {
-	unsigned char line1[141];
-	unsigned char line2[141];
-	unsigned char line3[141];
-	unsigned char line4[141];
-	unsigned char line5[141];
-	unsigned char line6[141];
-	unsigned char line7[141];
-} transactionContext_t;
+typedef struct uiContext_t {
+	unsigned char line1[91];
+	unsigned char line2[91];
+	unsigned char line3[91];
+	unsigned char line4[91];
+	unsigned char line5[91];
+	unsigned char line6[91];
+	unsigned char line7[91];
+} uiContext_t;
 
 // A place to store data during the signing
 typedef struct signingContext_t {
@@ -92,10 +92,11 @@ typedef struct addressesContext_t {
 } addressesContext_t;
 
 typedef union {
-    transactionContext_t    transaction_context;
     signingContext_t signing_context;
     addressesContext_t address_context;
 } tmpContext_t;
+
+extern uiContext_t ui_context;
 
 extern tmpContext_t tmp_ctx; // Temporary area to store stuff
 

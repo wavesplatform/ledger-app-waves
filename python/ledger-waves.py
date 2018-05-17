@@ -188,6 +188,11 @@ while (True):
         binary_data = path_to_bytes(expand_path(path))
         print("path bytes " + base58.b58encode(str(path_to_bytes(expand_path(path)))))
 
+        # tx amount asset decimals
+        binary_data += chr(8)
+        # fee amount asset decimals
+        binary_data += chr(8)
+
         # Tx info
         #
         # amount: 1

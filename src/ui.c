@@ -494,12 +494,12 @@ void ui_verify(void) {
             processed += 8;
 
             uint64_t amount = 0;
-            copy_in_reverse_order((unsigned char *) &amount, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], 8);
+            copy_in_reverse_order((unsigned char *) &amount, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], tmp_ctx.signing_context.amount_decimals);
             print_amount(amount, 8, (unsigned char*) ui_context.line1, 91);
             processed += 8;
 
             uint64_t fee = 0;
-            copy_in_reverse_order((unsigned char *) &fee, (unsigned char *)&tmp_ctx.signing_context.buffer[processed], 8);
+            copy_in_reverse_order((unsigned char *) &fee, (unsigned char *)&tmp_ctx.signing_context.buffer[processed], tmp_ctx.signing_context.fee_decimals);
             print_amount(fee, 8, (unsigned char*) ui_context.line6, 91);
             processed += 8;
 
@@ -566,26 +566,28 @@ void ui_verify(void) {
 }
 
 
-// borrowed from the Stellar wallet code and slightly modified
-void print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len) {
+// borrowed from the Stellar wallet code and modified
+bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len) {
     char buffer[len];
     uint64_t dVal = amount;
     int i, j;
 
     memset(buffer, 0, len);
-    for (i = 0; dVal > 0 || i < 9; i++) {
+    for (i = 0; dVal > 0 || i < decimals + 1; i++) {
         if (dVal > 0) {
-            buffer[i] = (dVal % 10) + '0';
+            buffer[i] = (char) ((dVal % 10) + '0');
             dVal /= 10;
         } else {
             buffer[i] = '0';
         }
         if (i == decimals - 1) {
             i += 1;
-            buffer[i] = '.';
+            if (dVal == 0) {
+                buffer[i] = '.';
+            }
         }
         if (i >= len) {
-            THROW(0x6700);
+            return false;
         }
     }
     // reverse order
@@ -599,4 +601,5 @@ void print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
     j += 1;
 
     out[j] = '\0';
+    return  true;
 }

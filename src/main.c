@@ -142,9 +142,14 @@ void add_chunk_data() {
         // then there're the bip32 path in the first chunk - first 20 bytes of data
         read_path_from_bytes(G_io_apdu_buffer + 5, (uint32_t *) tmp_ctx.signing_context.bip32);
 
+        // 21 byte - amount decimals
+        tmp_ctx.signing_context.amount_decimals = G_io_apdu_buffer[25];
+        // 22 byte - fee decimals
+        tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[26];
+
         // Update the other data from this segment
-        int data_size = G_io_apdu_buffer[4] - 20;
-        os_memmove((char *) tmp_ctx.signing_context.buffer, &G_io_apdu_buffer[25], data_size);
+        int data_size = G_io_apdu_buffer[4] - 22;
+        os_memmove((char *) tmp_ctx.signing_context.buffer, &G_io_apdu_buffer[27], data_size);
         tmp_ctx.signing_context.buffer_used += data_size;
     } else {
         // else update the data from entire segment.

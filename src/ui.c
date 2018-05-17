@@ -324,13 +324,13 @@ void ui_verify(void) {
             processed += 8;
 
             uint64_t amount = 0;
-            copy_in_reverse_order((unsigned char *) &amount, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], tmp_ctx.signing_context.amount_decimals);
-            print_amount(amount, 8, (unsigned char*) ui_context.line1, 91);
+            copy_in_reverse_order((unsigned char *) &amount, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], 8);
+            print_amount(amount, tmp_ctx.signing_context.amount_decimals, (unsigned char*) ui_context.line1, 91);
             processed += 8;
 
             uint64_t fee = 0;
-            copy_in_reverse_order((unsigned char *) &fee, (unsigned char *)&tmp_ctx.signing_context.buffer[processed], tmp_ctx.signing_context.fee_decimals);
-            print_amount(fee, 8, (unsigned char*) ui_context.line6, 91);
+            copy_in_reverse_order((unsigned char *) &fee, (unsigned char *)&tmp_ctx.signing_context.buffer[processed], 8);
+            print_amount(fee, tmp_ctx.signing_context.fee_decimals, (unsigned char*) ui_context.line6, 91);
             processed += 8;
 
             // address or alias flag is a part of address

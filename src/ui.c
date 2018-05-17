@@ -251,7 +251,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
 
     {{BAGL_LABELINE, 0x02, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "Amount",
+     "Id",
      0,
      0,
      0,
@@ -260,7 +260,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line1,
+     (char *)ui_context.line8,
      0,
      0,
      0,
@@ -270,7 +270,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
 
     {{BAGL_LABELINE, 0x03, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "Asset",
+     "Amount",
      0,
      0,
      0,
@@ -279,7 +279,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x03, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line2,
+     (char *)ui_context.line1,
      0,
      0,
      0,
@@ -289,7 +289,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
 
     {{BAGL_LABELINE, 0x04, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "From",
+     "Asset",
      0,
      0,
      0,
@@ -298,7 +298,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL},
     {{BAGL_LABELINE, 0x04, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line3,
+     (char *)ui_context.line2,
      0,
      0,
      0,
@@ -308,7 +308,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
 
     {{BAGL_LABELINE, 0x05, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "To",
+     "From",
      0,
      0,
      0,
@@ -316,6 +316,25 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL,
      NULL},
     {{BAGL_LABELINE, 0x05, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
+     (char *)ui_context.line3,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABELINE, 0x06, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
+      BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
+     "To",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    {{BAGL_LABELINE, 0x06, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
      (char *)ui_context.line4,
      0,
@@ -325,7 +344,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL,
      NULL},
 
-     {{BAGL_LABELINE, 0x06, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
+     {{BAGL_LABELINE, 0x07, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
       "Attachment",
       0,
@@ -334,7 +353,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
       NULL,
       NULL,
       NULL},
-     {{BAGL_LABELINE, 0x06, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
+     {{BAGL_LABELINE, 0x07, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
        BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
       (char *)ui_context.line5,
       0,
@@ -344,7 +363,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
       NULL,
       NULL},
 
-    {{BAGL_LABELINE, 0x07, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
+    {{BAGL_LABELINE, 0x08, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "Fee",
      0,
@@ -353,7 +372,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL,
      NULL,
      NULL},
-    {{BAGL_LABELINE, 0x07, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
+    {{BAGL_LABELINE, 0x08, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
      (char *)ui_context.line6,
      0,
@@ -363,7 +382,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL,
      NULL},
 
-    {{BAGL_LABELINE, 0x08, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
+    {{BAGL_LABELINE, 0x09, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "Fee asset",
      0,
@@ -372,7 +391,7 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      NULL,
      NULL,
      NULL},
-    {{BAGL_LABELINE, 0x08, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
+    {{BAGL_LABELINE, 0x09, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
      (char *)ui_context.line7,
      0,
@@ -466,7 +485,6 @@ void ui_verify(void) {
                 if (!b58enc((char *) ui_context.line7, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
-                ui_context.line7[length] = '\0';
                 processed += 32;
             } else {
                 snprintf((char *) ui_context.line7, 91, "%s", WAVES_CONST);
@@ -491,7 +509,6 @@ void ui_verify(void) {
                 if (!b58enc((char *) ui_context.line4, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 26)) {
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
-                ui_context.line4[length] = '\0';
                 processed += 26;
             } else {
                 // also skip address scheme byte
@@ -501,7 +518,6 @@ void ui_verify(void) {
                 processed += 2;
 
                 os_memmove((unsigned char *) ui_context.line4, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], alias_size);
-                ui_context.line4[alias_size] = '\0';
                 processed += alias_size;
             }
 
@@ -518,8 +534,16 @@ void ui_verify(void) {
             os_memmove((unsigned char *) ui_context.line5, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], attachment_size);
             processed += attachment_size;
 
+            // id
+            unsigned char id[32];
+            blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
+            size_t length = 91;
+            if (!b58enc((char *) ui_context.line8, &length, (const void *) &id, 32)) {
+                THROW(SW_CONDITIONS_NOT_SATISFIED);
+            }
+
             // Set the step/step count, and ui_state before requesting the UI
-            ux_step = 0; ux_step_count = 8;
+            ux_step = 0; ux_step_count = 10;
             ui_state = UI_VERIFY;
             UX_DISPLAY(ui_verify_transfer_nanos, ui_verify_transfer_prepro);
             break;

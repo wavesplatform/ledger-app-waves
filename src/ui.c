@@ -329,7 +329,7 @@ void ui_verify(void) {
             processed += 8;
 
             uint64_t fee = 0;
-            copy_in_reverse_order((unsigned char *) &fee, (unsigned char *)&tmp_ctx.signing_context.buffer[processed], 8);
+            copy_in_reverse_order((unsigned char *) &fee, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 8);
             print_amount(fee, tmp_ctx.signing_context.fee_decimals, (unsigned char*) ui_context.line6, 91);
             processed += 8;
 
@@ -402,8 +402,10 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
     uint64_t dVal = amount;
     int i, j;
 
+    if (decimals == 0) decimals--;
+
     memset(buffer, 0, len);
-    for (i = 0; dVal > 0 || i < decimals + 1; i++) {
+    for (i = 0; dVal > 0 || i < decimals + 2; i++) {
         if (dVal > 0) {
             buffer[i] = (char) ((dVal % 10) + '0');
             dVal /= 10;
@@ -424,11 +426,13 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
     for (i -= 1, j = 0; i >= 0 && j < len-1; i--, j++) {
         out[j] = buffer[i];
     }
-    // strip trailing 0s
-    for (j -= 1; j > 0; j--) {
-        if (out[j] != '0') break;
+    if (decimals > 0) {
+        // strip trailing 0s
+        for (j -= 1; j > 0; j--) {
+            if (out[j] != '0') break;
+        }
+        j += 1;
     }
-    j += 1;
 
     out[j] = '\0';
     return  true;

@@ -21,7 +21,7 @@
 
 #include "main.h"
 #include "crypto/waves.h"
-#include "sodium/keypair.h"
+#include "crypto/ledger_crypto.h"
 
 // Ledger Stuff
 #include "ui.h"
@@ -133,45 +133,6 @@ void read_path_from_bytes(unsigned char *buffer, uint32_t *path) {
     path[4] = deserialize_uint32_t(buffer + 16);
 }
 
-void get_keypair_by_path(const uint32_t* path, cx_ecfp_public_key_t* public_key, cx_ecfp_private_key_t* private_key) {
-    unsigned char privateKeyData[32];
-    os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
-    cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, private_key);
-    cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, public_key);
-    cx_ecfp_generate_pair(CX_CURVE_Ed25519, public_key, private_key, 1);
-}
-
-// converts little endian 65 byte (0x4 32X 32Y) public key to 32 byte Y big endian form (for other applications)
-void public_key_le_to_be(cx_ecfp_public_key_t* public_key) {
-    uint8_t public_key_be[32];
-    // copy public key little endian to big endian
-    for (uint8_t i = 0; i < 32; i++) {
-        public_key_be[i] = public_key->W[64 - i];
-    }
-    // set sign bit
-    if ((public_key->W[32] & 1) != 0) {
-        public_key_be[31] |= 0x80;
-    }
-    os_memmove(public_key->W, public_key_be, 32);
-}
-
-// Get a public key from the 44'/5741564' keypath.
-bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_public_key_t* public_key) {
-    if (!os_global_pin_is_validated()) {
-        return false;
-    }
-
-    cx_ecfp_private_key_t private_key;
-    // derive the ed25519 keys by that BIP32 path from the device
-    get_keypair_by_path(path, public_key, &private_key);
-    // clean private key
-    os_memset(private_key.d, 0, 32);
-
-    public_key_le_to_be(public_key);
-
-    return ed25519_pk_to_curve25519(public_key->W, public_key->W);
-}
-
 // Hanlde a signing request -- called both from the main apdu loop as well as from
 // the button handler after the user verifies the transaction.
 void add_chunk_data() {
@@ -198,14 +159,10 @@ uint32_t handle_signing() {
     cx_ecfp_private_key_t private_key;
     get_keypair_by_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key, &private_key);
 
-    // todo use waves_message_sign?
-    uint8_t signature[64];
-    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, signature);
-
     public_key_le_to_be(&public_key);
 
-    unsigned char sign_bit = public_key.W[31] & 0x80;
-    signature[63] |= sign_bit;
+    uint8_t signature[64];
+    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, signature);
 
     os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
 

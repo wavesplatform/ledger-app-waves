@@ -44,7 +44,7 @@ void check_canary() {
 }
 
 // Temporary area to sore stuff and reuse the same memory
-volatile tmpContext_t tmp_ctx;
+tmpContext_t tmp_ctx;
 
 #ifdef HAVE_U2F
 

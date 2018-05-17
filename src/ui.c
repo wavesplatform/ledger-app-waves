@@ -280,6 +280,20 @@ unsigned int ui_verify_transfer_nanos_button(unsigned int button_mask,
     return 0;
 }
 
+unsigned int ui_verify_transaction_nanos_button(unsigned int button_mask,
+                                    unsigned int button_mask_counter) {
+    switch (button_mask) {
+        case BUTTON_EVT_RELEASED | BUTTON_LEFT:
+            io_seproxyhal_touch_verify_transfer_deny(NULL);
+            break;
+
+        case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
+            io_seproxyhal_touch_verify_transfer_approve(NULL);
+            break;
+    }
+    return 0;
+}
+
 // display or not according to step, and adjust delay
 const bagl_element_t * ui_verify_transfer_prepro(const bagl_element_t *element) {
     if (element->component.userid > 0) {
@@ -445,6 +459,23 @@ void ui_verify(void) {
 //        case 11: {// mass transfer
 //            break;}
         default: {
+            // id
+            unsigned char id[32];
+            blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
+            size_t length = 91;
+            if (!b58enc((char *) ui_context.line1, &length, (const void *) &id, 32)) {
+                THROW(SW_CONDITIONS_NOT_SATISFIED);
+            }
+
+            // Get the public key and return it.
+            cx_ecfp_public_key_t public_key;
+
+            if (get_curve25519_public_key_for_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key) != 0) {
+                THROW(INVALID_PARAMETER);
+            }
+
+            waves_public_key_to_address(public_key.W, 'W', ui_context.line2);
+
             ux_step = 0; ux_step_count = 3;
             ui_state = UI_VERIFY;
             UX_DISPLAY(ui_verify_transaction_nanos, ui_verify_transaction_prepro);

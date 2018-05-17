@@ -192,13 +192,13 @@ while (True):
         #
         # amount: 1
         # asset: 9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t
-        # from: 3PAoWH8v4hPNTCrL5sCfrN3GRznfXmjLTfv
+        # from: 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
         # to: 3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK
         # attachment: privet
         # fee: 1
         # fee asset: WAVES
         # tx id: 7ij6k6kaPYobHmzv8TLTs64wWL8o8mCoKnCJctRa2MKm
-        some_transfer_bytes = build_transfer_bytes('9HJ1XTSDJyrxTXj6WaePx9Ukddp4kgmm86XbySxeZS5Z',
+        some_transfer_bytes = build_transfer_bytes('4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
                                                    pw.Address('3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK'),
                                                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 1,
                                                    'privet', timestamp = 1526477921829)

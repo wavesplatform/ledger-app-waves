@@ -596,7 +596,7 @@ void print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
     for (j -= 1; j > 0; j--) {
         if (out[j] != '0') break;
     }
-    j += 2;
+    j += 1;
 
     out[j] = '\0';
 }

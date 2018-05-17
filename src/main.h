@@ -66,29 +66,29 @@ void init_context();
 // A place to store information about the transaction
 // for displaying to the user when requesting approval
 typedef struct transactionSignContext_t {
-	volatile unsigned char line1[141];
-	volatile unsigned char line2[141];
-	volatile unsigned char line3[141];
-	volatile unsigned char line4[141];
-	volatile unsigned char line5[141];
-	volatile unsigned char line6[141];
-	volatile unsigned char line7[141];
+	unsigned char line1[141];
+	unsigned char line2[141];
+	unsigned char line3[141];
+	unsigned char line4[141];
+	unsigned char line5[141];
+	unsigned char line6[141];
+	unsigned char line7[141];
 } transactionContext_t;
 
 // A place to store data during the signing
 typedef struct signingContext_t {
     // bip32 path
-	volatile uint32_t bip32[5];
+	uint32_t bip32[5];
 	// Stuff for the SHA-256 hashing
     // Curve25519 support only full message hash
-	volatile unsigned char buffer[MAX_DATA_SIZE];
-	volatile uint32_t buffer_used;
+	unsigned char buffer[MAX_DATA_SIZE];
+	uint32_t buffer_used;
 } signingContext_t;
 
 // A place to store data during the confirming the address
 typedef struct addressesContext_t {
-	volatile unsigned char address[36];
-	volatile unsigned char public_key[32];
+	unsigned char address[36];
+	unsigned char public_key[32];
 } addressesContext_t;
 
 typedef union {

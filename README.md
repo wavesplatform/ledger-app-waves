@@ -1,4 +1,4 @@
-# nanos-app-waves
+# nanos-app-waves [![Build Status](https://travis-ci.com/wavesplatform/nanos-app-waves.svg?branch=master)](https://travis-ci.com/wavesplatform/nanos-app-waves)
 
 Waves wallet application for Ledger Nano S
 

@@ -60,38 +60,46 @@ typedef struct internal_storage_t {
 extern WIDE internal_storage_t N_storage_real;
 #define N_storage (*(WIDE internal_storage_t *)PIC(&N_storage_real))
 
-void handle_signing(volatile unsigned int *tx, volatile unsigned int *flags);
+uint32_t handle_signing();
+void init_context();
 
 // A place to store information about the transaction
 // for displaying to the user when requesting approval
-typedef struct transactionSignContext_t {
-    // todo change
-	char feesAmount[32];
-	char fullAddress[32]; 
-	char fullAmount[32];
-} transactionContext_t;
+typedef struct uiContext_t {
+	unsigned char line1[91];
+	unsigned char line2[91];
+	unsigned char line3[91];
+	unsigned char line4[91];
+	unsigned char line5[91];
+	unsigned char line6[91];
+	unsigned char line7[91];
+	unsigned char line8[91];
+} uiContext_t;
 
 // A place to store data during the signing
 typedef struct signingContext_t {
     // bip32 path
-	volatile uint32_t bip32[5];
+	uint32_t bip32[5];
+	unsigned char amount_decimals;
+	unsigned char fee_decimals;
 	// Stuff for the SHA-256 hashing
     // Curve25519 support only full message hash
-	volatile unsigned char buffer[MAX_DATA_SIZE];
-	volatile unsigned int buffer_used;
+	unsigned char buffer[MAX_DATA_SIZE];
+	uint32_t buffer_used;
 } signingContext_t;
 
 // A place to store data during the confirming the address
 typedef struct addressesContext_t {
-	volatile char address[36];
-	volatile char public_key[32];
+	unsigned char address[36];
+	unsigned char public_key[32];
 } addressesContext_t;
 
 typedef union {
-    transactionContext_t    transaction_context;
     signingContext_t signing_context;
     addressesContext_t address_context;
 } tmpContext_t;
+
+extern uiContext_t ui_context;
 
 extern tmpContext_t tmp_ctx; // Temporary area to store stuff
 
@@ -99,4 +107,4 @@ bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_public_key
 
 uint32_t set_result_get_address();
 
-#endif 
+#endif

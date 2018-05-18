@@ -1,4 +1,6 @@
 #include "waves.h"
+#include "sha3.h"
+#include "ledger_crypto.h"
 
 void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[32])
 {
@@ -6,19 +8,19 @@ void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[
     keccak_256(hash, 32, hash);
 }
 
-void waves_message_sign(const cx_ecfp_private_key_t *private_key, const ed25519_public_key public_key, const unsigned char *message, ed25519_signature signature) {
+void waves_message_sign(const cx_ecfp_private_key_t *private_key, const ed25519_public_key public_key, const unsigned char *message, const size_t message_size, ed25519_signature signature) {
     // ed25519 signature with the sha512 hashing
-    cx_eddsa_sign(private_key, CX_LAST, CX_SHA512, message, sizeof(message), NULL, 0, signature, NULL);
+    cx_eddsa_sign(private_key, CX_LAST, CX_SHA512, message, message_size, NULL, 0, signature, 64, NULL);
     // set the sign bit from ed25519 public key (using 31 byte) for curve25519 validation used in waves (this makes the ed25519 signature invalid)
-    unsigned char sign_bit = public_key[32] & 0x80;
+    unsigned char sign_bit = public_key[31] & 0x80;
     signature[63] |= sign_bit;
 }
 
 // todo move all that stuff to crypto module
 // Build waves address from the curve25519 public key, check https://github.com/wavesplatform/Waves/wiki/Data-Structures#address
-void waves_public_key_to_address(const ed25519_public_key public_key, const char network_byte, char *output) {
+void waves_public_key_to_address(const ed25519_public_key public_key, const unsigned char network_byte, unsigned char *output) {
     uint8_t public_key_hash[32];
-    uint8_t address[22];
+    uint8_t address[26];
     uint8_t checksum[32];
     waves_secure_hash(public_key, 32, public_key_hash);
 
@@ -31,6 +33,11 @@ void waves_public_key_to_address(const ed25519_public_key public_key, const char
     os_memmove(&address[22], checksum, 4);
 
     size_t length = 36;
-    b58enc(output, &length, address, 26);
-    output[length] = 0;
+    b58enc((char *) output, &length, address, 26);
+}
+
+void copy_in_reverse_order(unsigned char *to, const unsigned char *from, const unsigned int len) {
+    for (uint16_t i = 0; i < len; i++) {
+        to[i] = from[(len - 1) - i];
+    }
 }

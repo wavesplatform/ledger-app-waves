@@ -26,14 +26,12 @@
 #include <stdbool.h>
 #include "os_io_seproxyhal.h"
 #include "main.h"
+#include "ui_logic.h"
 
 extern ux_state_t ux;
 
 enum UI_STATE { UI_IDLE, UI_VERIFY };
-#define UI_RECIPIENT 0
-#define UI_AMOUNT    1
-#define UI_FEE       2
-#define UI_TRANSACTION_PART_MAX 3;
+static const unsigned char WAVES_CONST[] = "Waves";
 
 extern enum UI_STATE ui_state;
 

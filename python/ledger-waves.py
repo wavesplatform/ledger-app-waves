@@ -21,10 +21,14 @@ import base58
 import hashlib
 import struct
 import sys
+import pywaves.crypto as pwcrypto
+import pywaves as pw
+import time
 
 global dongle
 dongle = None
 
+pw.setOffline()
 
 class colors:
     '''Colors class:
@@ -71,6 +75,7 @@ class colors:
         cyan = '\033[46m'
         lightgrey = '\033[47m'
 
+
 def getKeysFromDongle(path):
     global dongle
     while (True):
@@ -84,15 +89,19 @@ def getKeysFromDongle(path):
             sys.exc_clear()
             break
 
+
 CHUNK_SIZE = 128
 PRIME_DERIVATION_FLAG = 0x80000000
+
 
 def path_to_bytes(path):
     return ''.join([struct.pack(">I", n) for n in path])
 
+
 def convert_prime(n):
     # Convert minus signs to uint32 with flag
     return [int(abs(x) | PRIME_DERIVATION_FLAG) if x < 0 else x for x in n]
+
 
 def expand_path(n):
     # Convert string of bip32 path to list of uint32 integers with prime flags
@@ -124,37 +133,87 @@ def expand_path(n):
 
     return path
 
+
+def build_transfer_bytes(publicKey, recipient, asset, amount, attachment='', feeAsset='', txFee=100000, timestamp=0):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    sData = b'\4' + \
+            base58.b58decode(publicKey) + \
+            (b'\1' + base58.b58decode(asset.assetId) if asset else b'\0') + \
+            (b'\1' + base58.b58decode(feeAsset.assetId) if feeAsset else b'\0') + \
+            struct.pack(">Q", timestamp) + \
+            struct.pack(">Q", amount) + \
+            struct.pack(">Q", txFee) + \
+            base58.b58decode(recipient.address) + \
+            struct.pack(">H", len(attachment)) + \
+            pwcrypto.str2bytes(attachment)
+    return sData
+
+
 while (True):
     while (dongle == None):
-            try:
-                dongle = getDongle(True)
-            except Exception as e:
-                answer = raw_input(
-                    "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
-                if (answer.upper() == 'Q'):
-                    sys.exit(0)
-                sys.exc_clear()
+        try:
+            dongle = getDongle(True)
+        except Exception as e:
+            answer = raw_input(
+                "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
+            if (answer.upper() == 'Q'):
+                sys.exit(0)
+            sys.exc_clear()
 
     print("")
     print(colors.fg.lightcyan + colors.bold + "Ledger Nano S - Waves proof of concept" + colors.reset)
     print(colors.fg.white + "\t 1. Get PublicKey/Address from Ledger Nano S" + colors.reset)
-    print(colors.fg.white + "\t 2. Sign anything (for example '31' hex byte) using Ledger Nano S" + colors.reset)
+    print(colors.fg.white + "\t 2. Sign tx using Ledger Nano S" + colors.reset)
     print(colors.fg.white + "\t 3. Exit" + colors.reset)
     select = raw_input(colors.fg.cyan + "Please select> " + colors.reset)
 
     if (select == "1"):
-        path = raw_input(colors.fg.lightblue + "Please input BIP-32 path (for example \"44'/5741564'/0'/0'/1'\")> " + colors.reset)
+        path = raw_input(
+            colors.fg.lightblue + "Please input BIP-32 path (for example \"44'/5741564'/0'/0'/1'\")> " + colors.reset)
+        if len(path) == 0:
+            path = "44'/5741564'/0'/0'/1'"
         keys = getKeysFromDongle(expand_path(path))
         if keys:
             publicKey = keys[0]
             address = keys[1]
 
-            print colors.fg.blue + "publicKey (base58): " + colors.reset + base58.b58encode(str(publicKey))
-            print colors.fg.blue + "address: " + colors.reset + address
+            print(colors.fg.blue + "publicKey (base58): " + colors.reset + base58.b58encode(str(publicKey)))
+            print(colors.fg.blue + "address: " + colors.reset + address)
     elif (select == "2"):
-        path = raw_input(colors.fg.lightblue + "Please input BIP-32 path (for example \"44'/5741564'/0'/0'/1'\")> " + colors.reset)
+        path = raw_input(
+            colors.fg.lightblue + "Please input BIP-32 path (for example \"44'/5741564'/0'/0'/1'\")> " + colors.reset)
+        if len(path) == 0:
+            path = "44'/5741564'/0'/0'/1'"
         binary_data = path_to_bytes(expand_path(path))
-        binary_data += bytearray(raw_input(colors.fg.lightblue + "Please input message to sign (for example \"test\")> " + colors.reset), 'utf-8')
+        print("path bytes " + base58.b58encode(str(path_to_bytes(expand_path(path)))))
+
+        # tx amount asset decimals
+        binary_data += chr(8)
+        # fee amount asset decimals
+        binary_data += chr(8)
+
+        # Tx info
+        #
+        # amount: 1
+        # asset: 9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t
+        # from: 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+        # to: 3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK
+        # attachment: privet
+        # fee: 1
+        # fee asset: WAVES
+        # tx id: 7ij6k6kaPYobHmzv8TLTs64wWL8o8mCoKnCJctRa2MKm
+        some_transfer_bytes = build_transfer_bytes('4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
+                                                   pw.Address('3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK'),
+                                                   pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 1,
+                                                   'privet', timestamp = 1526477921829)
+        print("tx bytes " + base58.b58encode(str(some_transfer_bytes)))
+        input = raw_input(colors.fg.lightblue + "Please input message to sign (for example \"" + base58.b58encode(
+            str(some_transfer_bytes)) + "\")> " + colors.reset)
+        if len(input) == 0:
+            binary_data += some_transfer_bytes
+        else:
+            binary_data += base58.b58decode(input)
         signature = None
         while (True):
             try:
@@ -178,14 +237,15 @@ while (True):
                         sys.exit(1)
                     signature = dongle.exchange(apdu)
                     offset += len(chunk)
-                print "signature " + base58.b58encode(str(signature))
+                print("signature " + base58.b58encode(str(signature)))
                 break
             except CommException as e:
-                print e.sw
+                print(e.sw)
                 if (e.sw == 0x6985):
                     print(colors.fg.red + "User denied signing request on Ledger Nano S device." + colors.reset)
+                break
             except Exception as e:
-                print e, type(e)
+                print(e, type(e))
                 answer = raw_input(
                     "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
                 if (answer.upper() == 'Q'):

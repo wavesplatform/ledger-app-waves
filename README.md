@@ -6,15 +6,9 @@ Waves wallet application for Ledger Nano S
 
 This is a proof-of concept Ledger Nano S wallet app for Waves platform.
 
-Special thanks to Jake B. for his support and advices.
+Special thanks to Jean Passot and Oto from the Ledger team, Jake Bordens from the Ledger/Birst community for their support and advices.
 
 # Building
 
 You'll need a Ledger Nano S development environment.  More information can be 
-found here: https://github.com/LedgerHQ/blue-devenv/ or in our wiki https://github.com/wavesplatform/nanos-app-waves/wiki
-
-## Web Integration
-
-Note you need to enable "Web Browser" support in the app on the Ledger device
-in order to switch from the standard communication protocol to the U2F 
-protocol.
+found here: https://github.com/wavesplatform/nanos-app-waves/wiki

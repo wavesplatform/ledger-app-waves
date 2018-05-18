@@ -97,7 +97,7 @@ const bagl_element_t ui_address_nanos[] = {
      "Address", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)tmp_ctx.address_context.address, 0, 0, 0, NULL, NULL, NULL},
+     (const char *)tmp_ctx.address_context.address, 0, 0, 0, NULL, NULL, NULL},
 };
 
 void menu_address_init(uint32_t *waves_bip32_path) {
@@ -179,56 +179,56 @@ const bagl_element_t ui_verify_transfer_nanos[] = {
      "Transaction Id", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line1, 0, 0, 0, NULL, NULL, NULL},
+     (const char *)ui_context.line1, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x03, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "Amount", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x03, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line2, 0, 0, 0, NULL, NULL, NULL},
+     (const char *)ui_context.line2, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x04, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "Asset",0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x04, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line3, 0, 0, 0, NULL, NULL, NULL},
+     (const char *)ui_context.line3, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x05, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "From", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x05, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line4, 0, 0, 0, NULL, NULL, NULL},
+     (const char *)ui_context.line4, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x06, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "To", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x06, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line5, 0, 0, 0, NULL, NULL, NULL},
+     (const char *)ui_context.line5, 0, 0, 0, NULL, NULL, NULL},
 
      {{BAGL_LABELINE, 0x07, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
        BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
       "Attachment", 0, 0, 0, NULL, NULL, NULL},
      {{BAGL_LABELINE, 0x07, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
        BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-      (char *)ui_context.line6, 0, 0, 0, NULL, NULL, NULL},
+      (const char *)ui_context.line6, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x08, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "Fee", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x08, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line7, 0, 0, 0, NULL, NULL, NULL},
+     (const char *)ui_context.line7, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x09, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "Fee asset", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x09, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line8, 0, 0, 0, NULL, NULL, NULL}
+     (const char *)ui_context.line8, 0, 0, 0, NULL, NULL, NULL}
 };
 
 const bagl_element_t ui_verify_transaction_nanos[] = {
@@ -249,21 +249,21 @@ const bagl_element_t ui_verify_transaction_nanos[] = {
      "Confirm", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x01, 0, 26, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     ui_context.line1, 0, 0, 0, NULL, NULL, NULL},
+     (const char *) ui_context.line1, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x02, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "Transaction Id", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line2, 0, 0, 0, NULL, NULL, NULL},
+     (const char *)ui_context.line2, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x03, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "From", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x03, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line3, 0, 0, 0, NULL, NULL, NULL},
+     (const char *)ui_context.line3, 0, 0, 0, NULL, NULL, NULL},
 };
 
 unsigned int ui_verify_transfer_nanos_button(unsigned int button_mask,

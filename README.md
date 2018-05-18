@@ -4,7 +4,7 @@ Waves wallet application for Ledger Nano S
 
 # Introduction
 
-This is a proof-of concept Ledger Nano S wallet app for Waves platform.
+This is a Ledger Nano S wallet app for Waves platform.
 
 Special thanks to Jean Passot and Oto from the Ledger team, Jake Bordens from the Ledger/Birst community for their support and advices.
 

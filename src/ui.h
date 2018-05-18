@@ -31,7 +31,7 @@
 extern ux_state_t ux;
 
 enum UI_STATE { UI_IDLE, UI_VERIFY };
-#define WAVES_CONST "Waves"
+static const unsigned char WAVES_CONST[] = "Waves";
 
 extern enum UI_STATE ui_state;
 

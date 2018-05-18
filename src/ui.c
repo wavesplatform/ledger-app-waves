@@ -249,21 +249,21 @@ const bagl_element_t ui_verify_transaction_nanos[] = {
      "Confirm", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x01, 0, 26, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "transaction", 0, 0, 0, NULL, NULL, NULL},
+     ui_context.line1, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x02, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "Transaction Id", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line1, 0, 0, 0, NULL, NULL, NULL},
+     (char *)ui_context.line2, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x03, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "From", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x03, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (char *)ui_context.line2, 0, 0, 0, NULL, NULL, NULL},
+     (char *)ui_context.line3, 0, 0, 0, NULL, NULL, NULL},
 };
 
 unsigned int ui_verify_transfer_nanos_button(unsigned int button_mask,
@@ -354,134 +354,137 @@ void ui_idle(void) {
 void ui_verify(void) {
     os_memset((unsigned char *) &ui_context, 0, sizeof(uiContext_t));
     unsigned int processed = 1;
-    switch( tmp_ctx.signing_context.buffer[0] ) {
-        // genesis, payment and exchange transactions are not supported
-//        case 3: {// issue
-//            break;}
-        case 4: {// transfer
-            // Sender public key 32 bytes
-            waves_public_key_to_address((const unsigned char *) &tmp_ctx.signing_context.buffer[processed], 'W', (unsigned char *) ui_context.line4);
-            processed += 32;
+    unsigned char tx_type = tmp_ctx.signing_context.buffer[0];
 
-            // amount asset flag
-            bool is_amount_in_asset = tmp_ctx.signing_context.buffer[processed] == 1;
-            processed += 1;
+    // transfer
+    if (tx_type == 4) {
+        // Sender public key 32 bytes
+        waves_public_key_to_address((const unsigned char *) &tmp_ctx.signing_context.buffer[processed], 'W', (unsigned char *) ui_context.line4);
+        processed += 32;
 
-            if (is_amount_in_asset) {
-                size_t length = 91;
-                if (!b58enc((char *) ui_context.line3, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
-                    THROW(SW_CONDITIONS_NOT_SATISFIED);
-                }
-                processed += 32;
-            } else {
-                os_memmove((char *) ui_context.line3, WAVES_CONST, 5);
-            }
+        // amount asset flag
+        bool is_amount_in_asset = tmp_ctx.signing_context.buffer[processed] == 1;
+        processed += 1;
 
-            // fee asset flag
-            bool is_fee_in_asset = tmp_ctx.signing_context.buffer[processed] == 1;
-            processed += 1;
-            if (is_fee_in_asset) {
-                size_t length = 91;
-                if (!b58enc((char *) ui_context.line8, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
-                    THROW(SW_CONDITIONS_NOT_SATISFIED);
-                }
-                processed += 32;
-            } else {
-                os_memmove((char *) ui_context.line8, WAVES_CONST, 5);
-            }
-
-            // timestamp;
-            processed += 8;
-
-            uint64_t amount = 0;
-            copy_in_reverse_order((unsigned char *) &amount, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], 8);
-            print_amount(amount, tmp_ctx.signing_context.amount_decimals, (unsigned char*) ui_context.line2, 91);
-            processed += 8;
-
-            uint64_t fee = 0;
-            copy_in_reverse_order((unsigned char *) &fee, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 8);
-            print_amount(fee, tmp_ctx.signing_context.fee_decimals, (unsigned char*) ui_context.line7, 91);
-            processed += 8;
-
-            // address or alias flag is a part of address
-            if (tmp_ctx.signing_context.buffer[processed] == 1) {
-                size_t length = 91;
-                if (!b58enc((char *) ui_context.line5, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 26)) {
-                    THROW(SW_CONDITIONS_NOT_SATISFIED);
-                }
-                processed += 26;
-            } else {
-                // also skip address scheme byte
-                processed += 2;
-                uint16_t alias_size = 0;
-                copy_in_reverse_order((unsigned char *) &alias_size, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 2);
-                processed += 2;
-
-                os_memmove((unsigned char *) ui_context.line5, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], alias_size);
-                processed += alias_size;
-            }
-
-            // in bytes
-            uint16_t attachment_size = 0;
-            copy_in_reverse_order((unsigned char *) &attachment_size, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 2);
-            processed += 2;
-
-            if (attachment_size > 87) {
-                os_memmove((unsigned char *) &ui_context.line6[87], &"...\0", 4);
-                attachment_size = 87;
-            }
-
-            os_memmove((unsigned char *) ui_context.line6, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], attachment_size);
-            processed += attachment_size;
-
-            // id
-            unsigned char id[32];
-            blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
-            size_t length = 91;
-            if (!b58enc((char *) ui_context.line1, &length, (const void *) &id, 32)) {
-                THROW(SW_CONDITIONS_NOT_SATISFIED);
-            }
-
-            // Set the step/step count, and ui_state before requesting the UI
-            ux_step = 0; ux_step_count = 9;
-            ui_state = UI_VERIFY;
-            UX_DISPLAY(ui_verify_transfer_nanos, ui_verify_transfer_prepro);
-            break;
+        if (is_amount_in_asset) {
+          size_t length = 91;
+          if (!b58enc((char *) ui_context.line3, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
+              THROW(SW_CONDITIONS_NOT_SATISFIED);
           }
-//        case 5: {// reissue
-//            break;}
-//        case 6: {// burn
-//            break;}
-//        case 8: {// lease
-//            break;}
-//        case 10: {// create alias
-//            break;}
-//        case 11: {// mass transfer
-//            break;}
-        default: {
-            // id
-            unsigned char id[32];
-            blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
-            size_t length = 91;
-            if (!b58enc((char *) ui_context.line1, &length, (const void *) &id, 32)) {
-                THROW(SW_CONDITIONS_NOT_SATISFIED);
-            }
-
-            // Get the public key and return it.
-            cx_ecfp_public_key_t public_key;
-
-            if (get_curve25519_public_key_for_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key) != 0) {
-                THROW(INVALID_PARAMETER);
-            }
-
-            waves_public_key_to_address(public_key.W, 'W', ui_context.line2);
-
-            ux_step = 0; ux_step_count = 3;
-            ui_state = UI_VERIFY;
-            UX_DISPLAY(ui_verify_transaction_nanos, ui_verify_transaction_prepro);
-            break;
+          processed += 32;
+        } else {
+          os_memmove((char *) ui_context.line3, WAVES_CONST, 5);
         }
+
+        // fee asset flag
+        bool is_fee_in_asset = tmp_ctx.signing_context.buffer[processed] == 1;
+        processed += 1;
+        if (is_fee_in_asset) {
+          size_t length = 91;
+          if (!b58enc((char *) ui_context.line8, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
+              THROW(SW_CONDITIONS_NOT_SATISFIED);
+          }
+          processed += 32;
+        } else {
+          os_memmove((char *) ui_context.line8, WAVES_CONST, 5);
+        }
+
+        // timestamp;
+        processed += 8;
+
+        uint64_t amount = 0;
+        copy_in_reverse_order((unsigned char *) &amount, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], 8);
+        print_amount(amount, tmp_ctx.signing_context.amount_decimals, (unsigned char*) ui_context.line2, 91);
+        processed += 8;
+
+        uint64_t fee = 0;
+        copy_in_reverse_order((unsigned char *) &fee, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 8);
+        print_amount(fee, tmp_ctx.signing_context.fee_decimals, (unsigned char*) ui_context.line7, 91);
+        processed += 8;
+
+        // address or alias flag is a part of address
+        if (tmp_ctx.signing_context.buffer[processed] == 1) {
+          size_t length = 91;
+          if (!b58enc((char *) ui_context.line5, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 26)) {
+              THROW(SW_CONDITIONS_NOT_SATISFIED);
+          }
+          processed += 26;
+        } else {
+          // also skip address scheme byte
+          processed += 2;
+          uint16_t alias_size = 0;
+          copy_in_reverse_order((unsigned char *) &alias_size, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 2);
+          processed += 2;
+
+          os_memmove((unsigned char *) ui_context.line5, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], alias_size);
+          processed += alias_size;
+        }
+
+        // in bytes
+        uint16_t attachment_size = 0;
+        copy_in_reverse_order((unsigned char *) &attachment_size, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 2);
+        processed += 2;
+
+        if (attachment_size > 87) {
+          os_memmove((unsigned char *) &ui_context.line6[87], &"...\0", 4);
+          attachment_size = 87;
+        }
+
+        os_memmove((unsigned char *) ui_context.line6, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], attachment_size);
+        processed += attachment_size;
+
+        // id
+        unsigned char id[32];
+        blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
+        size_t length = 91;
+        if (!b58enc((char *) ui_context.line1, &length, (const void *) &id, 32)) {
+          THROW(SW_CONDITIONS_NOT_SATISFIED);
+        }
+
+        // Set the step/step count, and ui_state before requesting the UI
+        ux_step = 0; ux_step_count = 9;
+        ui_state = UI_VERIFY;
+        UX_DISPLAY(ui_verify_transfer_nanos, ui_verify_transfer_prepro);
+        return;
+    } else if (tx_type == 3) {
+        os_memmove(&ui_context.line1, &"issue\0", 6);
+    } else if (tx_type == 5) {
+        os_memmove(&ui_context.line1, &"reissue\0", 8);
+    } else if (tx_type == 6) {
+        os_memmove(&ui_context.line1, &"burn\0", 5);
+    } else if (tx_type == 8) {
+        os_memmove(&ui_context.line1, &"lease\0", 6);
+    } else if (tx_type == 9) {
+        os_memmove(&ui_context.line1, &"lease cancel\0", 13);
+    } else if (tx_type == 10) {
+        os_memmove(&ui_context.line1, &"creating an alias\0", 18);
+    } else if (tx_type == 11) {
+        os_memmove(&ui_context.line1, &"mass transfer\0", 14);
     }
+
+    if (strlen((const char *) ui_context.line1) == 0) {
+        os_memmove(&ui_context.line1, &"transaction\0", 12);
+    }
+    // id
+    unsigned char id[32];
+    blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
+    size_t length = 91;
+    if (!b58enc((char *) ui_context.line2, &length, (const void *) &id, 32)) {
+        THROW(SW_CONDITIONS_NOT_SATISFIED);
+    }
+
+    // Get the public key and return it.
+    cx_ecfp_public_key_t public_key;
+
+    if (get_curve25519_public_key_for_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key) != 0) {
+        THROW(INVALID_PARAMETER);
+    }
+
+    waves_public_key_to_address(public_key.W, 'W', ui_context.line3);
+
+    ux_step = 0; ux_step_count = 3;
+    ui_state = UI_VERIFY;
+    UX_DISPLAY(ui_verify_transaction_nanos, ui_verify_transaction_prepro);
 }
 
 

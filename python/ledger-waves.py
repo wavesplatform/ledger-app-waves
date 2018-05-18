@@ -89,8 +89,8 @@ def getKeysFromDongle(path):
             sys.exc_clear()
             break
 
-
-CHUNK_SIZE = 128
+# 128 - 5 service bytes
+CHUNK_SIZE = 123
 PRIME_DERIVATION_FLAG = 0x80000000
 
 

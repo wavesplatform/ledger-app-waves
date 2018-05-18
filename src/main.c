@@ -130,6 +130,9 @@ void add_chunk_data() {
     } else {
         // else update the data from entire segment.
         int data_size = G_io_apdu_buffer[4];
+        if (tmp_ctx.signing_context.buffer_used + data_size > MAX_DATA_SIZE) {
+            THROW(SW_CONDITIONS_NOT_SATISFIED);
+        }
         os_memmove((char *) &tmp_ctx.signing_context.buffer[tmp_ctx.signing_context.buffer_used], &G_io_apdu_buffer[5], data_size);
         tmp_ctx.signing_context.buffer_used += data_size;
     }

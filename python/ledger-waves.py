@@ -168,7 +168,7 @@ while (True):
             sys.exc_clear()
 
     print("")
-    print(colors.fg.lightcyan + colors.bold + "Ledger Nano S - Waves proof of concept" + colors.reset)
+    print(colors.fg.lightcyan + colors.bold + "Ledger Nano S - Waves test app" + colors.reset)
     print(colors.fg.white + "\t 1. Get PublicKey/Address from Ledger Nano S" + colors.reset)
     print(colors.fg.white + "\t 2. Sign tx using Ledger Nano S" + colors.reset)
     print(colors.fg.white + "\t 3. Exit" + colors.reset)

@@ -27,6 +27,8 @@ APPVERSION = 1.0.0
 ICONNAME = nanos_app_waves.gif
 APP_LOAD_PARAMS = --appFlags 0x40 --path "44'/5741564'" --curve secp256k1 --curve ed25519 $(COMMON_LOAD_PARAMS)
 
+$(info APP_LOAD_PARAMS="$(APP_LOAD_PARAMS)")
+
 # Build configuration
 
 APP_SOURCE_PATH += src
@@ -84,8 +86,9 @@ load: all
 delete:
 	python -m ledgerblue.deleteApp $(COMMON_DELETE_PARAMS)
 
-glyphs:
-	include $(BOLOS_SDK)/Makefile.glyphs
+# Import rules to build glyphs
+# NOTE: src/glyphs.* should be removed to recompile it. Or just use 'clean'.
+include $(BOLOS_SDK)/Makefile.glyphs
 
 # Import generic rules from the SDK
 

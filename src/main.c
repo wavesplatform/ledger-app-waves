@@ -198,7 +198,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
 
                 if (G_io_apdu_buffer[2] == P1_LAST) {
                     add_chunk_data();
-                    ui_verify();
+                    menu_sign_init();
                     *flags |= IO_ASYNCH_REPLY;
                 } else {
                     add_chunk_data();
@@ -236,7 +236,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
 
                 *flags |= IO_ASYNCH_REPLY;
 
-                menu_address_init(path);
+                menu_address_init();
             } break;
 
             default:

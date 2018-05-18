@@ -24,36 +24,27 @@
 #include "os.h"
 #include "cx.h"
 #include <stdbool.h>
-#include "os_io_seproxyhal.h"
 #include "main.h"
 #include "ui_logic.h"
 
 extern ux_state_t ux;
 
 enum UI_STATE { UI_IDLE, UI_VERIFY };
-static const unsigned char WAVES_CONST[] = "Waves";
-
 extern enum UI_STATE ui_state;
+
+static const unsigned char WAVES_CONST[] = "Waves";
 
 // extern unsigned int current_text_pos; // parsing cursor in the text to display
 // extern unsigned int text_y;           // current location of the displayed text
 // extern char lineBuffer[50];
 
-void ui_verify(void);
-void ui_idle(void);
+void menu_sign_init();
+void ui_idle();
 
 extern int ux_step;
 extern int ux_step_count;
 
-extern const ux_menu_entry_t menu_main[];
-extern const ux_menu_entry_t menu_settings[];
-extern const ux_menu_entry_t menu_settings_browser[];
-
-unsigned int ui_address_nanos_button(unsigned int button_mask,
-                                     unsigned int button_mask_counter);
-const bagl_element_t * ui_address_prepro(const bagl_element_t *element);
-
-void menu_address_init(uint32_t *waves_bip32_path);
+void menu_address_init();
 
 #define MAX_CHARS_PER_LINE 49
 #define DEFAULT_FONT BAGL_FONT_OPEN_SANS_LIGHT_16px | BAGL_FONT_ALIGNMENT_LEFT

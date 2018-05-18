@@ -9,4 +9,4 @@ before_install:
   - docker pull tolsi/ledger-devenv
 
 script:
-  - docker run -t -v `pwd`:/home/app -i tolsi/ledger-devenv /bin/bash -c "cd /home && git clone --branch nanos-1421 https://github.com/LedgerHQ/nanos-secure-sdk.git && git clone --branch blue-r23 https://github.com/LedgerHQ/blue-secure-sdk.git && cd app && make BOLOS_ENV=/opt/ledger-blue/ BOLOS_SDK=/home/nanos-secure-sdk && if [[ \"$(grep '0x300 00' debug/app.map | awk '{print $2}')\" > \"0x20002100\" ]] then exit -1 fi"
+  - docker run -t -v `pwd`:/home/app -i tolsi/ledger-devenv /bin/bash -c "cd /home && git clone --branch nanos-1421 https://github.com/LedgerHQ/nanos-secure-sdk.git && git clone --branch blue-r23 https://github.com/LedgerHQ/blue-secure-sdk.git && cd app && make BOLOS_ENV=/opt/ledger-blue/ BOLOS_SDK=/home/nanos-secure-sdk && if [[ \"$(grep '0x300 00' debug/app.map | awk '{print $2}')\" > \"0x20002100\" ]]; then exit -1 fi"

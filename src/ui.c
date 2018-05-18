@@ -465,7 +465,9 @@ void ui_verify(void) {
         } else {
             // type byte >200 are 'reserved', it will not be signed
             os_memmove(&ui_context.line2, &"Hash\0", 5);
-            if (tx_type == 253) {
+            if (tx_type == 252) {
+                os_memmove(&ui_context.line1, &"order\0", 6);
+            } else if (tx_type == 253) {
                 os_memmove(&ui_context.line1, &"data\0", 5);
             } else if (tx_type == 254) {
                 os_memmove(&ui_context.line1, &"request\0", 8);

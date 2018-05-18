@@ -84,7 +84,6 @@ def getKeysFromDongle(path):
             data = dongle.exchange(data_bytes)
             return [data[0:32], data[32:67]]
         except CommException as e:
-            print(e.sw)
             if (e.sw == 0x6985):
                 print(colors.fg.red + "Required condition failed." + colors.reset)
             if (e.sw == 0x9100):
@@ -244,7 +243,6 @@ while (True):
                 print("signature " + base58.b58encode(str(signature)))
                 break
             except CommException as e:
-                print(e.sw)
                 if (e.sw == 0x6990):
                     print(colors.fg.red + "Transaction buffer max size reached." + colors.reset)
                 if (e.sw == 0x6985):

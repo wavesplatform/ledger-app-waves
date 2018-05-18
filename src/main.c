@@ -169,7 +169,7 @@ uint32_t get_sign_data_offset() {
 }
 
 // like https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
-uint32_t handle_signing() {
+uint32_t set_result_sign() {
     cx_ecfp_public_key_t public_key;
     cx_ecfp_private_key_t private_key;
     get_keypair_by_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key, &private_key);

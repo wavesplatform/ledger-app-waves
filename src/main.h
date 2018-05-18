@@ -60,9 +60,6 @@ typedef struct internal_storage_t {
 extern WIDE internal_storage_t N_storage_real;
 #define N_storage (*(WIDE internal_storage_t *)PIC(&N_storage_real))
 
-uint32_t handle_signing();
-void init_context();
-
 // A place to store information about the transaction
 // for displaying to the user when requesting approval
 typedef struct uiContext_t {
@@ -105,7 +102,9 @@ extern tmpContext_t tmp_ctx; // Temporary area to store stuff
 
 bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_public_key_t* public_key);
 
+void init_context();
 uint32_t get_sign_data_offset();
 uint32_t set_result_get_address();
+uint32_t set_result_sign();
 
 #endif

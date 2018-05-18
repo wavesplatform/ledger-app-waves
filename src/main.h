@@ -64,7 +64,7 @@ extern WIDE internal_storage_t N_storage_real;
 // for displaying to the user when requesting approval
 // 44 for address/id and +1 for \0
 typedef struct uiContext_t {
-	unsigned char line1[4500];
+	unsigned char line1[450];
 	unsigned char line2[45];
 	unsigned char line3[45];
 	unsigned char line4[45];

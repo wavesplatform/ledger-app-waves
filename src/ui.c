@@ -480,7 +480,8 @@ void ui_verify(void) {
     }
     // id
     unsigned char id[32];
-    blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
+    uint32_t sign_data_offset = get_sign_data_offset();
+    blake2b((unsigned char *) tmp_ctx.signing_context.buffer + sign_data_offset, tmp_ctx.signing_context.buffer_used - sign_data_offset, &id, 32);
     size_t length = 91;
     if (!b58enc((char *) ui_context.line3, &length, (const void *) &id, 32)) {
         THROW(SW_CONDITIONS_NOT_SATISFIED);

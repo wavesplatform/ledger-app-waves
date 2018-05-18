@@ -159,6 +159,15 @@ void add_chunk_data() {
     }
 }
 
+uint32_t get_sign_data_offset() {
+    uint32_t offset = 0;
+    // skip message type if it's reserved
+    if (tmp_ctx.signing_context.buffer[0] > 200) {
+        offset = 1;
+    }
+    return offset;
+}
+
 // like https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
 uint32_t handle_signing() {
     cx_ecfp_public_key_t public_key;
@@ -167,14 +176,9 @@ uint32_t handle_signing() {
 
     public_key_le_to_be(&public_key);
 
-    uint32_t offset = 0;
-    // skip message type if it's reserved
-    if (tmp_ctx.signing_context.buffer[0] > 200) {
-        offset = 1;
-    }
-
+    uint32_t sign_data_offset = get_sign_data_offset();
     uint8_t signature[64];
-    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer + offset, tmp_ctx.signing_context.buffer_used - offset, signature);
+    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer + sign_data_offset, tmp_ctx.signing_context.buffer_used - sign_data_offset, signature);
 
     os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
 

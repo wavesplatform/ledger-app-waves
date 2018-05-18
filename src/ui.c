@@ -253,17 +253,17 @@ const bagl_element_t ui_verify_transaction_nanos[] = {
 
     {{BAGL_LABELINE, 0x02, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "Transaction Id", 0, 0, 0, NULL, NULL, NULL},
+     (const char *)ui_context.line2, 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x02, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (const char *)ui_context.line2, 0, 0, 0, NULL, NULL, NULL},
+     (const char *)ui_context.line3, 0, 0, 0, NULL, NULL, NULL},
 
     {{BAGL_LABELINE, 0x03, 0, 12, 128, 12, 0, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_REGULAR_11px | BAGL_FONT_ALIGNMENT_CENTER, 0},
      "From", 0, 0, 0, NULL, NULL, NULL},
     {{BAGL_LABELINE, 0x03, 23, 26, 82, 12, 0x80 | 10, 0, 0, 0xFFFFFF, 0x000000,
       BAGL_FONT_OPEN_SANS_EXTRABOLD_11px | BAGL_FONT_ALIGNMENT_CENTER, 26},
-     (const char *)ui_context.line3, 0, 0, 0, NULL, NULL, NULL},
+     (const char *)ui_context.line4, 0, 0, 0, NULL, NULL, NULL},
 };
 
 unsigned int ui_verify_transfer_nanos_button(unsigned int button_mask,
@@ -446,20 +446,33 @@ void ui_verify(void) {
         ui_state = UI_VERIFY;
         UX_DISPLAY(ui_verify_transfer_nanos, ui_verify_transfer_prepro);
         return;
-    } else if (tx_type == 3) {
-        os_memmove(&ui_context.line1, &"issue\0", 6);
-    } else if (tx_type == 5) {
-        os_memmove(&ui_context.line1, &"reissue\0", 8);
-    } else if (tx_type == 6) {
-        os_memmove(&ui_context.line1, &"burn\0", 5);
-    } else if (tx_type == 8) {
-        os_memmove(&ui_context.line1, &"lease\0", 6);
-    } else if (tx_type == 9) {
-        os_memmove(&ui_context.line1, &"lease cancel\0", 13);
-    } else if (tx_type == 10) {
-        os_memmove(&ui_context.line1, &"creating an alias\0", 18);
-    } else if (tx_type == 11) {
-        os_memmove(&ui_context.line1, &"mass transfer\0", 14);
+    } else {
+        os_memmove(&ui_context.line2, &"Transaction Id\0", 15);
+        if (tx_type == 3) {
+            os_memmove(&ui_context.line1, &"issue\0", 6);
+        } else if (tx_type == 5) {
+            os_memmove(&ui_context.line1, &"reissue\0", 8);
+        } else if (tx_type == 6) {
+            os_memmove(&ui_context.line1, &"burn\0", 5);
+        } else if (tx_type == 8) {
+            os_memmove(&ui_context.line1, &"lease\0", 6);
+        } else if (tx_type == 9) {
+            os_memmove(&ui_context.line1, &"lease cancel\0", 13);
+        } else if (tx_type == 10) {
+            os_memmove(&ui_context.line1, &"creating an alias\0", 18);
+        } else if (tx_type == 11) {
+            os_memmove(&ui_context.line1, &"mass transfer\0", 14);
+        } else {
+            // type byte >200 are 'reserved', it will not be signed
+            os_memmove(&ui_context.line2, &"Hash\0", 5);
+            if (tx_type == 253) {
+                os_memmove(&ui_context.line1, &"data\0", 5);
+            } else if (tx_type == 254) {
+                os_memmove(&ui_context.line1, &"request\0", 8);
+            } else if (tx_type == 255) {
+                os_memmove(&ui_context.line1, &"message\0", 8);
+            }
+        }
     }
 
     if (strlen((const char *) ui_context.line1) == 0) {
@@ -469,7 +482,7 @@ void ui_verify(void) {
     unsigned char id[32];
     blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
     size_t length = 91;
-    if (!b58enc((char *) ui_context.line2, &length, (const void *) &id, 32)) {
+    if (!b58enc((char *) ui_context.line3, &length, (const void *) &id, 32)) {
         THROW(SW_CONDITIONS_NOT_SATISFIED);
     }
 
@@ -480,7 +493,7 @@ void ui_verify(void) {
         THROW(INVALID_PARAMETER);
     }
 
-    waves_public_key_to_address(public_key.W, 'W', ui_context.line3);
+    waves_public_key_to_address(public_key.W, 'W', ui_context.line4);
 
     ux_step = 0; ux_step_count = 3;
     ui_state = UI_VERIFY;

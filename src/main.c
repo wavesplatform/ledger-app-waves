@@ -167,8 +167,14 @@ uint32_t handle_signing() {
 
     public_key_le_to_be(&public_key);
 
+    uint32_t offset = 0;
+    // skip message type if it's reserved
+    if (tmp_ctx.signing_context.buffer[0] > 200) {
+        offset = 1;
+    }
+
     uint8_t signature[64];
-    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, signature);
+    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer + offset, tmp_ctx.signing_context.buffer_used - offset, signature);
 
     os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
 
@@ -196,7 +202,6 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
             }
 
             switch (G_io_apdu_buffer[1]) {
-            // todo sign order
             case INS_SIGN: {
                 if (G_io_apdu_buffer[4] != rx - 5) {
                     // the length of the APDU should match what's int he 5-byte header.

@@ -83,6 +83,13 @@ def getKeysFromDongle(path):
             data_bytes = bytes("8004800014".decode('hex')) + path_to_bytes(path)
             data = dongle.exchange(data_bytes)
             return [data[0:32], data[32:67]]
+        except CommException as e:
+            print(e.sw)
+            if (e.sw == 0x6985):
+                print(colors.fg.red + "Required condition failed." + colors.reset)
+            if (e.sw == 0x9100):
+                print(colors.fg.red + "User denied signing request on Ledger Nano S device." + colors.reset)
+            break
         except Exception as e:
             raw_input(
                 "An error occurred while processing the request, repeat or correct your request (note what all the bip32 path parts should be hardened)")
@@ -232,16 +239,17 @@ while (True):
                         print("Waiting for approval to sign on the Ledger Nano S")
 
                     apdu = bytes("8002".decode('hex')) + chr(p1) + chr(0x00) + chr(len(chunk)) + bytes(chunk)
-                    if (apdu.encode('hex') == "6985"):
-                        print("Error: user denied signing on device.")
-                        sys.exit(1)
                     signature = dongle.exchange(apdu)
                     offset += len(chunk)
                 print("signature " + base58.b58encode(str(signature)))
                 break
             except CommException as e:
                 print(e.sw)
+                if (e.sw == 0x6990):
+                    print(colors.fg.red + "Transaction buffer max size reached." + colors.reset)
                 if (e.sw == 0x6985):
+                    print(colors.fg.red + "Required condition failed." + colors.reset)
+                if (e.sw == 0x9100):
                     print(colors.fg.red + "User denied signing request on Ledger Nano S device." + colors.reset)
                 break
             except Exception as e:

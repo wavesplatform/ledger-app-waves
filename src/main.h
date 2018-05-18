@@ -24,19 +24,6 @@
 #include "cx.h"
 #include "constants.h"
 
-#ifdef HAVE_U2F
-
-#include "u2f/u2f_service.h"
-#include "u2f/u2f_transport.h"
-
-extern volatile unsigned char u2fMessageBuffer[U2F_MAX_MESSAGE_SIZE];
-extern volatile u2f_service_t u2fService;
-extern bool fido_activated;
-extern void USB_power_U2F(unsigned char enabled, unsigned char fido);
-void u2f_proxy_response(u2f_service_t *service, unsigned int tx);
-
-#endif
-
 // Host innteration communication protocol
 #define CLA 0x80                // CLASS? 
 #define INS_SIGN 0x02           // Sign Instruction

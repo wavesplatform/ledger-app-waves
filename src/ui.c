@@ -33,26 +33,6 @@ int ux_step, ux_step_count;
 
 bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len);
 
-#ifdef HAVE_U2F
-
-// change the setting
-void menu_settings_browser_change(unsigned int enabled) {
-    uint8_t fido_transport = enabled;
-    nvm_write(&N_storage.fido_transport, (void *)&fido_transport, sizeof(uint8_t));
-    USB_power_U2F(0, 0);
-    USB_power_U2F(1, N_storage.fido_transport);
-    // go back to the menu entry
-    UX_MENU_DISPLAY(1, menu_settings, NULL);
-}
-
-// show the currently activated entry
-void menu_settings_browser_init(unsigned int ignored) {
-    UNUSED(ignored);
-    UX_MENU_DISPLAY(N_storage.fido_transport ? 1 : 0, menu_settings_browser, NULL);
-}
-
-#endif
-
 unsigned int ui_address_nanos_button(unsigned int button_mask,
                                      unsigned int button_mask_counter) {
     switch (button_mask) {
@@ -126,19 +106,6 @@ const bagl_element_t * ui_address_prepro(const bagl_element_t *element) {
     return element;
 }
 
-#ifdef HAVE_U2F
-
-const ux_menu_entry_t menu_settings_browser[] = {
-    {NULL, menu_settings_browser_change, 0, NULL, "No", NULL, 0, 0},
-    {NULL, menu_settings_browser_change, 1, NULL, "Yes", NULL, 0, 0},
-    UX_MENU_END};
-
-const ux_menu_entry_t menu_settings[] = {
-    {NULL, menu_settings_browser_init, 0, NULL, "Browser support", NULL, 0, 0},
-    {menu_main, NULL, 1, &C_icon_back, "Back", NULL, 61, 40},
-    UX_MENU_END};
-#endif
-
 const ux_menu_entry_t menu_about[] = {
     {NULL, NULL, 0, NULL, "Version", APPVERSION, 0, 0},
     {menu_main, NULL, 2, &C_icon_back, "Back", NULL, 61, 40},
@@ -146,9 +113,6 @@ const ux_menu_entry_t menu_about[] = {
 
 const ux_menu_entry_t menu_main[] = {
     {NULL, NULL, 0, &C_icon_waves, "Use wallet to", "view accounts", 33, 12},
-#ifdef HAVE_U2F
-    {menu_settings, NULL, 0, NULL, "Settings", NULL, 0, 0},
-#endif
     {menu_about, NULL, 0, NULL, "About", NULL, 0, 0},
     {NULL, os_sched_exit, 0, &C_icon_dashboard, "Quit app", NULL, 50, 29},
     UX_MENU_END};

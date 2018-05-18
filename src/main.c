@@ -22,6 +22,7 @@
 #include "main.h"
 #include "crypto/waves.h"
 #include "crypto/ledger_crypto.h"
+#include "os_io_seproxyhal.h"
 
 // Ledger Stuff
 #include "ui.h"
@@ -47,17 +48,6 @@ void check_canary() {
 tmpContext_t tmp_ctx;
 uiContext_t ui_context;
 
-#ifdef HAVE_U2F
-
-// U2F Stuff
-#include "u2f/u2f_service.h"
-#include "u2f/u2f_transport.h"
-
-volatile unsigned char u2fMessageBuffer[U2F_MAX_MESSAGE_SIZE];
-volatile u2f_service_t u2fService;
-
-#endif
-
 // Non-volatile storage for the wallet app's stuff
 WIDE internal_storage_t N_storage_real;
 
@@ -71,20 +61,6 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 #ifndef TARGET_NANOS
 #error This application only supports the Ledger Nano S
-#endif
-
-#ifdef HAVE_U2F
-
-// Function to respond to a u2f request.  Similar to the io_exchange function
-void u2f_proxy_response(u2f_service_t *service, unsigned int tx) {
-    os_memset(service->messageBuffer, 0, 5);
-    os_memmove((char *) service->messageBuffer + 5, G_io_apdu_buffer, tx);
-    service->messageBuffer[tx + 5] = 0x90;
-    service->messageBuffer[tx + 6] = 0x00;
-    u2f_send_fragmented_response(service, U2F_CMD_MSG, service->messageBuffer,
-                                 tx + 7, true);
-}
-
 #endif
 
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
@@ -448,18 +424,8 @@ __attribute__((section(".boot"))) int main(void) {
                               sizeof(internal_storage_t));
                 }
 
-    #ifdef HAVE_U2F
-                    os_memset((unsigned char *)&u2fService, 0, sizeof(u2fService));
-                    u2fService.inputBuffer = G_io_apdu_buffer;
-                    u2fService.outputBuffer = G_io_apdu_buffer;
-                    u2fService.messageBuffer = (uint8_t *)u2fMessageBuffer;
-                    u2fService.messageBufferSize = U2F_MAX_MESSAGE_SIZE;
-                    u2f_initialize_service((u2f_service_t *)&u2fService);
-
-                    USB_power_U2F(1, N_storage.fido_transport);
-    #else  // HAVE_U2F
-                    USB_power_U2F(1, 0);
-    #endif // HAVE_U2F
+                USB_power(0);
+                USB_power(1);
 
                 ui_idle();
 

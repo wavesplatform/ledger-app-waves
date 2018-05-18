@@ -57,7 +57,7 @@ unsigned int ui_address_nanos_button(unsigned int button_mask,
                                      unsigned int button_mask_counter) {
     switch (button_mask) {
     case BUTTON_EVT_RELEASED | BUTTON_LEFT: // CANCEL
-        io_seproxyhal_touch_address_cancel(NULL);
+        io_seproxyhal_cancel(NULL);
         break;
 
     case BUTTON_EVT_RELEASED | BUTTON_RIGHT: { // OK
@@ -270,11 +270,11 @@ unsigned int ui_verify_transfer_nanos_button(unsigned int button_mask,
                                     unsigned int button_mask_counter) {
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-            io_seproxyhal_touch_verify_transfer_deny(NULL);
+            io_seproxyhal_cancel(NULL);
             break;
 
         case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-            io_seproxyhal_touch_verify_transfer_approve(NULL);
+            io_seproxyhal_touch_sign_approve(NULL);
             break;
     }
     return 0;
@@ -284,11 +284,11 @@ unsigned int ui_verify_transaction_nanos_button(unsigned int button_mask,
                                     unsigned int button_mask_counter) {
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT:
-            io_seproxyhal_touch_verify_transfer_deny(NULL);
+            io_seproxyhal_cancel(NULL);
             break;
 
         case BUTTON_EVT_RELEASED | BUTTON_RIGHT:
-            io_seproxyhal_touch_verify_transfer_approve(NULL);
+            io_seproxyhal_touch_sign_approve(NULL);
             break;
     }
     return 0;

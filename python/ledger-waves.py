@@ -192,7 +192,7 @@ while (True):
         if len(path) == 0:
             path = "44'/5741564'/0'/0'/1'"
         binary_data = path_to_bytes(expand_path(path))
-        print(colors.fg.lightgrey + "path bytes: \t" + base58.b58encode(str(path_to_bytes(expand_path(path)))))
+        print(colors.fg.lightgrey + "path bytes: " + base58.b58encode(str(path_to_bytes(expand_path(path)))))
 
         # tx amount asset decimals
         binary_data += chr(8)
@@ -213,13 +213,14 @@ while (True):
                                                    pw.Address('3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK'),
                                                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 1,
                                                    'privet', timestamp = 1526477921829)
-        print(colors.fg.lightgrey + "tx bytes:\t\t" + base58.b58encode(str(some_transfer_bytes)))
         input = raw_input(colors.fg.lightblue + "Please input message to sign (for example \"" + base58.b58encode(
             str(some_transfer_bytes)) + "\")> " + colors.reset)
         if len(input) == 0:
             binary_data += some_transfer_bytes
+            print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(some_transfer_bytes)))
         else:
             binary_data += base58.b58decode(input)
+            print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(input)))
         signature = None
         while (True):
             try:

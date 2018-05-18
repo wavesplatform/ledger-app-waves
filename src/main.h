@@ -62,15 +62,16 @@ extern WIDE internal_storage_t N_storage_real;
 
 // A place to store information about the transaction
 // for displaying to the user when requesting approval
+// 44 for address/id and +1 for \0
 typedef struct uiContext_t {
-	unsigned char line1[91];
-	unsigned char line2[91];
-	unsigned char line3[91];
-	unsigned char line4[91];
-	unsigned char line5[91];
-	unsigned char line6[91];
-	unsigned char line7[91];
-	unsigned char line8[91];
+	unsigned char line1[45];
+	unsigned char line2[45];
+	unsigned char line3[45];
+	unsigned char line4[45];
+	unsigned char line5[45];
+	unsigned char line6[45];
+	unsigned char line7[45];
+	unsigned char line8[45];
 } uiContext_t;
 
 // A place to store data during the signing

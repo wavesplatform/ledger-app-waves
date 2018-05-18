@@ -367,7 +367,7 @@ void ui_verify(void) {
         processed += 1;
 
         if (is_amount_in_asset) {
-          size_t length = 91;
+          size_t length = 45;
           if (!b58enc((char *) ui_context.line3, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
               THROW(SW_CONDITIONS_NOT_SATISFIED);
           }
@@ -380,7 +380,7 @@ void ui_verify(void) {
         bool is_fee_in_asset = tmp_ctx.signing_context.buffer[processed] == 1;
         processed += 1;
         if (is_fee_in_asset) {
-          size_t length = 91;
+          size_t length = 45;
           if (!b58enc((char *) ui_context.line8, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
               THROW(SW_CONDITIONS_NOT_SATISFIED);
           }
@@ -394,17 +394,17 @@ void ui_verify(void) {
 
         uint64_t amount = 0;
         copy_in_reverse_order((unsigned char *) &amount, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], 8);
-        print_amount(amount, tmp_ctx.signing_context.amount_decimals, (unsigned char*) ui_context.line2, 91);
+        print_amount(amount, tmp_ctx.signing_context.amount_decimals, (unsigned char*) ui_context.line2, 45);
         processed += 8;
 
         uint64_t fee = 0;
         copy_in_reverse_order((unsigned char *) &fee, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 8);
-        print_amount(fee, tmp_ctx.signing_context.fee_decimals, (unsigned char*) ui_context.line7, 91);
+        print_amount(fee, tmp_ctx.signing_context.fee_decimals, (unsigned char*) ui_context.line7, 45);
         processed += 8;
 
         // address or alias flag is a part of address
         if (tmp_ctx.signing_context.buffer[processed] == 1) {
-          size_t length = 91;
+          size_t length = 45;
           if (!b58enc((char *) ui_context.line5, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 26)) {
               THROW(SW_CONDITIONS_NOT_SATISFIED);
           }
@@ -425,9 +425,9 @@ void ui_verify(void) {
         copy_in_reverse_order((unsigned char *) &attachment_size, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 2);
         processed += 2;
 
-        if (attachment_size > 87) {
-          os_memmove((unsigned char *) &ui_context.line6[87], &"...\0", 4);
-          attachment_size = 87;
+        if (attachment_size > 41) {
+          os_memmove((unsigned char *) &ui_context.line6[41], &"...\0", 4);
+          attachment_size = 41;
         }
 
         os_memmove((unsigned char *) ui_context.line6, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], attachment_size);
@@ -436,7 +436,7 @@ void ui_verify(void) {
         // id
         unsigned char id[32];
         blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
-        size_t length = 91;
+        size_t length = 45;
         if (!b58enc((char *) ui_context.line1, &length, (const void *) &id, 32)) {
           THROW(SW_CONDITIONS_NOT_SATISFIED);
         }
@@ -482,7 +482,7 @@ void ui_verify(void) {
     unsigned char id[32];
     uint32_t sign_data_offset = get_sign_data_offset();
     blake2b((unsigned char *) tmp_ctx.signing_context.buffer + sign_data_offset, tmp_ctx.signing_context.buffer_used - sign_data_offset, &id, 32);
-    size_t length = 91;
+    size_t length = 45;
     if (!b58enc((char *) ui_context.line3, &length, (const void *) &id, 32)) {
         THROW(SW_CONDITIONS_NOT_SATISFIED);
     }

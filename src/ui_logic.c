@@ -39,11 +39,9 @@ unsigned int io_seproxyhal_cancel(const bagl_element_t *e) {
 }
 
 unsigned int io_seproxyhal_touch_sign_approve(const bagl_element_t *e) {
-    uint32_t tx = 0;
-    unsigned short sw = SW_OK;
-
     // first 64 byte - signature
-    tx = set_result_sign();
+    uint32_t tx = set_result_sign();
+    unsigned short sw = SW_OK;
 
     G_io_apdu_buffer[tx++] = sw >> 8;
     G_io_apdu_buffer[tx++] = sw;

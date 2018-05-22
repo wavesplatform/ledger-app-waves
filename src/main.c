@@ -234,9 +234,13 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 // term byte for string shown
                 tmp_ctx.address_context.address[35] = '\0';
 
-                *flags |= IO_ASYNCH_REPLY;
-
-                menu_address_init();
+                if (G_io_apdu_buffer[2] == P1_NON_CONFIRM) {
+                    *tx = set_result_get_address();
+                    THROW(0x9000);
+                }  else {
+                    *flags |= IO_ASYNCH_REPLY;
+                    menu_address_init();
+                }
             } break;
 
             default:

@@ -30,6 +30,7 @@ dongle = None
 
 pw.setOffline()
 
+# 'T' for testnet, 'W' for mainnet
 chain_id = 'T'
 
 class colors:

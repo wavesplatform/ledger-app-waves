@@ -30,6 +30,8 @@ dongle = None
 
 pw.setOffline()
 
+chain_id = 'T'
+
 class colors:
     '''Colors class:
     reset all colors with colors.reset
@@ -76,11 +78,11 @@ class colors:
         lightgrey = '\033[47m'
 
 
-def getKeysFromDongle(path):
+def getKeysFromDongle(path, networkByte):
     global dongle
     while (True):
         try:
-            data_bytes = bytes("8004800014".decode('hex')) + path_to_bytes(path)
+            data_bytes = bytes(("800400" + '{0:x}'.format(ord(networkByte)) + "14").decode('hex')) + path_to_bytes(path)
             data = dongle.exchange(data_bytes)
             return [data[0:32], data[32:67]]
         except CommException as e:
@@ -179,7 +181,7 @@ while (True):
             colors.fg.lightblue + "Please input BIP-32 path (for example \"44'/5741564'/0'/0'/1'\")> " + colors.reset)
         if len(path) == 0:
             path = "44'/5741564'/0'/0'/1'"
-        keys = getKeysFromDongle(expand_path(path))
+        keys = getKeysFromDongle(expand_path(path), chain_id)
         if keys:
             publicKey = keys[0]
             address = keys[1]
@@ -238,7 +240,7 @@ while (True):
                     if (offset == 0):
                         print("Waiting for approval to sign on the Ledger Nano S")
 
-                    apdu = bytes("8002".decode('hex')) + chr(p1) + chr(0x00) + chr(len(chunk)) + bytes(chunk)
+                    apdu = bytes("8002".decode('hex')) + chr(p1) + chain_id + chr(len(chunk)) + bytes(chunk)
                     signature = dongle.exchange(apdu)
                     offset += len(chunk)
                 print("signature " + base58.b58encode(str(signature)))

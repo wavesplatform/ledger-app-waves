@@ -58,7 +58,7 @@ void menu_sign_init() {
     // transfer
     if (tx_type == 4) {
         // Sender public key 32 bytes
-        waves_public_key_to_address((const unsigned char *) &tmp_ctx.signing_context.buffer[processed], 'W', (unsigned char *) ui_context.line4);
+        waves_public_key_to_address((const unsigned char *) &tmp_ctx.signing_context.buffer[processed], tmp_ctx.signing_context.network_byte, (unsigned char *) ui_context.line4);
         processed += 32;
 
         // amount asset flag
@@ -195,7 +195,7 @@ void menu_sign_init() {
         THROW(INVALID_PARAMETER);
     }
 
-    waves_public_key_to_address(public_key.W, 'W', ui_context.line4);
+    waves_public_key_to_address(public_key.W, tmp_ctx.signing_context.network_byte, ui_context.line4);
 
     ux_step = 0; ux_step_count = 3;
     ui_state = UI_VERIFY;

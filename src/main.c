@@ -197,6 +197,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 }
 
                 if (G_io_apdu_buffer[2] == P1_LAST) {
+                    tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
                     add_chunk_data();
                     menu_sign_init();
                     *flags |= IO_ASYNCH_REPLY;
@@ -227,7 +228,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 }
 
                 unsigned char address[35];
-                waves_public_key_to_address(public_key.W, 'W', address);
+                waves_public_key_to_address(public_key.W, G_io_apdu_buffer[3], address);
 
                 os_memmove((char *) tmp_ctx.address_context.public_key, public_key.W, 32);
                 os_memmove((char *) tmp_ctx.address_context.address, address, 35);
@@ -236,7 +237,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
 
                 if (G_io_apdu_buffer[2] == P1_NON_CONFIRM) {
                     *tx = set_result_get_address();
-                    THROW(0x9000);
+                    THROW(SW_OK);
                 }  else {
                     *flags |= IO_ASYNCH_REPLY;
                     menu_address_init();

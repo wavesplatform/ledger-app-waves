@@ -16,7 +16,6 @@ void waves_message_sign(const cx_ecfp_private_key_t *private_key, const ed25519_
     signature[63] |= sign_bit;
 }
 
-// todo move all that stuff to crypto module
 // Build waves address from the curve25519 public key, check https://github.com/wavesplatform/Waves/wiki/Data-Structures#address
 void waves_public_key_to_address(const ed25519_public_key public_key, const unsigned char network_byte, unsigned char *output) {
     uint8_t public_key_hash[32];

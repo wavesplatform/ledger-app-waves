@@ -75,6 +75,7 @@ typedef struct signingContext_t {
     // Curve25519 support only full message hash
 	unsigned char buffer[MAX_DATA_SIZE];
 	uint32_t buffer_used;
+	unsigned char network_byte;
 } signingContext_t;
 
 // A place to store data during the confirming the address

@@ -179,6 +179,10 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
     unsigned short sw = 0;
     BEGIN_TRY {
         TRY {
+
+            if (os_global_pin_is_validated() == 0) {
+                THROW(SW_DEVICE_IS_LOCKED);
+            }
             
             if (G_io_apdu_buffer[0] != CLA) {
                 THROW(SW_CLA_NOT_SUPPORTED);
@@ -223,7 +227,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 uint32_t path[5];
                 read_path_from_bytes(G_io_apdu_buffer + 5, path);
 
-                if (get_curve25519_public_key_for_path(path, &public_key) != 0) {
+                if (!get_curve25519_public_key_for_path(path, &public_key)) {
                     THROW(INVALID_PARAMETER);
                 }
 
@@ -256,7 +260,6 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
         CATCH_OTHER(e) {
             switch (e & 0xF000) {
             case 0x6000:
-                // TODO: WIPE/Clean Up if necessary?
                 sw = e;                
                 break;
             case 0x9000:

@@ -58,7 +58,7 @@ void menu_sign_init() {
     // transfer
     if (tx_type == 4) {
         // Sender public key 32 bytes
-        waves_public_key_to_address((const unsigned char *) &tmp_ctx.signing_context.buffer[processed], tmp_ctx.signing_context.network_byte, (unsigned char *) ui_context.line6);
+        waves_public_key_to_address((const unsigned char *) &tmp_ctx.signing_context.buffer[processed], tmp_ctx.signing_context.network_byte, (unsigned char *) ui_context.line7);
         processed += 32;
 
         // amount asset flag
@@ -125,11 +125,11 @@ void menu_sign_init() {
         processed += 2;
 
         if (attachment_size > 41) {
-          os_memmove((unsigned char *) &ui_context.line7[41], &"...\0", 4);
+          os_memmove((unsigned char *) &ui_context.line6[41], &"...\0", 4);
           attachment_size = 41;
         }
 
-        os_memmove((unsigned char *) ui_context.line7, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], attachment_size);
+        os_memmove((unsigned char *) ui_context.line6, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], attachment_size);
         processed += attachment_size;
 
         // id

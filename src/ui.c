@@ -58,7 +58,7 @@ void menu_sign_init() {
     // transfer
     if (tx_type == 4) {
         // Sender public key 32 bytes
-        waves_public_key_to_address((const unsigned char *) &tmp_ctx.signing_context.buffer[processed], tmp_ctx.signing_context.network_byte, (unsigned char *) ui_context.line4);
+        waves_public_key_to_address((const unsigned char *) &tmp_ctx.signing_context.buffer[processed], tmp_ctx.signing_context.network_byte, (unsigned char *) ui_context.line7);
         processed += 32;
 
         // amount asset flag
@@ -67,12 +67,12 @@ void menu_sign_init() {
 
         if (is_amount_in_asset) {
           size_t length = 45;
-          if (!b58enc((char *) ui_context.line3, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
+          if (!b58enc((char *) ui_context.line2, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
               THROW(SW_CONDITIONS_NOT_SATISFIED);
           }
           processed += 32;
         } else {
-          os_memmove((char *) ui_context.line3, WAVES_CONST, 5);
+          os_memmove((char *) ui_context.line2, WAVES_CONST, 5);
         }
 
         // fee asset flag
@@ -80,12 +80,12 @@ void menu_sign_init() {
         processed += 1;
         if (is_fee_in_asset) {
           size_t length = 45;
-          if (!b58enc((char *) ui_context.line8, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
+          if (!b58enc((char *) ui_context.line5, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 32)) {
               THROW(SW_CONDITIONS_NOT_SATISFIED);
           }
           processed += 32;
         } else {
-          os_memmove((char *) ui_context.line8, WAVES_CONST, 5);
+          os_memmove((char *) ui_context.line5, WAVES_CONST, 5);
         }
 
         // timestamp;
@@ -93,18 +93,18 @@ void menu_sign_init() {
 
         uint64_t amount = 0;
         copy_in_reverse_order((unsigned char *) &amount, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], 8);
-        print_amount(amount, tmp_ctx.signing_context.amount_decimals, (unsigned char*) ui_context.line2, 45);
+        print_amount(amount, tmp_ctx.signing_context.amount_decimals, (unsigned char*) ui_context.line1, 45);
         processed += 8;
 
         uint64_t fee = 0;
         copy_in_reverse_order((unsigned char *) &fee, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 8);
-        print_amount(fee, tmp_ctx.signing_context.fee_decimals, (unsigned char*) ui_context.line7, 45);
+        print_amount(fee, tmp_ctx.signing_context.fee_decimals, (unsigned char*) ui_context.line4, 45);
         processed += 8;
 
         // address or alias flag is a part of address
         if (tmp_ctx.signing_context.buffer[processed] == 1) {
           size_t length = 45;
-          if (!b58enc((char *) ui_context.line5, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 26)) {
+          if (!b58enc((char *) ui_context.line3, &length, (const void *) &tmp_ctx.signing_context.buffer[processed], 26)) {
               THROW(SW_CONDITIONS_NOT_SATISFIED);
           }
           processed += 26;
@@ -115,7 +115,7 @@ void menu_sign_init() {
           copy_in_reverse_order((unsigned char *) &alias_size, (unsigned char *) &tmp_ctx.signing_context.buffer[processed], 2);
           processed += 2;
 
-          os_memmove((unsigned char *) ui_context.line5, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], alias_size);
+          os_memmove((unsigned char *) ui_context.line3, (const unsigned char *) &tmp_ctx.signing_context.buffer[processed], alias_size);
           processed += alias_size;
         }
 
@@ -136,7 +136,7 @@ void menu_sign_init() {
         unsigned char id[32];
         blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
         size_t length = 45;
-        if (!b58enc((char *) ui_context.line1, &length, (const void *) &id, 32)) {
+        if (!b58enc((char *) ui_context.line8, &length, (const void *) &id, 32)) {
           THROW(SW_CONDITIONS_NOT_SATISFIED);
         }
 

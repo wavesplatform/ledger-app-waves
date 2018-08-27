@@ -221,9 +221,7 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
         }
         if (i == decimals - 1) {
             i += 1;
-            if (dVal == 0) {
-                buffer[i] = '.';
-            }
+            buffer[i] = '.';
         }
         if (i >= len) {
             return false;
@@ -239,6 +237,7 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
             if (out[j] != '0') break;
         }
         j += 1;
+        if (out[j - 1] == '.') j -= 1;
     }
 
     out[j] = '\0';

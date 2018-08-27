@@ -110,17 +110,17 @@ void read_path_from_bytes(unsigned char *buffer, uint32_t *path) {
     path[4] = deserialize_uint32_t(buffer + 16);
 }
 
-// Hanlde a signing request -- called both from the main apdu loop as well as from
+// Handle a signing request -- called both from the main apdu loop as well as from
 // the button handler after the user verifies the transaction.
 void add_chunk_data() {
     // if this is a first chunk
     if (tmp_ctx.signing_context.buffer_used == 0) {
-        // then there're the bip32 path in the first chunk - first 20 bytes of data
+        // then there is the bip32 path in the first chunk - first 20 bytes of data
         read_path_from_bytes(G_io_apdu_buffer + 5, (uint32_t *) tmp_ctx.signing_context.bip32);
 
-        // 21 byte - amount decimals
+        // 21th byte - amount decimals
         tmp_ctx.signing_context.amount_decimals = G_io_apdu_buffer[25];
-        // 22 byte - fee decimals
+        // 22th byte - fee decimals
         tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[26];
 
         // Update the other data from this segment
@@ -191,7 +191,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
             switch (G_io_apdu_buffer[1]) {
             case INS_SIGN: {
                 if (G_io_apdu_buffer[4] != rx - 5) {
-                    // the length of the APDU should match what's int he 5-byte header.
+                    // the length of the APDU should match what's in the 5-byte header.
                     // If not fail.  Don't want to buffer overrun or anything.
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }
@@ -214,7 +214,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
 
             case INS_GET_PUBLIC_KEY: {
                 if (G_io_apdu_buffer[4] != rx - 5 || G_io_apdu_buffer[4] != 20) {
-                    // the length of the APDU should match what's int he 5-byte header.
+                    // the length of the APDU should match what's in the 5-byte header.
                     // If not fail.  Don't want to buffer overrun or anything.
                     THROW(SW_CONDITIONS_NOT_SATISFIED);
                 }

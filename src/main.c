@@ -174,6 +174,13 @@ uint32_t set_result_get_address() {
     return 67;
 }
 
+uint32_t set_result_get_app_configuration() {
+  G_io_apdu_buffer[0] = LEDGER_MAJOR_VERSION;
+  G_io_apdu_buffer[1] = LEDGER_MINOR_VERSION;
+  G_io_apdu_buffer[2] = LEDGER_PATCH_VERSION;
+  return 3;
+}
+
 // Called by both the U2F and the standard communications channel
 void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volatile unsigned int rx) {
     unsigned short sw = 0;
@@ -247,6 +254,11 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                     menu_address_init();
                 }
             } break;
+
+            case INS_GET_APP_CONFIGURATION:
+                *tx = set_result_get_app_configuration();
+                THROW(SW_OK);
+                break;
 
             default:
                 // Instruction not supported

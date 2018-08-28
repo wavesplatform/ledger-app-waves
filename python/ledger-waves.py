@@ -98,6 +98,25 @@ def getKeysFromDongle(path, networkByte):
             sys.exc_clear()
             break
 
+def getVersionFromDongle():
+    global dongle
+    while (True):
+        try:
+            data_bytes = bytes(("8006000000").decode('hex'))
+            data = dongle.exchange(data_bytes)
+            return data[0:3]
+        except CommException as e:
+            if (e.sw == 0x6985):
+                print(colors.fg.red + "Required condition failed." + colors.reset)
+            if (e.sw == 0x9100):
+                print(colors.fg.red + "User denied signing request on Ledger Nano S device." + colors.reset)
+            break
+        except Exception as e:
+            raw_input(
+                "An error occurred while processing the request, repeat or correct your request (note what all the bip32 path parts should be hardened)")
+            sys.exc_clear()
+            break
+
 # 128 - 5 service bytes
 CHUNK_SIZE = 123
 PRIME_DERIVATION_FLAG = 0x80000000
@@ -174,7 +193,8 @@ while (True):
     print(colors.fg.lightcyan + colors.bold + "Ledger Nano S - Waves test app" + colors.reset)
     print(colors.fg.white + "\t 1. Get PublicKey/Address from Ledger Nano S" + colors.reset)
     print(colors.fg.white + "\t 2. Sign tx using Ledger Nano S" + colors.reset)
-    print(colors.fg.white + "\t 3. Exit" + colors.reset)
+    print(colors.fg.white + "\t 3. Get app version from Ledger Nano S" + colors.reset)
+    print(colors.fg.white + "\t 4. Exit" + colors.reset)
     select = raw_input(colors.fg.cyan + "Please select> " + colors.reset)
 
     if (select == "1"):
@@ -261,5 +281,8 @@ while (True):
                 if (answer.upper() == 'Q'):
                     sys.exit(0)
                 sys.exc_clear()
+    elif (select == "3"):
+        version = getVersionFromDongle()
+        print('App version is {}.{}.{}'.format(version[0],version[1],version[2]))
     else:
         break

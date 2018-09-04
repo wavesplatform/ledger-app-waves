@@ -29,8 +29,8 @@ const bagl_icon_details_t C_icon_dashboard;
 #endif // GLYPH_icon_dashboard_BPP
 #endif // OS_IO_SEPROXYHAL
 #ifndef GLYPH_icon_waves_BPP
-#define GLYPH_icon_waves_WIDTH 13
-#define GLYPH_icon_waves_HEIGHT 13
+#define GLYPH_icon_waves_WIDTH 16
+#define GLYPH_icon_waves_HEIGHT 16
 #define GLYPH_icon_waves_BPP 1
 extern
 unsigned int const C_icon_waves_colors[]

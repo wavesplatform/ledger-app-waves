@@ -139,12 +139,7 @@ void add_chunk_data() {
 }
 
 uint32_t get_sign_data_offset() {
-    uint32_t offset = 0;
-    // skip message type if it's reserved
-    if (tmp_ctx.signing_context.buffer[0] > 200) {
-        offset = 1;
-    }
-    return offset;
+    return 2;
 }
 
 // like https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784

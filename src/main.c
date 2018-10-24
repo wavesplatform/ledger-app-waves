@@ -30,20 +30,6 @@
 #include "cx.h"
 #include "os_io_seproxyhal.h"
 
-// This symbol is defined by the link script to be at the start of the stack
-// area.  Intended for stack canary
-extern unsigned long _stack;
-#define STACK_CANARY (*((volatile uint32_t*) &_stack))
-
-void init_canary() {
-    STACK_CANARY = 0xDEADBEEF;
-}
-
-void check_canary() {
-    if (STACK_CANARY != 0xDEADBEEF)
-        THROW(EXCEPTION_OVERFLOW);
-}
-
 // Temporary area to sore stuff and reuse the same memory
 tmpContext_t tmp_ctx;
 uiContext_t ui_context;
@@ -123,9 +109,14 @@ void add_chunk_data() {
         // 22 byte - fee decimals
         tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[26];
 
+        // 23 byte - data type
+        tmp_ctx.signing_context.data_type = G_io_apdu_buffer[27];
+        // 24 byte - data version
+        tmp_ctx.signing_context.data_version = G_io_apdu_buffer[28];
+
         // Update the other data from this segment
-        int data_size = G_io_apdu_buffer[4] - 22;
-        os_memmove((char *) tmp_ctx.signing_context.buffer, &G_io_apdu_buffer[27], data_size);
+        int data_size = G_io_apdu_buffer[4] - 24;
+        os_memmove((char *) tmp_ctx.signing_context.buffer, &G_io_apdu_buffer[29], data_size);
         tmp_ctx.signing_context.buffer_used += data_size;
     } else {
         // else update the data from entire segment.
@@ -138,15 +129,6 @@ void add_chunk_data() {
     }
 }
 
-uint32_t get_sign_data_offset() {
-    uint32_t offset = 0;
-    // skip message type if it's reserved
-    if (tmp_ctx.signing_context.buffer[0] > 200) {
-        offset = 1;
-    }
-    return offset;
-}
-
 // like https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
 uint32_t set_result_sign() {
     cx_ecfp_public_key_t public_key;
@@ -155,9 +137,8 @@ uint32_t set_result_sign() {
 
     public_key_le_to_be(&public_key);
 
-    uint32_t sign_data_offset = get_sign_data_offset();
     uint8_t signature[64];
-    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer + sign_data_offset, tmp_ctx.signing_context.buffer_used - sign_data_offset, signature);
+    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, signature);
 
     os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
 
@@ -364,7 +345,6 @@ void io_seproxyhal_display(const bagl_element_t *element) {
 }
 
 unsigned char io_event(unsigned char channel) {
-    //check_canary();
     // nothing done with the event, throw an error on the transport layer if
     // needed
     // can't have more than one tag in the reply, not supported yet.
@@ -421,8 +401,6 @@ void app_exit(void) {
 __attribute__((section(".boot"))) int main(void) {
     // exit critical section
     __asm volatile("cpsie i");
-
-    //init_canary();
 
     init_context();
     // current_text_pos = 0;

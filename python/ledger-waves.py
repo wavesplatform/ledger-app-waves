@@ -31,7 +31,7 @@ dongle = None
 pw.setOffline()
 
 # 'T' for testnet, 'W' for mainnet
-chain_id = 'T'
+chain_id = 'W'
 
 class colors:
     '''Colors class:
@@ -162,11 +162,16 @@ def expand_path(n):
     return path
 
 
-def build_transfer_bytes(publicKey, recipient, asset, amount, attachment='', feeAsset='', txFee=100000, timestamp=0):
+def build_transfer_bytes(publicKey, recipient, asset, amount, attachment='', feeAsset='', txFee=100000, timestamp=0, version = b'\2'):
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
-    sData = b'\4' + \
-            base58.b58decode(publicKey) + \
+
+    sData = b'\4' + version + b'\4'
+
+    if version == b'\2':
+        sData += version
+
+    sData += base58.b58decode(publicKey) + \
             (b'\1' + base58.b58decode(asset.assetId) if asset else b'\0') + \
             (b'\1' + base58.b58decode(feeAsset.assetId) if feeAsset else b'\0') + \
             struct.pack(">Q", timestamp) + \
@@ -176,7 +181,6 @@ def build_transfer_bytes(publicKey, recipient, asset, amount, attachment='', fee
             struct.pack(">H", len(attachment)) + \
             pwcrypto.str2bytes(attachment)
     return sData
-
 
 while (True):
     while (dongle == None):
@@ -229,9 +233,8 @@ while (True):
         # from: 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
         # to: 3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK
         # attachment: privet
-        # fee: 1
+        # fee: 0.001
         # fee asset: WAVES
-        # tx id: 7ij6k6kaPYobHmzv8TLTs64wWL8o8mCoKnCJctRa2MKm
         some_transfer_bytes = build_transfer_bytes('4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
                                                    pw.Address('3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK'),
                                                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 1,

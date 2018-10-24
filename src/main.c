@@ -123,9 +123,14 @@ void add_chunk_data() {
         // 22 byte - fee decimals
         tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[26];
 
+        // 23 byte - data type
+        tmp_ctx.signing_context.data_type = G_io_apdu_buffer[27];
+        // 24 byte - data version
+        tmp_ctx.signing_context.data_version = G_io_apdu_buffer[28];
+
         // Update the other data from this segment
-        int data_size = G_io_apdu_buffer[4] - 22;
-        os_memmove((char *) tmp_ctx.signing_context.buffer, &G_io_apdu_buffer[27], data_size);
+        int data_size = G_io_apdu_buffer[4] - 24;
+        os_memmove((char *) tmp_ctx.signing_context.buffer, &G_io_apdu_buffer[29], data_size);
         tmp_ctx.signing_context.buffer_used += data_size;
     } else {
         // else update the data from entire segment.
@@ -146,9 +151,8 @@ uint32_t set_result_sign() {
 
     public_key_le_to_be(&public_key);
 
-    uint32_t sign_data_offset = 2;
     uint8_t signature[64];
-    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer + sign_data_offset, tmp_ctx.signing_context.buffer_used - sign_data_offset, signature);
+    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, signature);
 
     os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
 

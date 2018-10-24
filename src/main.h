@@ -75,6 +75,8 @@ typedef struct signingContext_t {
 	unsigned char fee_decimals;
 	// Stuff for the SHA-256 hashing
     // Curve25519 support only full message hash
+	unsigned char data_type;
+	unsigned char data_version;
 	unsigned char buffer[MAX_DATA_SIZE];
 	uint32_t buffer_used;
 	unsigned char network_byte;

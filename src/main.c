@@ -138,10 +138,6 @@ void add_chunk_data() {
     }
 }
 
-uint32_t get_sign_data_offset() {
-    return 2;
-}
-
 // like https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
 uint32_t set_result_sign() {
     cx_ecfp_public_key_t public_key;
@@ -150,7 +146,7 @@ uint32_t set_result_sign() {
 
     public_key_le_to_be(&public_key);
 
-    uint32_t sign_data_offset = get_sign_data_offset();
+    uint32_t sign_data_offset = 2;
     uint8_t signature[64];
     waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer + sign_data_offset, tmp_ctx.signing_context.buffer_used - sign_data_offset, signature);
 

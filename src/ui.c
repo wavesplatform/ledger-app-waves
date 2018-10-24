@@ -54,7 +54,7 @@ void menu_sign_init() {
     os_memset((unsigned char *) &ui_context, 0, sizeof(uiContext_t));
     unsigned char tx_type = tmp_ctx.signing_context.buffer[0];
     unsigned char tx_version = tmp_ctx.signing_context.buffer[1];
-    uint32_t sign_data_offset = get_sign_data_offset();
+    uint32_t sign_data_offset = 2;
 
     // transfer
     if (tx_type == 4) {

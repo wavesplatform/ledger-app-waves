@@ -30,20 +30,6 @@
 #include "cx.h"
 #include "os_io_seproxyhal.h"
 
-// This symbol is defined by the link script to be at the start of the stack
-// area.  Intended for stack canary
-extern unsigned long _stack;
-#define STACK_CANARY (*((volatile uint32_t*) &_stack))
-
-void init_canary() {
-    STACK_CANARY = 0xDEADBEEF;
-}
-
-void check_canary() {
-    if (STACK_CANARY != 0xDEADBEEF)
-        THROW(EXCEPTION_OVERFLOW);
-}
-
 // Temporary area to sore stuff and reuse the same memory
 tmpContext_t tmp_ctx;
 uiContext_t ui_context;
@@ -359,7 +345,6 @@ void io_seproxyhal_display(const bagl_element_t *element) {
 }
 
 unsigned char io_event(unsigned char channel) {
-    //check_canary();
     // nothing done with the event, throw an error on the transport layer if
     // needed
     // can't have more than one tag in the reply, not supported yet.
@@ -416,8 +401,6 @@ void app_exit(void) {
 __attribute__((section(".boot"))) int main(void) {
     // exit critical section
     __asm volatile("cpsie i");
-
-    //init_canary();
 
     init_context();
     // current_text_pos = 0;

@@ -22,7 +22,6 @@
 #define __MAIN_H__
 #include "os.h"
 #include "cx.h"
-#include "constants.h"
 
 // Host innteration communication protocol
 #define CLA 0x80                // CLASS? 

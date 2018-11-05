@@ -52,11 +52,17 @@ void ui_idle() {
 // Show the transaction details for the user to approve
 void menu_sign_init() {
     os_memset((unsigned char *) &ui_context, 0, sizeof(uiContext_t));
-    unsigned int processed = 1;
-    unsigned char tx_type = tmp_ctx.signing_context.buffer[0];
+    unsigned char tx_type = tmp_ctx.signing_context.data_type;
+    unsigned char tx_version = tmp_ctx.signing_context.data_version;
 
     // transfer
     if (tx_type == 4) {
+        unsigned int processed = 1;
+
+        if (tx_version == 2) {
+            processed += 1;
+        }
+
         // Sender public key 32 bytes
         waves_public_key_to_address((const unsigned char *) &tmp_ctx.signing_context.buffer[processed], tmp_ctx.signing_context.network_byte, (unsigned char *) ui_context.line7);
         processed += 32;
@@ -181,8 +187,7 @@ void menu_sign_init() {
     }
     // id
     unsigned char id[32];
-    uint32_t sign_data_offset = get_sign_data_offset();
-    blake2b((unsigned char *) tmp_ctx.signing_context.buffer + sign_data_offset, tmp_ctx.signing_context.buffer_used - sign_data_offset, &id, 32);
+    blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
     size_t length = 45;
     if (!b58enc((char *) ui_context.line3, &length, (const void *) &id, 32)) {
         THROW(SW_CONDITIONS_NOT_SATISFIED);

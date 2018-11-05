@@ -22,7 +22,6 @@
 #define __MAIN_H__
 #include "os.h"
 #include "cx.h"
-#include "constants.h"
 
 // Host innteration communication protocol
 #define CLA 0x80                // CLASS? 
@@ -75,6 +74,8 @@ typedef struct signingContext_t {
 	unsigned char fee_decimals;
 	// Stuff for the SHA-256 hashing
     // Curve25519 support only full message hash
+	unsigned char data_type;
+	unsigned char data_version;
 	unsigned char buffer[MAX_DATA_SIZE];
 	uint32_t buffer_used;
 	unsigned char network_byte;
@@ -98,7 +99,6 @@ extern tmpContext_t tmp_ctx; // Temporary area to store stuff
 bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_public_key_t* public_key);
 
 void init_context();
-uint32_t get_sign_data_offset();
 uint32_t set_result_get_address();
 uint32_t set_result_sign();
 

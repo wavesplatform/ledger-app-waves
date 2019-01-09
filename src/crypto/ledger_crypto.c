@@ -2,6 +2,8 @@
 
 
 #include "keypair.h"
+#include "os.h"
+#include "cx.h"
 
 // converts little endian 65 byte (0x4 32X 32Y) public key to 32 byte Y big endian form (for other applications)
 void public_key_le_to_be(cx_ecfp_public_key_t* public_key) {
@@ -37,4 +39,24 @@ bool get_curve25519_public_key_for_path(const uint32_t* path, cx_ecfp_public_key
     public_key_le_to_be(public_key);
 
     return ed25519_pk_to_curve25519(public_key->W, public_key->W) == 0;
+}
+
+void blake2b_256(const uint8_t *msg, uint32_t msg_len, void *out)
+{
+    cx_blake2b_t ctx;
+    // size in bits
+    cx_blake2b_init(&ctx, 256);
+    cx_hash(&ctx.header, 0, (void *)msg, msg_len, NULL, 0);
+    // size in bytes
+    cx_hash(&ctx.header, CX_LAST, NULL, 0, out, 32);
+}
+
+void keccak_256(const unsigned char* msg, size_t msg_len, unsigned char* out)
+{
+    cx_sha3_t ctx;
+    // size in bits
+    cx_keccak_init(&ctx, 256);
+    cx_hash(&ctx.header, 0, (void *)msg, msg_len, NULL, 0);
+    // size in bytes
+    cx_hash(&ctx.header, CX_LAST, NULL, 0, out, 32);
 }

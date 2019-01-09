@@ -140,7 +140,7 @@ void menu_sign_init() {
 
         // id
         unsigned char id[32];
-        blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
+        blake2b_256((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id);
         size_t length = 45;
         if (!b58enc((char *) ui_context.line8, &length, (const void *) &id, 32)) {
           THROW(SW_CONDITIONS_NOT_SATISFIED);
@@ -187,7 +187,7 @@ void menu_sign_init() {
     }
     // id
     unsigned char id[32];
-    blake2b((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id, 32);
+    blake2b_256((unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &id);
     size_t length = 45;
     if (!b58enc((char *) ui_context.line3, &length, (const void *) &id, 32)) {
         THROW(SW_CONDITIONS_NOT_SATISFIED);

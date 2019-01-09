@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include "main.h"
 #include "ui_logic.h"
+#include "crypto/ledger_crypto.h"
 
 extern ux_state_t ux;
 

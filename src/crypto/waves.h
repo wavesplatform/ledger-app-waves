@@ -5,7 +5,6 @@
 #include <stdbool.h>
 
 #include "base58.h"
-#include "blake2b.h"
 #include "os.h"
 #include "cx.h"
 

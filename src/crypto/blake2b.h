@@ -3,26 +3,8 @@
 
 #include <stdint.h>
 #include <stddef.h>
-
-enum blake2b_constant
-{
-    BLAKE2B_BLOCKBYTES = 128,
-    BLAKE2B_OUTBYTES   = 64,
-    BLAKE2B_KEYBYTES   = 64,
-    BLAKE2B_SALTBYTES  = 16,
-    BLAKE2B_PERSONALBYTES = 16
-};
-
-typedef struct __blake2b_state
-{
-    uint64_t h[8];
-    uint64_t t[2];
-    uint64_t f[2];
-    uint8_t  buf[BLAKE2B_BLOCKBYTES];
-    size_t   buflen;
-    size_t   outlen;
-    uint8_t  last_node;
-} blake2b_state;
+#include "os.h"
+#include "cx.h"
 
 #define BLAKE2B_CTX blake2b_state
 #define BLAKE2B_BLOCK_LENGTH   BLAKE2B_BLOCKBYTES

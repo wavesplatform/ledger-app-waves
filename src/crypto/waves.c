@@ -1,10 +1,9 @@
 #include "waves.h"
-#include "sha3.h"
 #include "ledger_crypto.h"
 
 void waves_secure_hash(const uint8_t *message, size_t message_len, uint8_t hash[32])
 {
-	blake2b(message, message_len, hash, 32);
+    blake2b_256(message, message_len, hash);
     keccak_256(hash, 32, hash);
 }
 

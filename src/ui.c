@@ -39,14 +39,24 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out, uint8_t len
 void menu_address_init() {
     ux_step = 0;
     ux_step_count = 2;
-    UX_DISPLAY(ui_address_nanos, ui_address_prepro);
+    #if defined(TARGET_BLUE)
+    // todo !!!
+        UX_DISPLAY(ui_idle_blue, ui_idle_blue_prepro);
+    #elif defined(TARGET_NANOS)
+        UX_DISPLAY(ui_address_nanos, ui_address_prepro);
+    #endif // #if TARGET_ID
 }
 
 // Idle state, sow the menu
 void ui_idle() {
     ux_step = 0; ux_step_count = 0;
     ui_state = UI_IDLE;
-    UX_MENU_DISPLAY(0, menu_main, NULL);
+    #if defined(TARGET_BLUE)
+    // todo !!!
+        UX_DISPLAY(ui_idle_blue, ui_idle_blue_prepro);
+    #elif defined(TARGET_NANOS)
+        UX_MENU_DISPLAY(0, menu_main, NULL);
+    #endif // #if TARGET_ID
 }
 
 // Show the transaction details for the user to approve
@@ -149,7 +159,12 @@ void menu_sign_init() {
         // Set the step/step count, and ui_state before requesting the UI
         ux_step = 0; ux_step_count = 9;
         ui_state = UI_VERIFY;
-        UX_DISPLAY(ui_verify_transfer_nanos, ui_verify_transfer_prepro);
+            #if defined(TARGET_BLUE)
+                // todo !!!
+                UX_DISPLAY(ui_idle_blue, ui_idle_blue_prepro);
+            #elif defined(TARGET_NANOS)
+                UX_DISPLAY(ui_verify_transfer_nanos, ui_verify_transfer_prepro);
+            #endif // #if TARGET_ID
         return;
     } else {
         os_memmove(&ui_context.line2, &"Transaction Id\0", 15);
@@ -204,7 +219,12 @@ void menu_sign_init() {
 
     ux_step = 0; ux_step_count = 3;
     ui_state = UI_VERIFY;
-    UX_DISPLAY(ui_verify_transaction_nanos, ui_verify_transaction_prepro);
+    #if defined(TARGET_BLUE)
+        // todo !!!
+        UX_DISPLAY(ui_idle_blue, ui_idle_blue_prepro);
+    #elif defined(TARGET_NANOS)
+        UX_DISPLAY(ui_verify_transaction_nanos, ui_verify_transaction_prepro);
+    #endif // #if TARGET_ID
 }
 
 

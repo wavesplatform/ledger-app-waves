@@ -22,6 +22,7 @@
 #define __MAIN_H__
 #include "os.h"
 #include "cx.h"
+#include <stdbool.h>
 
 // Host innteration communication protocol
 #define CLA 0x80                // CLASS? 
@@ -43,6 +44,10 @@
 #define SW_INS_NOT_SUPPORTED 0x6D00
 #define SW_CLA_NOT_SUPPORTED  0x6E00
 #define SW_SECURITY_STATUS_NOT_SATISFIED 0x6982
+
+#define COLOR_BG_1 0xF9F9F9
+#define COLOR_APP 0x0ebdcf
+#define COLOR_APP_LIGHT 0x87dee6
 
 typedef struct internal_storage_t {
     uint8_t 			 fido_transport;

@@ -28,7 +28,12 @@ APPVERSION_P=8
 
 APPNAME = "Waves"
 APPVERSION = $(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
+ifeq ($(TARGET_NAME),TARGET_BLUE)
+ICONNAME = blue_app_waves.gif
+else
 ICONNAME = nanos_app_waves.gif
+endif
+
 APP_LOAD_PARAMS = --appFlags 0x40 --path "44'/5741564'" --curve secp256k1 --curve ed25519 $(COMMON_LOAD_PARAMS)
 
 # Build configuration

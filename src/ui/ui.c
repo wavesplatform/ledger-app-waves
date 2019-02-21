@@ -57,7 +57,6 @@ void ui_idle() {
     ux_step = 0; ux_step_count = 0;
     ui_state = UI_IDLE;
     #if defined(TARGET_BLUE)
-    // todo !!!
         UX_DISPLAY(ui_idle_blue, ui_idle_blue_prepro);
     #elif defined(TARGET_NANOS)
         UX_MENU_DISPLAY(0, menu_main, NULL);
@@ -70,6 +69,7 @@ void menu_sign_init() {
     unsigned char tx_type = tmp_ctx.signing_context.data_type;
     unsigned char tx_version = tmp_ctx.signing_context.data_version;
 
+    #if defined(TARGET_NANOS)
     // transfer
     if (tx_type == 4) {
         unsigned int processed = 1;
@@ -172,9 +172,12 @@ void menu_sign_init() {
             #endif // #if TARGET_ID
         return;
     } else {
+    #endif
         os_memmove(&ui_context.line2, &"Transaction Id\0", 15);
         if (tx_type == 3) {
             os_memmove(&ui_context.line1, &"issue\0", 6);
+        } else if (tx_type == 4) {
+            os_memmove(&ui_context.line1, &"transfer\0", 9);
         } else if (tx_type == 5) {
             os_memmove(&ui_context.line1, &"reissue\0", 8);
         } else if (tx_type == 6) {
@@ -200,7 +203,9 @@ void menu_sign_init() {
                 os_memmove(&ui_context.line1, &"message\0", 8);
             }
         }
+    #if defined(TARGET_NANOS)
     }
+    #endif
 
     if (strlen((const char *) ui_context.line1) == 0) {
         os_memmove(&ui_context.line1, &"transaction\0", 12);
@@ -225,8 +230,7 @@ void menu_sign_init() {
     ux_step = 0; ux_step_count = 3;
     ui_state = UI_VERIFY;
     #if defined(TARGET_BLUE)
-        // todo !!!
-        UX_DISPLAY(ui_idle_blue, ui_idle_blue_prepro);
+        UX_DISPLAY(ui_approval_blue, ui_approval_blue_prepro);
     #elif defined(TARGET_NANOS)
         UX_DISPLAY(ui_verify_transaction_nanos, ui_verify_transaction_prepro);
     #endif // #if TARGET_ID

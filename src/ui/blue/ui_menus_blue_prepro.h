@@ -5,6 +5,7 @@
 
 const bagl_element_t *ui_address_blue_prepro(const bagl_element_t* element);
 const bagl_element_t *ui_idle_blue_prepro(const bagl_element_t *element);
+const bagl_element_t* ui_approval_blue_prepro(const bagl_element_t* element);
 
 
 #endif

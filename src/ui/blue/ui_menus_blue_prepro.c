@@ -22,3 +22,33 @@ const bagl_element_t *ui_idle_blue_prepro(const bagl_element_t *element) {
 //    }
     return element;
 }
+
+const bagl_element_t* ui_approval_blue_prepro(const bagl_element_t* element) {
+    // none elements are skipped
+//    if ((element->component.type&(~BAGL_FLAG_TOUCHABLE)) == BAGL_NONE) {
+//      return 0;
+//    }
+//    else {
+//      switch(element->component.userid&0xF0) {
+//        // icon
+//        case 0x40:
+//          return element;
+//          break;
+//        // TITLE
+//        case 0x60:
+//          return element;
+//          break;
+//        // SUBLINE
+//        case 0x50:
+//          return element;
+//        // details label
+//        case 0x70:
+//          return NULL;
+//        // detail value
+//        case 0x10:
+//          return NULL;
+//          break;
+//      }
+//    }
+    return element;
+}

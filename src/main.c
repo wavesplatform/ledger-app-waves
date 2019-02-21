@@ -25,7 +25,7 @@
 #include "os_io_seproxyhal.h"
 
 // Ledger Stuff
-#include "ui.h"
+#include "ui/ui.h"
 #include "os.h"
 #include "cx.h"
 #include "os_io_seproxyhal.h"

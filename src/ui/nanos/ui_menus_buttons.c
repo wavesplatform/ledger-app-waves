@@ -1,6 +1,6 @@
 #include "ui_menus_buttons.h"
 
-#include "ui_logic.h"
+#include "../ui_logic.h"
 #include "os_io_seproxyhal.h"
 
 #if defined(TARGET_NANOS)

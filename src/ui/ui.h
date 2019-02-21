@@ -24,9 +24,9 @@
 #include "os.h"
 #include "cx.h"
 #include <stdbool.h>
-#include "main.h"
-#include "ui_logic.h"
-#include "crypto/ledger_crypto.h"
+#include "../main.h"
+#include "../crypto/ledger_crypto.h"
+#include "os_io_seproxyhal.h"
 
 extern ux_state_t ux;
 

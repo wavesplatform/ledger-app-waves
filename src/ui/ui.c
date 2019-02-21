@@ -20,12 +20,18 @@
 
 #include "ui.h"
 #include <stdbool.h>
-#include "glyphs.h"
-#include "main.h"
-#include "crypto/waves.h"
-#include "ui_menus.h"
-#include "ui_menus_buttons.h"
-#include "ui_menus_prepro.h"
+#include "../glyphs.h"
+#include "../main.h"
+#include "../crypto/waves.h"
+#ifdef TARGET_NANOS
+#include "nanos/ui_menus_nanos.h"
+#include "nanos/ui_menus_buttons.h"
+#include "nanos/ui_menus_prepro.h"
+#endif
+#ifdef TARGET_BLUE
+#include "blue/ui_menus_blue.h"
+#include "blue/ui_menus_blue_prepro.h"
+#endif
 
 ux_state_t ux;
 
@@ -40,8 +46,7 @@ void menu_address_init() {
     ux_step = 0;
     ux_step_count = 2;
     #if defined(TARGET_BLUE)
-    // todo !!!
-        UX_DISPLAY(ui_idle_blue, ui_idle_blue_prepro);
+        UX_DISPLAY(ui_address_blue, ui_address_blue_prepro);
     #elif defined(TARGET_NANOS)
         UX_DISPLAY(ui_address_nanos, ui_address_prepro);
     #endif // #if TARGET_ID

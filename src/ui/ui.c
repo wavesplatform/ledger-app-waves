@@ -164,12 +164,7 @@ void menu_sign_init() {
         // Set the step/step count, and ui_state before requesting the UI
         ux_step = 0; ux_step_count = 9;
         ui_state = UI_VERIFY;
-            #if defined(TARGET_BLUE)
-                // todo !!!
-                UX_DISPLAY(ui_idle_blue, ui_idle_blue_prepro);
-            #elif defined(TARGET_NANOS)
-                UX_DISPLAY(ui_verify_transfer_nanos, ui_verify_transfer_prepro);
-            #endif // #if TARGET_ID
+        UX_DISPLAY(ui_verify_transfer_nanos, ui_verify_transfer_prepro);
         return;
     } else {
     #endif

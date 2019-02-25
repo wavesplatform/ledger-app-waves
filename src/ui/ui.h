@@ -24,9 +24,9 @@
 #include "os.h"
 #include "cx.h"
 #include <stdbool.h>
-#include "main.h"
-#include "ui_logic.h"
-#include "crypto/ledger_crypto.h"
+#include "../main.h"
+#include "../crypto/ledger_crypto.h"
+#include "os_io_seproxyhal.h"
 
 extern ux_state_t ux;
 
@@ -34,10 +34,6 @@ enum UI_STATE { UI_IDLE, UI_VERIFY };
 extern enum UI_STATE ui_state;
 
 static const unsigned char WAVES_CONST[] = "Waves";
-
-// extern unsigned int current_text_pos; // parsing cursor in the text to display
-// extern unsigned int text_y;           // current location of the displayed text
-// extern char lineBuffer[50];
 
 void menu_sign_init();
 void ui_idle();

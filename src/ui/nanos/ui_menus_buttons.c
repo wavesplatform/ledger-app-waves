@@ -1,8 +1,9 @@
 #include "ui_menus_buttons.h"
 
-#include "ui_logic.h"
+#include "../ui_logic.h"
 #include "os_io_seproxyhal.h"
 
+#if defined(TARGET_NANOS)
 unsigned int ui_verify_transfer_nanos_button(unsigned int button_mask, unsigned int button_mask_counter) {
     switch (button_mask) {
         case BUTTON_EVT_RELEASED | BUTTON_LEFT: // CANCEL
@@ -41,3 +42,4 @@ unsigned int ui_address_nanos_button(unsigned int button_mask, unsigned int butt
         }
     return 0;
 }
+#endif

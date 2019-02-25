@@ -25,7 +25,7 @@
 #include "os_io_seproxyhal.h"
 
 // Ledger Stuff
-#include "ui.h"
+#include "ui/ui.h"
 #include "os.h"
 #include "cx.h"
 #include "os_io_seproxyhal.h"
@@ -40,13 +40,8 @@ WIDE internal_storage_t N_storage_real;
 // SPI Buffer for io_event
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
-// Supported device errors for preprocessor
-#ifdef TARGET_BLUE
-#error This application does not support the Ledger Blue
-#endif
-
-#ifndef TARGET_NANOS
-#error This application only supports the Ledger Nano S
+#if !defined(TARGET_NANOS) && !defined(TARGET_BLUE)
+#error This application only supports the Ledger Nano S and the Ledger Blue
 #endif
 
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {

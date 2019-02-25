@@ -22,7 +22,11 @@ void public_key_le_to_be(cx_ecfp_public_key_t* public_key) {
 
 void get_keypair_by_path(const uint32_t* path, cx_ecfp_public_key_t* public_key, cx_ecfp_private_key_t* private_key) {
     unsigned char privateKeyData[32];
+    #ifdef TARGET_BLUE
+    os_perso_derive_node_bip32(CX_CURVE_Ed25519, path, 5, privateKeyData, NULL);
+    #else
     os_perso_derive_node_bip32_seed_key(HDW_ED25519_SLIP10, CX_CURVE_Ed25519, path, 5, privateKeyData, NULL, (unsigned char*) "ed25519 seed", 12);
+    #endif
     cx_ecdsa_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, private_key);
     cx_ecdsa_init_public_key(CX_CURVE_Ed25519, NULL, 0, public_key);
     cx_ecfp_generate_pair(CX_CURVE_Ed25519, public_key, private_key, 1);

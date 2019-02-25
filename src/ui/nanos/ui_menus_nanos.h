@@ -1,5 +1,5 @@
-#ifndef __UI_MENUS_H__
-#define __UI_MENUS_H__
+#ifndef __UI_MENUS_NANOS_H__
+#define __UI_MENUS_NANOS_H__
 
 #include "os.h"
 #include "cx.h"

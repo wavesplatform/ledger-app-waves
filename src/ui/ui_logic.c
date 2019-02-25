@@ -54,3 +54,9 @@ unsigned int io_seproxyhal_touch_sign_approve(const bagl_element_t *e) {
 
     return 0; // do not redraw the widget
 }
+
+unsigned int io_seproxyhal_touch_exit(const bagl_element_t *e) {
+    // Go back to the dashboard
+    os_sched_exit(0);
+    return 0; // do not redraw the widget
+}

@@ -423,6 +423,11 @@ __attribute__((section(".boot"))) int main(void) {
                 USB_power(0);
                 USB_power(1);
 
+                // set menu bar colour for blue
+#if defined(TARGET_BLUE)
+                UX_SET_STATUS_BAR_COLOR(COLOR_BG_1, COLOR_APP);
+#endif // #if TARGET_ID
+
                 ui_idle();
 
                 waves_main();

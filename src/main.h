@@ -46,7 +46,7 @@
 #define SW_SECURITY_STATUS_NOT_SATISFIED 0x6982
 
 #define COLOR_BG_1 0xF9F9F9
-#define COLOR_APP 0x0ebdcf
+#define COLOR_APP 0x0055FF
 #define COLOR_APP_LIGHT 0x87dee6
 
 typedef struct internal_storage_t {

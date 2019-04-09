@@ -181,13 +181,23 @@ void menu_sign_init() {
         } else if (tx_type == 6) {
             os_memmove(&ui_context.line1, &"burn\0", 5);
         } else if (tx_type == 8) {
-            os_memmove(&ui_context.line1, &"lease\0", 6);
+            os_memmove(&ui_context.line1, &"start leasing\0", 14);
         } else if (tx_type == 9) {
-            os_memmove(&ui_context.line1, &"lease cancel\0", 13);
+            os_memmove(&ui_context.line1, &"cancel leasing\0", 15);
         } else if (tx_type == 10) {
             os_memmove(&ui_context.line1, &"creating an alias\0", 18);
         } else if (tx_type == 11) {
             os_memmove(&ui_context.line1, &"mass transfer\0", 14);
+        } else if (tx_type == 12) {
+            os_memmove(&ui_context.line1, &"data\0", 5);
+        } else if (tx_type == 13) {
+            os_memmove(&ui_context.line1, &"set script\0", 11);
+        } else if (tx_type == 14) {
+            os_memmove(&ui_context.line1, &"sponsorship\0", 12);
+        } else if (tx_type == 15) {
+            os_memmove(&ui_context.line1, &"asset script\0", 13);
+        } else if (tx_type == 16) {
+            os_memmove(&ui_context.line1, &"script invocation\0", 18);
         } else {
             // type byte >200 are 'reserved', it will not be signed
             os_memmove(&ui_context.line2, &"Hash\0", 5);

@@ -35,13 +35,13 @@ tmpContext_t tmp_ctx;
 uiContext_t ui_context;
 
 // Non-volatile storage for the wallet app's stuff
-WIDE internal_storage_t N_storage_real;
+WIDE internal_storage_t const N_storage_real;
 
 // SPI Buffer for io_event
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
-#if !defined(TARGET_NANOS) && !defined(TARGET_BLUE)
-#error This application only supports the Ledger Nano S and the Ledger Blue
+#if !defined(TARGET_NANOS) && !defined(TARGET_BLUE) && !defined(TARGET_NANOX)
+#error This application only supports the Ledger Nano S, Nano X and the Ledger Blue
 #endif
 
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
@@ -305,6 +305,8 @@ static void waves_main(void) {
                     THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
                 }
 
+                PRINTF("New APDU received:\n%.*H\n", rx, G_io_apdu_buffer);
+
                 // Call the Apdu handler,
                 handle_apdu(&flags, &tx, rx);
             }
@@ -397,20 +399,23 @@ __attribute__((section(".boot"))) int main(void) {
     // exit critical section
     __asm volatile("cpsie i");
 
-    init_context();
-    // current_text_pos = 0;
-    // text_y = 60;
-    ui_state = UI_IDLE;
+    // ensure exception will work as planned
+    os_boot();
 
     for (;;) {
-        // ensure exception will work as planned
-        os_boot();
-
         UX_INIT();
-
+        ui_state = UI_IDLE;
         BEGIN_TRY {
             TRY {
+
                 io_seproxyhal_init();
+
+#ifdef TARGET_NANOX
+                // grab the current plane mode setting
+                G_io_app.plane_mode = os_setting_get(OS_SETTING_PLANEMODE, NULL, 0);
+#endif // TARGET_NANOX
+
+                init_context();
 
                 if (N_storage.initialized != 0x01) {
                     internal_storage_t storage;
@@ -423,20 +428,27 @@ __attribute__((section(".boot"))) int main(void) {
                 USB_power(0);
                 USB_power(1);
 
+                ui_idle();
+
+#ifdef HAVE_BLE
+                BLE_power(0, NULL);
+                BLE_power(1, "Nano X");
+#endif // HAVE_BLE
+
                 // set menu bar colour for blue
 #if defined(TARGET_BLUE)
                 UX_SET_STATUS_BAR_COLOR(COLOR_BG_1, COLOR_APP);
 #endif // #if TARGET_ID
 
-                ui_idle();
-
                 waves_main();
             }
             CATCH(EXCEPTION_IO_RESET) {
                 // reset IO and UX before continuing
+                CLOSE_TRY;
                 continue;
             }
             CATCH_ALL {
+                CLOSE_TRY;
                 break;
             }
             FINALLY {

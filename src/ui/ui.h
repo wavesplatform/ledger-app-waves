@@ -28,7 +28,13 @@
 #include "../crypto/ledger_crypto.h"
 #include "os_io_seproxyhal.h"
 
+#ifdef TARGET_NANOX
+#include "ux.h"
+extern ux_state_t G_ux;
+extern bolos_ux_params_t G_ux_params;
+#else // TARGET_NANOX
 extern ux_state_t ux;
+#endif // TARGET_NANOX
 
 enum UI_STATE { UI_IDLE, UI_VERIFY };
 extern enum UI_STATE ui_state;

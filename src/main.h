@@ -54,8 +54,8 @@ typedef struct internal_storage_t {
     uint8_t 			 initialized;
 } internal_storage_t;
 
-extern WIDE internal_storage_t N_storage_real;
-#define N_storage (*(WIDE internal_storage_t *)PIC(&N_storage_real))
+extern WIDE internal_storage_t const N_storage_real;
+#define N_storage (*(volatile internal_storage_t *)PIC(&N_storage_real))
 
 // A place to store information about the transaction
 // for displaying to the user when requesting approval

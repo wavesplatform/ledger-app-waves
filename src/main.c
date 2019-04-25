@@ -35,7 +35,7 @@ tmpContext_t tmp_ctx;
 uiContext_t ui_context;
 
 // Non-volatile storage for the wallet app's stuff
-WIDE internal_storage_t const N_storage_real;
+internal_storage_t const N_storage_real;
 
 // SPI Buffer for io_event
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];

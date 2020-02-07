@@ -23,8 +23,6 @@
 
 #include "os.h"
 
-#if defined(TARGET_NANOX)
-
 #include "cx.h"
 #include "ux.h"
 
@@ -186,7 +184,5 @@ UX_FLOW(ux_verify_transaction_flow, &ux_verify_transaction_1_step,
         &ux_verify_transaction_4_step, &ux_verify_transaction_5_step);
 
 //////////////////////////////////////////////////////////////////////
-
-#endif
 
 #endif

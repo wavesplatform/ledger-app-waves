@@ -51,8 +51,8 @@ SDK_SOURCE_PATH  += lib_u2f lib_stusb_impl
 
 ifeq ($(TARGET_NAME),TARGET_NANOX)
 SDK_SOURCE_PATH  += lib_blewbxx lib_blewbxx_impl
-SDK_SOURCE_PATH  += lib_ux
 endif
+SDK_SOURCE_PATH  += lib_ux
 
 DEFINES += APPVERSION=\"$(APPVERSION)\"
 
@@ -88,10 +88,10 @@ DEFINES       += HAVE_BAGL_ELLIPSIS # long label truncation feature
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_REGULAR_11PX
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_EXTRABOLD_11PX
 DEFINES       += HAVE_BAGL_FONT_OPEN_SANS_LIGHT_16PX
-DEFINES		  += HAVE_UX_FLOW
 else
 DEFINES   += IO_SEPROXYHAL_BUFFER_SIZE_B=128
 endif
+DEFINES		  += HAVE_UX_FLOW
 
 # Enabling debug PRINTF
 DEBUG = 0
@@ -136,6 +136,7 @@ LDLIBS += -lm -lgcc -lc
 # Main rules
 
 all: default
+    $(info $(APP_LOAD_PARAMS))
 
 load: all
 	python -m ledgerblue.loadApp $(APP_LOAD_PARAMS)

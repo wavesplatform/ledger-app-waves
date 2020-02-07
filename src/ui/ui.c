@@ -24,9 +24,7 @@
 #include "../main.h"
 #include "../crypto/waves.h"
 #ifdef TARGET_NANOS
-#include "nanos/ui_menus_nanos.h"
-#include "nanos/ui_menus_buttons.h"
-#include "nanos/ui_menus_prepro.h"
+#include "nanox/ui_menus_nanox.h"
 #endif
 #ifdef TARGET_BLUE
 #include "blue/ui_menus_blue.h"
@@ -37,13 +35,13 @@
 #include "nanox/ui_menus_nanox.h"
 #endif
 
-#ifdef TARGET_NANOX
-#include "ux.h"
-ux_state_t G_ux;
-bolos_ux_params_t G_ux_params;
-#else
+//#ifdef TARGET_NANOX
+//#include "ux.h"
+//ux_state_t G_ux;
+//bolos_ux_params_t G_ux_params;
+//#else
 ux_state_t ux;
-#endif // TARGET_NANOX
+//#endif // TARGET_NANOX
 
 // UI currently displayed
 enum UI_STATE ui_state;
@@ -57,9 +55,9 @@ void menu_address_init() {
     ux_step_count = 2;
     #if defined(TARGET_BLUE)
         UX_DISPLAY(ui_address_blue, ui_address_blue_prepro);
-    #elif defined(TARGET_NANOS)
-        UX_DISPLAY(ui_address_nanos, ui_address_prepro);
-    #elif defined(TARGET_NANOX)
+//    #elif defined(TARGET_NANOS)
+//        UX_DISPLAY(ui_address_nanos, ui_address_prepro);
+    #else
         // UX_DISPLAY(ui_address_nanos, ui_address_prepro);
         ux_flow_init(0, ux_display_address_flow, NULL);
     #endif // #if TARGET_ID
@@ -71,9 +69,7 @@ void ui_idle() {
     ui_state = UI_IDLE;
     #if defined(TARGET_BLUE)
         UX_DISPLAY(ui_idle_blue, ui_idle_blue_prepro);
-    #elif defined(TARGET_NANOS)
-        UX_MENU_DISPLAY(0, menu_main, NULL);
-    #elif defined(TARGET_NANOX)
+    #else
         // reserve a display stack slot if none yet
         if(G_ux.stack_count == 0) {
             ux_stack_push();
@@ -412,9 +408,7 @@ void show_sign_ui() {
 
         #if defined(TARGET_BLUE)
             UX_DISPLAY(ui_verify_transfer_blue, NULL);
-        #elif defined(TARGET_NANOS)
-            UX_DISPLAY(ui_verify_transfer_nanos, ui_verify_transfer_prepro);
-        #elif defined(TARGET_NANOX)
+        #else
             ux_flow_init(0, ux_transfer_flow, NULL);
         #endif // #if TARGET_ID
     } else {

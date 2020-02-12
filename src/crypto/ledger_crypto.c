@@ -50,9 +50,8 @@ void blake2b_256(const unsigned char* msg, size_t msg_len, void* out)
     cx_blake2b_t ctx;
     // size in bits
     cx_blake2b_init(&ctx, 256);
-    cx_hash(&ctx.header, 0, (void *)msg, msg_len, NULL, 0);
     // size in bytes
-    cx_hash(&ctx.header, CX_LAST, NULL, 0, out, 32);
+    cx_hash(&ctx.header, CX_LAST, (void *)msg, msg_len, out, 32);
 }
 
 void keccak_256(const unsigned char* msg, size_t msg_len, void* out)
@@ -60,7 +59,6 @@ void keccak_256(const unsigned char* msg, size_t msg_len, void* out)
     cx_sha3_t ctx;
     // size in bits
     cx_keccak_init(&ctx, 256);
-    cx_hash(&ctx.header, 0, (void *)msg, msg_len, NULL, 0);
     // size in bytes
-    cx_hash(&ctx.header, CX_LAST, NULL, 0, out, 32);
+    cx_hash(&ctx.header, CX_LAST, (void *)msg, msg_len, out, 32);
 }

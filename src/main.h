@@ -83,6 +83,7 @@ typedef struct signingContext_t {
 	unsigned char data_version;
 	unsigned char buffer[MAX_DATA_SIZE];
 	uint32_t buffer_used;
+	cx_sha512_t sign_hash_ctx;
 	unsigned char network_byte;
 } signingContext_t;
 

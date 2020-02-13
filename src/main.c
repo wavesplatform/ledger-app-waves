@@ -111,16 +111,20 @@ void add_chunk_data() {
 
         // Update the other data from this segment
         int data_size = G_io_apdu_buffer[4] - 24;
-        os_memmove((char *) tmp_ctx.signing_context.buffer, &G_io_apdu_buffer[29], data_size);
-        tmp_ctx.signing_context.buffer_used += data_size;
+//        os_memmove((char *) tmp_ctx.signing_context.buffer, &G_io_apdu_buffer[29], data_size);
+        tmp_ctx.signing_context.buffer_used += 1;
+        cx_sha512_init(&tmp_ctx.signing_context.sign_hash_ctx);
+        cx_hash(&tmp_ctx.signing_context.sign_hash_ctx.header, NULL, &G_io_apdu_buffer[29], data_size, NULL, 0);
     } else {
         // else update the data from entire segment.
         int data_size = G_io_apdu_buffer[4];
-        if (tmp_ctx.signing_context.buffer_used + data_size > MAX_DATA_SIZE) {
-            THROW(SW_BUFFER_OVERFLOW);
-        }
-        os_memmove((char *) &tmp_ctx.signing_context.buffer[tmp_ctx.signing_context.buffer_used], &G_io_apdu_buffer[5], data_size);
-        tmp_ctx.signing_context.buffer_used += data_size;
+        tmp_ctx.signing_context.buffer_used += 1;
+        cx_hash(&tmp_ctx.signing_context.sign_hash_ctx.header, NULL, &G_io_apdu_buffer[5], data_size, NULL, 0);
+//        if (tmp_ctx.signing_context.buffer_used + data_size > MAX_DATA_SIZE) {
+//            THROW(SW_BUFFER_OVERFLOW);
+//        }
+//        os_memmove((char *) &tmp_ctx.signing_context.buffer[tmp_ctx.signing_context.buffer_used], &G_io_apdu_buffer[5], data_size);
+//        tmp_ctx.signing_context.buffer_used += data_size;
     }
 }
 
@@ -133,9 +137,11 @@ uint32_t set_result_sign() {
     public_key_le_to_be(&public_key);
 
     uint8_t signature[64];
-    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, signature);
+    uint8_t tx_sha512_hash[64];
+    cx_hash(&tmp_ctx.signing_context.sign_hash_ctx.header, CX_LAST, NULL, 0, tx_sha512_hash, 64);
+//    waves_message_sign(&private_key, public_key.W, (unsigned char *) tx_sha512_hash, signature);
 
-    os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
+    os_memmove((char *) G_io_apdu_buffer, tx_sha512_hash, 64);
 
     // reset all private stuff
     os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));

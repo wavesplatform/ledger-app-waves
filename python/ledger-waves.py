@@ -245,8 +245,10 @@ while (True):
             binary_data += some_transfer_bytes
             print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(some_transfer_bytes)))
         else:
-            binary_data += base58.b58decode(input)
-            print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(input)))
+            binary_input = base58.b58decode(input)
+            binary_data += binary_input
+            print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(binary_input)))
+        print(colors.fg.lightgrey + "all request bytes:   " + base58.b58encode(str(binary_data)))
         signature = None
         while (True):
             try:

@@ -99,22 +99,22 @@ void add_chunk_data() {
         // then there is the bip32 path in the first chunk - first 20 bytes of data
         read_path_from_bytes(G_io_apdu_buffer + 5, (uint32_t *) tmp_ctx.signing_context.bip32);
 
-        // 21th byte - amount decimals
+        // 25th byte - amount decimals
         tmp_ctx.signing_context.amount_decimals = G_io_apdu_buffer[25];
-        // 22th byte - fee decimals
+        // 26th byte - fee decimals
         tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[26];
 
-        // 23 byte - data type
+        // 27 byte - data type
         tmp_ctx.signing_context.data_type = G_io_apdu_buffer[27];
-        // 24 byte - data version
+        // 28 byte - data version
         tmp_ctx.signing_context.data_version = G_io_apdu_buffer[28];
 
         // Update the other data from this segment
-        int data_size = G_io_apdu_buffer[4] - 24;
+        int data_size = G_io_apdu_buffer[4] - 22;
 //        os_memmove((char *) tmp_ctx.signing_context.buffer, &G_io_apdu_buffer[29], data_size);
         tmp_ctx.signing_context.buffer_used += 1;
         cx_sha512_init(&tmp_ctx.signing_context.sign_hash_ctx);
-        cx_hash(&tmp_ctx.signing_context.sign_hash_ctx.header, NULL, &G_io_apdu_buffer[29], data_size, NULL, 0);
+        cx_hash(&tmp_ctx.signing_context.sign_hash_ctx.header, NULL, &G_io_apdu_buffer[27], data_size, NULL, 0);
     } else {
         // else update the data from entire segment.
         int data_size = G_io_apdu_buffer[4];
@@ -139,9 +139,9 @@ uint32_t set_result_sign() {
     uint8_t signature[64];
     uint8_t tx_sha512_hash[64];
     cx_hash(&tmp_ctx.signing_context.sign_hash_ctx.header, CX_LAST, NULL, 0, tx_sha512_hash, 64);
-//    waves_message_sign(&private_key, public_key.W, (unsigned char *) tx_sha512_hash, signature);
+    waves_message_sign(&private_key, public_key.W, (unsigned char *) tx_sha512_hash, signature);
 
-    os_memmove((char *) G_io_apdu_buffer, tx_sha512_hash, 64);
+    os_memmove((char *) G_io_apdu_buffer, signature, 64);
 
     // reset all private stuff
     os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));

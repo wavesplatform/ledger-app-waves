@@ -96,6 +96,9 @@ void read_path_from_bytes(unsigned char *buffer, uint32_t *path) {
 void add_chunk_data() {
     // if this is a first chunk
     if (tmp_ctx.signing_context.buffer_used == 0) {
+        // then there is the bip32 path in the first chunk - first 20 bytes of data
+        read_path_from_bytes(G_io_apdu_buffer + 5, (uint32_t *) tmp_ctx.signing_context.bip32);
+
         // 25th byte - amount decimals
         tmp_ctx.signing_context.amount_decimals = G_io_apdu_buffer[25];
         // 26th byte - fee decimals
@@ -108,17 +111,7 @@ void add_chunk_data() {
 
         // Update the other data from this segment
         int data_size = G_io_apdu_buffer[4] - 22;
-        cx_ecfp_public_key_t public_key;
-        cx_ecfp_private_key_t private_key;
-
-        // then there is the bip32 path in the first chunk - first 20 bytes of data
-        get_keypair_by_path((uint32_t *) G_io_apdu_buffer + 5, &public_key, &private_key);
-        stream_eddsa_sign_step1(&tmp_ctx.signing_context.eddsa_context, &private_key);
-        os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
-        os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
-
-        stream_eddsa_sign_step2(&tmp_ctx.signing_context.eddsa_context, &G_io_apdu_buffer[27], data_size);
-        os_memmove((char *) tmp_ctx.signing_context.buffer, );
+        os_memmove((char *) tmp_ctx.signing_context.buffer, &G_io_apdu_buffer[27], data_size);
         tmp_ctx.signing_context.buffer_used += data_size;
     } else {
         // else update the data from entire segment.
@@ -135,16 +128,14 @@ void add_chunk_data() {
 uint32_t set_result_sign() {
     cx_ecfp_public_key_t public_key;
     cx_ecfp_private_key_t private_key;
-    get_keypair_by_path((uint32_t *) bip32, &public_key, &private_key);
+    get_keypair_by_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key, &private_key);
 
     public_key_le_to_be(&public_key);
 
     uint8_t signature[64];
-    stream_eddsa_sign_step5(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, signature);
+    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &tmp_ctx.signing_context.eddsa_context, signature);
 
     os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
-    unsigned char sign_bit = public_key[31] & 0x80;
-    signature[63] |= sign_bit;
 
     // reset all private stuff
     os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));

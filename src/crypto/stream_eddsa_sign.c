@@ -95,11 +95,10 @@ static void cx_eddsa_get_public_key_internal(const cx_ecfp_private_key_t *pv_key
                                              unsigned char* a, unsigned int a_len,
                                              unsigned char* h, unsigned int h_len,
                                              unsigned char* scal /*tmp*/) {
-  cx_curve_twisted_edward_t *domain;
+  cx_curve_twisted_edward_t *domain = (cx_curve_twisted_edward_t *) &C_cx_Ed25519;
   cx_sha512_t hash_ctx;
   unsigned int size;
 
-  domain = (cx_curve_twisted_edward_t *) &C_cx_Ed25519;
   size = domain->length;
 
 //  cx_scc_assert_param(CX_CURVE_RANGE(domain->curve,TWISTED_EDWARD));
@@ -131,7 +130,7 @@ static void cx_eddsa_get_public_key_internal(const cx_ecfp_private_key_t *pv_key
     scal[31]  = (scal[31] & 0x7F) | 0x40;
 
   } else {
-    memmove(scal, pv_key->d, pv_key->d_len);
+    os_memmove(scal, pv_key->d, pv_key->d_len);
   }
 
   /* 3. Interpret the buffer as the little-endian integer, forming a
@@ -140,16 +139,16 @@ static void cx_eddsa_get_public_key_internal(const cx_ecfp_private_key_t *pv_key
    */
   cx_decode_int(scal, size);
   if (a) {
-    memmove(a,scal,size);
+    os_memmove(a,scal,size);
   }
   if (h) {
-    memmove(h, scal + size, size);
+    os_memmove(h, scal + size, size);
   }
   pu_key->curve = pv_key->curve;
   pu_key->W_len = 1+size*2;
   pu_key->W[0]  = 0x04;
-  memmove(pu_key->W+1,      domain->Gx, size);
-  memmove(pu_key->W+1+size, domain->Gy, size);
+  os_memmove(pu_key->W+1,      domain->Gx, size);
+  os_memmove(pu_key->W+1+size, domain->Gy, size);
   cx_ecfp_scalar_mult(domain->curve, pu_key->W, pu_key->W_len, scal, size);
 }
 
@@ -245,19 +244,19 @@ static void cx_eddsa_get_public_key_internal(const cx_ecfp_private_key_t *pv_key
 //  #undef H
 //}
 
-int stream_eddsa_sign_step1(streamEddsaContext_t *eddsa_context, const cx_ecfp_private_key_t *pv_key) {
-    os_memset((unsigned char *) &streamEddsaContext_t, 0, sizeof(streamEddsaContext_t));
-    eddsa_context->domain = (cx_curve_twisted_edward_t *) &C_cx_Ed25519;
+void stream_eddsa_sign_step1(streamEddsaContext_t *eddsa_context, const cx_ecfp_private_key_t *pv_key) {
+    os_memset((unsigned char *) eddsa_context, 0, sizeof(streamEddsaContext_t));
+    cx_curve_twisted_edward_t *domain = (cx_curve_twisted_edward_t *) &C_cx_Ed25519;
 
     unsigned int size = domain->length;
-    unsigned int hsize = 2*size;
 
+    unsigned char scal[64];
     // retrieve public key,private scalar a, and private prefix h (stored in r)
-    cx_eddsa_get_public_key_internal(pv_key, CX_SHA512, (cx_ecfp_public_key_t *)&eddsa_context->u.internal_pu_key, eddsa_context->a, sizeof(eddsa_context->a), eddsa_context->r, sizeof(eddsa_context->r), eddsa_context->scal);
+    cx_eddsa_get_public_key_internal(pv_key, CX_SHA512, (cx_ecfp_public_key_t *)&eddsa_context->u.internal_pu_key, eddsa_context->a, sizeof(eddsa_context->a), eddsa_context->r, sizeof(eddsa_context->r), scal);
 
     //compress public_key
     cx_edward_compress_point(domain->curve, &eddsa_context->u.internal_pu_key.W[0], eddsa_context->u.internal_pu_key.W_len);
-    memmove(eddsa_context->Y, &eddsa_context->u.internal_pu_key.W[1], size);
+    os_memmove(eddsa_context->Y, &eddsa_context->u.internal_pu_key.W[1], size);
 
     //compute r
     // - last size (32/57) bytes of H(sk), h,  as big endian bytes ordered. stored in r
@@ -273,52 +272,55 @@ int stream_eddsa_sign_step2(streamEddsaContext_t *eddsa_context, const unsigned 
      return cx_hash(&eddsa_context->hash_ctx.header, CX_NONE, hash, hash_len, NULL, 0);
 }
 
-int stream_eddsa_sign_step3(streamEddsaContext_t *eddsa_context) {
+void stream_eddsa_sign_step3(streamEddsaContext_t *eddsa_context) {
        unsigned char scal[64];
+       cx_curve_twisted_edward_t *domain = (cx_curve_twisted_edward_t *) &C_cx_Ed25519;
        unsigned int size = domain->length;
        unsigned int hsize = 2*size;
 
        cx_hash(&eddsa_context->hash_ctx.header, CX_LAST, NULL, 0, scal, 64);
        cx_encode_int(scal,hsize);
-       cx_math_modm(scal, hsize,  domain->n, size);
-       memmove(r,scal+size,size);                   // r
+       cx_math_modm(scal, hsize, domain->n, size);
+       os_memmove(eddsa_context->r,scal+size,size);                   // r
 
        //compute R = r.B
        eddsa_context->u.Q[0] = 0x04;
-       memmove(eddsa_context->u.Q+1,      domain->Gx, size);
-       memmove(eddsa_context->u.Q+1+size, domain->Gy, size);
-       cx_ecfp_scalar_mult(CX_CURVE_Ed25519, eddsa_context->u.Q, 1+2*domain->length, r, size);
+       os_memmove(eddsa_context->u.Q+1, domain->Gx, size);
+       os_memmove(eddsa_context->u.Q+1+size, domain->Gy, size);
+       cx_ecfp_scalar_mult(CX_CURVE_Ed25519, eddsa_context->u.Q, 1+2*domain->length, eddsa_context->r, size);
        cx_compress(eddsa_context->u.Q+1,size);
-       memmove(sig,eddsa_context->u.Q+1+size,size);                // sig <- R
+       os_memmove(eddsa_context->sig,eddsa_context->u.Q+1+size,size);                // sig <- R
 
        //compute S = r+H(R,A,M).a
        // - compute H(R,A,M)
-       cx_sha512_init(&hash_ctx);
+       cx_sha512_init(&eddsa_context->hash_ctx);
 
-       cx_hash(&hash_ctx.header, CX_NONE, sig, size, NULL, 0);
-       cx_hash(&hash_ctx.header, CX_NONE, eddsa_context->Y, size, NULL, 0);
+       cx_hash(&eddsa_context->hash_ctx.header, CX_NONE, eddsa_context->sig, size, NULL, 0);
+       cx_hash(&eddsa_context->hash_ctx.header, CX_NONE, eddsa_context->Y, size, NULL, 0);
 }
 
 int stream_eddsa_sign_step4(streamEddsaContext_t *eddsa_context, const unsigned char  *hash ,unsigned int hash_len) {
-     return stream_eddsa_sign_step_2(hash, hash_len);
+     return stream_eddsa_sign_step2(eddsa_context, hash, hash_len);
 }
 
-int stream_eddsa_sign_step5(streamEddsaContext_t *eddsa_context, unsigned char *sig, unsigned int sig_len) {
+int stream_eddsa_sign_step5(streamEddsaContext_t *eddsa_context, unsigned char *sig) {
       unsigned char scal[64];
+      cx_curve_twisted_edward_t *domain = (cx_curve_twisted_edward_t *) &C_cx_Ed25519;
       unsigned int size = domain->length;
       unsigned int hsize = 2*size;
 
-      cx_hash(&hash_ctx.header, CX_LAST, NULL, 0, scal, 64);
+      cx_hash(&eddsa_context->hash_ctx.header, CX_LAST, NULL, 0, scal, 64);
 
       cx_encode_int(scal, hsize);
       // - compute S = r+H(.)a
       cx_math_modm(scal, hsize, domain->n, size);
-      cx_math_modm(a, size, domain->n, size);
-      cx_math_multm(sig+size, scal+size, eddsa_context->a, domain->n, size);
-      cx_math_addm (sig+size, sig+size,  eddsa_context->r, domain->n, size);
-      cx_encode_int(sig+size, size);
+      cx_math_modm(eddsa_context->a, size, domain->n, size);
+      cx_math_multm(eddsa_context->sig+size, scal+size, eddsa_context->a, domain->n, size);
+      cx_math_addm (eddsa_context->sig+size, eddsa_context->sig+size,  eddsa_context->r, domain->n, size);
+      cx_encode_int(eddsa_context->sig+size, size);
 
-      os_memset((unsigned char *) &streamEddsaContext_t, 0, sizeof(streamEddsaContext_t));
+      os_memmove(sig, eddsa_context->sig, 64);
+      os_memset((unsigned char *) eddsa_context, 0, sizeof(streamEddsaContext_t));
 
       return 2*size;
 }

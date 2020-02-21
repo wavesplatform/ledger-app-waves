@@ -83,9 +83,13 @@ typedef struct signingContext_t {
 	unsigned char data_type;
 	unsigned char data_version;
 	unsigned char network_byte;
+	uint32_t data_size;
     unsigned char buffer[MAX_DATA_SIZE];
-    uint32_t buffer_used;
-	streamEddsaContext_t eddsa_context;
+    uint32_t data_read;
+    uint32_t chunk_used;
+    uint32_t chunk;
+    uint8_t step;
+    streamEddsaContext_t eddsa_context;
 } signingContext_t;
 
 // A place to store data during the confirming the address

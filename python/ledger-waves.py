@@ -18,7 +18,6 @@
 from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
 import base58
-import hashlib
 import struct
 import sys
 import pywaves.crypto as pwcrypto
@@ -242,10 +241,12 @@ while (True):
         input = raw_input(colors.fg.lightblue + "Please input message to sign (for example \"" + base58.b58encode(
             str(some_transfer_bytes)) + "\")> " + colors.reset)
         if len(input) == 0:
+            binary_data += struct.pack(">I", len(some_transfer_bytes))
             binary_data += some_transfer_bytes
             print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(some_transfer_bytes)))
         else:
             binary_input = base58.b58decode(input)
+            binary_data += struct.pack(">I", len(binary_input))
             binary_data += binary_input
             print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(binary_input)))
         print(colors.fg.lightgrey + "all request bytes:   " + base58.b58encode(str(binary_data)))

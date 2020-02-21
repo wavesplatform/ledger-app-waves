@@ -90,12 +90,21 @@ void read_path_from_bytes(unsigned char *buffer, uint32_t *path) {
     path[3] = deserialize_uint32_t(buffer + 12);
     path[4] = deserialize_uint32_t(buffer + 16);
 }
-
 // Handle a signing request -- called both from the main apdu loop as well as from
 // the button handler after the user verifies the transaction.
-void add_chunk_data() {
-    // if this is a first chunk
-    if (tmp_ctx.signing_context.buffer_used == 0) {
+
+// todo WHY ERROR 6801?!
+void make_sign_step() {
+    uint8_t chunk_data_start = G_io_apdu_buffer[5];
+    uint8_t chunk_data_size = G_io_apdu_buffer[4];
+
+    if (tmp_ctx.signing_context.chunk == 0) {
+        // todo sign all data for now
+        chunk_data_size -= 31 + 5;
+        chunk_data_start += 31 - 5;
+    }
+
+    if (tmp_ctx.signing_context.step == 0) {
         // then there is the bip32 path in the first chunk - first 20 bytes of data
         read_path_from_bytes(G_io_apdu_buffer + 5, (uint32_t *) tmp_ctx.signing_context.bip32);
 
@@ -104,42 +113,67 @@ void add_chunk_data() {
         // 26th byte - fee decimals
         tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[26];
 
-        // 27 byte - data type
-        tmp_ctx.signing_context.data_type = G_io_apdu_buffer[27];
-        // 28 byte - data version
-        tmp_ctx.signing_context.data_version = G_io_apdu_buffer[28];
+        // 27 byte - data size
+        tmp_ctx.signing_context.data_size = deserialize_uint32_t(&G_io_apdu_buffer[27]);
+        // 31 byte - data type
+        tmp_ctx.signing_context.data_type = G_io_apdu_buffer[31];
+        // 32 byte - data version
+        tmp_ctx.signing_context.data_version = G_io_apdu_buffer[32];
+    }
 
-        // Update the other data from this segment
-        int data_size = G_io_apdu_buffer[4] - 22;
-        os_memmove((char *) tmp_ctx.signing_context.buffer, &G_io_apdu_buffer[27], data_size);
-        tmp_ctx.signing_context.buffer_used += data_size;
-    } else {
-        // else update the data from entire segment.
-        int data_size = G_io_apdu_buffer[4];
-        if (tmp_ctx.signing_context.buffer_used + data_size > MAX_DATA_SIZE) {
-            THROW(SW_BUFFER_OVERFLOW);
-        }
-        os_memmove((char *) &tmp_ctx.signing_context.buffer[tmp_ctx.signing_context.buffer_used], &G_io_apdu_buffer[5], data_size);
-        tmp_ctx.signing_context.buffer_used += data_size;
+    // else wait for next chunk
+    if (tmp_ctx.signing_context.chunk_used < chunk_data_size) {
+        // if this is a first chunk
+        if (tmp_ctx.signing_context.step == 1) {
+            cx_ecfp_public_key_t public_key;
+            cx_ecfp_private_key_t private_key;
+            get_keypair_by_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key, &private_key);
+            stream_eddsa_sign_step1(&tmp_ctx.signing_context.eddsa_context, &private_key);
+            os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
+            os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
+            tmp_ctx.signing_context.step = 2;
+            make_sign_step();
+        } else if (tmp_ctx.signing_context.step == 2) {
+            // todo if tmp_ctx.signing_context.data_size < chunk_data_size
+            if (tmp_ctx.signing_context.data_read < tmp_ctx.signing_context.data_size) {
+                uint32_t chunk_data_left = chunk_data_size - tmp_ctx.signing_context.chunk_used;
+                uint32_t data_read_left = tmp_ctx.signing_context.data_size - tmp_ctx.signing_context.data_read;
+                uint32_t step_read_bytes_left = MIN(chunk_data_left, data_read_left);
+                stream_eddsa_sign_step2(&tmp_ctx.signing_context.eddsa_context, &G_io_apdu_buffer[chunk_data_start + tmp_ctx.signing_context.chunk_used], step_read_bytes_left);
+                tmp_ctx.signing_context.data_read += step_read_bytes_left;
+                tmp_ctx.signing_context.chunk_used += step_read_bytes_left;
+                make_sign_step();
+            } else {
+                stream_eddsa_sign_step3(&tmp_ctx.signing_context.eddsa_context);
+                tmp_ctx.signing_context.step = 4;
+            }
+        }  else if (tmp_ctx.signing_context.step == 4) {
+            // todo if tmp_ctx.signing_context.data_size < chunk_data_size
+            if (tmp_ctx.signing_context.data_read < tmp_ctx.signing_context.data_size) {
+                uint32_t chunk_data_left = chunk_data_size - tmp_ctx.signing_context.chunk_used;
+                uint32_t data_read_left = tmp_ctx.signing_context.data_size - tmp_ctx.signing_context.data_read;
+                uint32_t step_read_bytes_left = MIN(chunk_data_left, data_read_left);
+                stream_eddsa_sign_step4(&tmp_ctx.signing_context.eddsa_context, &G_io_apdu_buffer[chunk_data_start + tmp_ctx.signing_context.chunk_used], step_read_bytes_left);
+                tmp_ctx.signing_context.data_read += step_read_bytes_left;
+                tmp_ctx.signing_context.chunk_used += step_read_bytes_left;
+                make_sign_step();
+            } else {
+                tmp_ctx.signing_context.step = 5;
+            }
+          }
     }
 }
 
 // like https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
 uint32_t set_result_sign() {
-    cx_ecfp_public_key_t public_key;
-    cx_ecfp_private_key_t private_key;
-    get_keypair_by_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key, &private_key);
-
-    public_key_le_to_be(&public_key);
-
     uint8_t signature[64];
-    waves_message_sign(&private_key, public_key.W, (unsigned char *) tmp_ctx.signing_context.buffer, tmp_ctx.signing_context.buffer_used, &tmp_ctx.signing_context.eddsa_context, signature);
+    if (tmp_ctx.signing_context.step != 5) {
+        THROW(SW_CONDITIONS_NOT_SATISFIED);
+    }
+
+    stream_eddsa_sign_step5(&tmp_ctx.signing_context.eddsa_context, signature);
 
     os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
-
-    // reset all private stuff
-    os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
-    os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
 
     return 64;
 }
@@ -173,23 +207,31 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
 
             switch (G_io_apdu_buffer[1]) {
             case INS_SIGN: {
-                if (G_io_apdu_buffer[4] != rx - 5) {
-                    // the length of the APDU should match what's in the 5-byte header.
-                    // If not fail.  Don't want to buffer overrun or anything.
-                    THROW(SW_CONDITIONS_NOT_SATISFIED);
+//                if (G_io_apdu_buffer[4] != rx - 5) {
+//                    // the length of the APDU should match what's in the 5-byte header.
+//                    // If not fail.  Don't want to buffer overrun or anything.
+//                    THROW(SW_CONDITIONS_NOT_SATISFIED);
+//                }
+//                if ((G_io_apdu_buffer[2] != P1_MORE) &&
+//                    (G_io_apdu_buffer[2] != P1_LAST)) {
+//                    THROW(SW_INCORRECT_P1_P2);
+//                }
+
+                if (tmp_ctx.signing_context.step > 0) {
+                    tmp_ctx.signing_context.chunk += 1;
+                } else {
+                    tmp_ctx.signing_context.step = 1;
                 }
-                if ((G_io_apdu_buffer[2] != P1_MORE) &&
-                    (G_io_apdu_buffer[2] != P1_LAST)) {
-                    THROW(SW_INCORRECT_P1_P2);
-                }
+
+                tmp_ctx.signing_context.chunk_used = 0;
 
                 if (G_io_apdu_buffer[2] == P1_LAST) {
                     tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
-                    add_chunk_data();
+                    make_sign_step();
                     menu_sign_init();
                     *flags |= IO_ASYNCH_REPLY;
                 } else {
-                    add_chunk_data();
+                    make_sign_step();
                     THROW(SW_OK);
                 }
 

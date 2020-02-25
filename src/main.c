@@ -93,18 +93,15 @@ void read_path_from_bytes(unsigned char *buffer, uint32_t *path) {
 // Handle a signing request -- called both from the main apdu loop as well as from
 // the button handler after the user verifies the transaction.
 
-// todo WHY ERROR 6801?!
 void make_sign_step() {
-    uint8_t chunk_data_start = G_io_apdu_buffer[5];
+    uint8_t chunk_data_start_index = 5;
     uint8_t chunk_data_size = G_io_apdu_buffer[4];
 
     if (tmp_ctx.signing_context.chunk == 0) {
         // todo sign all data for now
-        chunk_data_size -= 31 + 5;
-        chunk_data_start += 31 - 5;
-    }
+        chunk_data_start_index += 26;
+        chunk_data_size -= 26;
 
-    if (tmp_ctx.signing_context.step == 0) {
         // then there is the bip32 path in the first chunk - first 20 bytes of data
         read_path_from_bytes(G_io_apdu_buffer + 5, (uint32_t *) tmp_ctx.signing_context.bip32);
 
@@ -134,31 +131,33 @@ void make_sign_step() {
             tmp_ctx.signing_context.step = 2;
             make_sign_step();
         } else if (tmp_ctx.signing_context.step == 2) {
-            // todo if tmp_ctx.signing_context.data_size < chunk_data_size
             if (tmp_ctx.signing_context.data_read < tmp_ctx.signing_context.data_size) {
                 uint32_t chunk_data_left = chunk_data_size - tmp_ctx.signing_context.chunk_used;
                 uint32_t data_read_left = tmp_ctx.signing_context.data_size - tmp_ctx.signing_context.data_read;
                 uint32_t step_read_bytes_left = MIN(chunk_data_left, data_read_left);
-                stream_eddsa_sign_step2(&tmp_ctx.signing_context.eddsa_context, &G_io_apdu_buffer[chunk_data_start + tmp_ctx.signing_context.chunk_used], step_read_bytes_left);
+                stream_eddsa_sign_step2(&tmp_ctx.signing_context.eddsa_context, &G_io_apdu_buffer[chunk_data_start_index + tmp_ctx.signing_context.chunk_used], step_read_bytes_left);
                 tmp_ctx.signing_context.data_read += step_read_bytes_left;
                 tmp_ctx.signing_context.chunk_used += step_read_bytes_left;
                 make_sign_step();
             } else {
                 stream_eddsa_sign_step3(&tmp_ctx.signing_context.eddsa_context);
                 tmp_ctx.signing_context.step = 4;
+                tmp_ctx.signing_context.data_read = 0;
+                make_sign_step();
             }
-        }  else if (tmp_ctx.signing_context.step == 4) {
-            // todo if tmp_ctx.signing_context.data_size < chunk_data_size
+        } else if (tmp_ctx.signing_context.step == 4) {
             if (tmp_ctx.signing_context.data_read < tmp_ctx.signing_context.data_size) {
                 uint32_t chunk_data_left = chunk_data_size - tmp_ctx.signing_context.chunk_used;
                 uint32_t data_read_left = tmp_ctx.signing_context.data_size - tmp_ctx.signing_context.data_read;
                 uint32_t step_read_bytes_left = MIN(chunk_data_left, data_read_left);
-                stream_eddsa_sign_step4(&tmp_ctx.signing_context.eddsa_context, &G_io_apdu_buffer[chunk_data_start + tmp_ctx.signing_context.chunk_used], step_read_bytes_left);
+                stream_eddsa_sign_step4(&tmp_ctx.signing_context.eddsa_context, &G_io_apdu_buffer[chunk_data_start_index + tmp_ctx.signing_context.chunk_used], step_read_bytes_left);
                 tmp_ctx.signing_context.data_read += step_read_bytes_left;
                 tmp_ctx.signing_context.chunk_used += step_read_bytes_left;
-                make_sign_step();
-            } else {
-                tmp_ctx.signing_context.step = 5;
+                if (tmp_ctx.signing_context.data_read == tmp_ctx.signing_context.data_size) {
+                    tmp_ctx.signing_context.step = 5;
+                } else {
+                    make_sign_step();
+                }
             }
           }
     }
@@ -207,15 +206,15 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
 
             switch (G_io_apdu_buffer[1]) {
             case INS_SIGN: {
-//                if (G_io_apdu_buffer[4] != rx - 5) {
-//                    // the length of the APDU should match what's in the 5-byte header.
-//                    // If not fail.  Don't want to buffer overrun or anything.
-//                    THROW(SW_CONDITIONS_NOT_SATISFIED);
-//                }
-//                if ((G_io_apdu_buffer[2] != P1_MORE) &&
-//                    (G_io_apdu_buffer[2] != P1_LAST)) {
-//                    THROW(SW_INCORRECT_P1_P2);
-//                }
+                if (G_io_apdu_buffer[4] != rx - 5) {
+                    // the length of the APDU should match what's in the 5-byte header.
+                    // If not fail.  Don't want to buffer overrun or anything.
+                    THROW(SW_CONDITIONS_NOT_SATISFIED);
+                }
+                if ((G_io_apdu_buffer[2] != P1_MORE) &&
+                    (G_io_apdu_buffer[2] != P1_LAST)) {
+                    THROW(SW_INCORRECT_P1_P2);
+                }
 
                 if (tmp_ctx.signing_context.step > 0) {
                     tmp_ctx.signing_context.chunk += 1;

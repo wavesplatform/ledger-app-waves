@@ -172,6 +172,20 @@ uint32_t set_result_sign() {
 
     stream_eddsa_sign_step5(&tmp_ctx.signing_context.eddsa_context, signature);
 
+    cx_ecfp_public_key_t public_key;
+    cx_ecfp_private_key_t private_key;
+    get_keypair_by_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key, &private_key);
+
+    // set the sign bit from ed25519 public key (using 31 byte) for curve25519 validation used in waves (this makes the ed25519 signature invalid)
+    unsigned char sign_bit = public_key[31] & 0x80;
+
+    os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
+    os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
+
+    signature[63] |= sign_bit;
+
+    init_context();
+
     os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
 
     return 64;

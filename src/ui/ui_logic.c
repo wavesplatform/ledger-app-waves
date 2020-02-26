@@ -40,9 +40,21 @@ unsigned int io_seproxyhal_cancel(const bagl_element_t *e) {
 
 unsigned int io_seproxyhal_touch_sign_approve(const bagl_element_t *e) {
     // first 64 byte - signature
-    // todo if throw then cancel the request
-    uint32_t tx = set_result_sign();
-    unsigned short sw = SW_OK;
+    unsigned short sw = SW_CONDITIONS_NOT_SATISFIED;
+    uint32_t tx = 0;
+
+    BEGIN_TRY {
+        TRY {
+            tx = set_result_sign();
+            sw = SW_OK;
+        }
+        CATCH_OTHER(e) {
+            sw = e;
+        }
+        FINALLY {
+        }
+    }
+    END_TRY;
 
     G_io_apdu_buffer[tx++] = sw >> 8;
     G_io_apdu_buffer[tx++] = sw;

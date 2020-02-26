@@ -264,12 +264,16 @@ void stream_eddsa_sign_step1(streamEddsaContext_t *eddsa_context, const cx_ecfp_
 
     cx_sha512_init(&eddsa_context->hash_ctx);
 
+    // hash to compare two data bytes
+    cx_blake2b_init(&eddsa_context->data_hash_ctx, 256);
+
     cx_hash(&eddsa_context->hash_ctx.header, CX_NONE, eddsa_context->r, size, NULL, 0);
     // ...   cx_hash(&eddsa_context->hash_ctx.header, CX_NONE, hash, hash_len, NULL, 0);
 }
 
-int stream_eddsa_sign_step2(streamEddsaContext_t *eddsa_context, const unsigned char  *hash ,unsigned int hash_len) {
-     return cx_hash(&eddsa_context->hash_ctx.header, CX_NONE, hash, hash_len, NULL, 0);
+void stream_eddsa_sign_step2(streamEddsaContext_t *eddsa_context, const unsigned char  *hash ,unsigned int hash_len) {
+     cx_hash(&eddsa_context->data_hash_ctx.header, CX_NONE, hash, hash_len, NULL, 0);
+     cx_hash(&eddsa_context->hash_ctx.header, CX_NONE, hash, hash_len, NULL, 0);
 }
 
 void stream_eddsa_sign_step3(streamEddsaContext_t *eddsa_context) {
@@ -278,6 +282,7 @@ void stream_eddsa_sign_step3(streamEddsaContext_t *eddsa_context) {
        unsigned int size = domain->length;
        unsigned int hsize = 2*size;
 
+       cx_hash(&eddsa_context->data_hash_ctx.header, CX_LAST, NULL, 0, eddsa_context->first_data_hash, 32);
        cx_hash(&eddsa_context->hash_ctx.header, CX_LAST, NULL, 0, scal, 64);
        cx_encode_int(scal,hsize);
        cx_math_modm(scal, hsize, domain->n, size);
@@ -295,12 +300,15 @@ void stream_eddsa_sign_step3(streamEddsaContext_t *eddsa_context) {
        // - compute H(R,A,M)
        cx_sha512_init(&eddsa_context->hash_ctx);
 
+       // hash to compare two data bytes
+       cx_blake2b_init(&eddsa_context->data_hash_ctx, 256);
+
        cx_hash(&eddsa_context->hash_ctx.header, CX_NONE, eddsa_context->sig, size, NULL, 0);
        cx_hash(&eddsa_context->hash_ctx.header, CX_NONE, eddsa_context->Y, size, NULL, 0);
 }
 
-int stream_eddsa_sign_step4(streamEddsaContext_t *eddsa_context, const unsigned char  *hash ,unsigned int hash_len) {
-     return stream_eddsa_sign_step2(eddsa_context, hash, hash_len);
+void stream_eddsa_sign_step4(streamEddsaContext_t *eddsa_context, const unsigned char  *hash ,unsigned int hash_len) {
+     stream_eddsa_sign_step2(eddsa_context, hash, hash_len);
 }
 
 int stream_eddsa_sign_step5(streamEddsaContext_t *eddsa_context, unsigned char *sig) {
@@ -309,6 +317,11 @@ int stream_eddsa_sign_step5(streamEddsaContext_t *eddsa_context, unsigned char *
       unsigned int size = domain->length;
       unsigned int hsize = 2*size;
 
+      unsigned char second_data_hash[64];
+      cx_hash(&eddsa_context->data_hash_ctx.header, CX_LAST, NULL, 0, second_data_hash, 32);
+      if (os_memcmp(&eddsa_context->first_data_hash, &second_data_hash, 32) != 0) {
+        THROW(SW_SIGN_DATA_NOT_MATCH);
+      }
       cx_hash(&eddsa_context->hash_ctx.header, CX_LAST, NULL, 0, scal, 64);
 
       cx_encode_int(scal, hsize);

@@ -70,6 +70,8 @@ typedef struct uiContext_t {
 	unsigned char line6[45];
 	unsigned char line7[45];
 	unsigned char line8[45];
+	unsigned char id[32];
+	uint32_t processed;
 } uiContext_t;
 
 // A place to store data during the signing
@@ -86,6 +88,7 @@ typedef struct signingContext_t {
     uint32_t chunk_used;
     uint32_t chunk;
     uint8_t step;
+    uint8_t sign_from;
     streamEddsaContext_t eddsa_context;
 } signingContext_t;
 

@@ -90,6 +90,22 @@ void read_path_from_bytes(unsigned char *buffer, uint32_t *path) {
     path[3] = deserialize_uint32_t(buffer + 12);
     path[4] = deserialize_uint32_t(buffer + 16);
 }
+
+void hash_stream_data(uint8_t chunk_data_size, uint8_t chunk_data_start_index) {
+    uint32_t chunk_data_left = chunk_data_size - tmp_ctx.signing_context.chunk_used;
+    uint32_t data_read_left = tmp_ctx.signing_context.data_size - tmp_ctx.signing_context.data_read;
+    if (tmp_ctx.signing_context.data_read == 0) {
+        chunk_data_left -= tmp_ctx.signing_context.sign_from;
+        data_read_left -= tmp_ctx.signing_context.sign_from;
+        tmp_ctx.signing_context.chunk_used += tmp_ctx.signing_context.sign_from;
+    }
+    uint32_t step_read_bytes_left = MIN(chunk_data_left, data_read_left);
+    // stream_eddsa_sign_step2 and stream_eddsa_sign_step4 are the same
+    stream_eddsa_sign_step2(&tmp_ctx.signing_context.eddsa_context, &G_io_apdu_buffer[chunk_data_start_index + tmp_ctx.signing_context.chunk_used], step_read_bytes_left);
+    tmp_ctx.signing_context.data_read += step_read_bytes_left;
+    tmp_ctx.signing_context.chunk_used += step_read_bytes_left;
+}
+
 // Handle a signing request -- called both from the main apdu loop as well as from
 // the button handler after the user verifies the transaction.
 
@@ -112,15 +128,23 @@ void make_sign_step() {
 
         // 27 byte - data size
         tmp_ctx.signing_context.data_size = deserialize_uint32_t(&G_io_apdu_buffer[27]);
-        // 31 byte - data type
-        tmp_ctx.signing_context.data_type = G_io_apdu_buffer[31];
-        // 32 byte - data version
-        tmp_ctx.signing_context.data_version = G_io_apdu_buffer[32];
+        // first byte of data
+        uint8_t may_be_type = G_io_apdu_buffer[31];
+
+        if (may_be_type == 0) {
+            tmp_ctx.signing_context.data_type = G_io_apdu_buffer[32];
+            tmp_ctx.signing_context.data_version = G_io_apdu_buffer[33];
+            // don't sign zero for tx v2+
+            tmp_ctx.signing_context.sign_from = 1;
+        } else {
+            tmp_ctx.signing_context.data_type = G_io_apdu_buffer[31];
+            tmp_ctx.signing_context.data_version = 1;
+            tmp_ctx.signing_context.sign_from = 0;
+        }
     }
 
     // else wait for next chunk
     if (tmp_ctx.signing_context.chunk_used < chunk_data_size) {
-        // if this is a first chunk
         if (tmp_ctx.signing_context.step == 1) {
             cx_ecfp_public_key_t public_key;
             cx_ecfp_private_key_t private_key;
@@ -132,12 +156,7 @@ void make_sign_step() {
             make_sign_step();
         } else if (tmp_ctx.signing_context.step == 2) {
             if (tmp_ctx.signing_context.data_read < tmp_ctx.signing_context.data_size) {
-                uint32_t chunk_data_left = chunk_data_size - tmp_ctx.signing_context.chunk_used;
-                uint32_t data_read_left = tmp_ctx.signing_context.data_size - tmp_ctx.signing_context.data_read;
-                uint32_t step_read_bytes_left = MIN(chunk_data_left, data_read_left);
-                stream_eddsa_sign_step2(&tmp_ctx.signing_context.eddsa_context, &G_io_apdu_buffer[chunk_data_start_index + tmp_ctx.signing_context.chunk_used], step_read_bytes_left);
-                tmp_ctx.signing_context.data_read += step_read_bytes_left;
-                tmp_ctx.signing_context.chunk_used += step_read_bytes_left;
+                hash_stream_data(chunk_data_size, chunk_data_start_index);
                 make_sign_step();
             } else {
                 stream_eddsa_sign_step3(&tmp_ctx.signing_context.eddsa_context);
@@ -147,13 +166,10 @@ void make_sign_step() {
             }
         } else if (tmp_ctx.signing_context.step == 4) {
             if (tmp_ctx.signing_context.data_read < tmp_ctx.signing_context.data_size) {
-                uint32_t chunk_data_left = chunk_data_size - tmp_ctx.signing_context.chunk_used;
-                uint32_t data_read_left = tmp_ctx.signing_context.data_size - tmp_ctx.signing_context.data_read;
-                uint32_t step_read_bytes_left = MIN(chunk_data_left, data_read_left);
-                stream_eddsa_sign_step4(&tmp_ctx.signing_context.eddsa_context, &G_io_apdu_buffer[chunk_data_start_index + tmp_ctx.signing_context.chunk_used], step_read_bytes_left);
-                tmp_ctx.signing_context.data_read += step_read_bytes_left;
-                tmp_ctx.signing_context.chunk_used += step_read_bytes_left;
+                hash_stream_data(chunk_data_size, chunk_data_start_index);
+                // not call make_sign_step() because tmp_ctx.signing_context.chunk_used < chunk_data_size will be false
                 if (tmp_ctx.signing_context.data_read == tmp_ctx.signing_context.data_size) {
+                    os_memmove(ui_context.id, tmp_ctx.signing_context.eddsa_context.first_data_hash, 32);
                     tmp_ctx.signing_context.step = 5;
                 } else {
                     make_sign_step();
@@ -173,13 +189,12 @@ uint32_t set_result_sign() {
     stream_eddsa_sign_step5(&tmp_ctx.signing_context.eddsa_context, signature);
 
     cx_ecfp_public_key_t public_key;
-    cx_ecfp_private_key_t private_key;
-    get_keypair_by_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key, &private_key);
-
+    if (!get_curve25519_public_key_for_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key)) {
+        THROW(INVALID_PARAMETER);
+    }
     // set the sign bit from ed25519 public key (using 31 byte) for curve25519 validation used in waves (this makes the ed25519 signature invalid)
-    unsigned char sign_bit = public_key[31] & 0x80;
+    unsigned char sign_bit = public_key.W[31] & 0x80;
 
-    os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
     os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
 
     signature[63] |= sign_bit;

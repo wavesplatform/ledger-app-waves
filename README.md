@@ -11,4 +11,38 @@ Special thanks to Jean Passot and Oto from the Ledger team, Jake Bordens from th
 # Building
 
 You'll need a Ledger Nano S development environment.  More information can be 
-found here: https://github.com/wavesplatform/nanos-app-waves/wiki
+found [here](https://github.com/wavesplatform/nanos-app-waves/wiki).
+
+Also there're [my ledger dev env docker image](https://github.com/Tolsi/ledger-devenv), you can use it to build it.
+
+## Nano S
+
+```rm -rf bin/ debug/ dep/ obj/ app.hex src/glyphs.c src/glyphs.h && make BOLOS_ENV=/opt/ledger/ BOLOS_SDK=/home/nanos-secure-sdk```
+
+## Nano X
+
+```rm -rf bin/ debug/ dep/ obj/ app.hex src/glyphs.c src/glyphs.h && make BOLOS_ENV=/opt/ledger/ BOLOS_SDK=/home/ledger/sdk-nanox-1.2.4-1.3```
+
+## Blue
+
+```rm -rf bin/ debug/ dep/ obj/ app.hex src/glyphs.c src/glyphs.h && make BOLOS_ENV=/opt/ledger/ BOLOS_SDK=/home/blue-secure-sdk/```
+
+# Installation
+
+You can download the official version of this application, signed and verified by the Ledger team, from [the official Ledger Live application](https://www.ledger.com/ledger-live).
+
+Building and installing from the source code is usually required in order to develop or customize the application. Try to avoid this, it may be unsafe.
+
+## Nano S
+
+```python -m ledgerblue.loadApp --appFlags 0x240 --path "44'/5741564'" --curve secp256k1 --curve ed25519 --tlv --targetId 0x31100004 --delete --fileName bin/app.hex --appName Waves --appVersion 1.0.1 --dataSize 64 --icon 010000000000ffffffffffffff7ffe3ffc1ff80ff007e003c003c007e00ff01ff83ffc7ffeffffffff```
+
+## Nano X
+
+Note that at the time of publication of this manual (March 2020), the installation of your applications is possible only on special devices for developers.
+
+```python -m ledgerblue.loadApp --appFlags 0x240 --path "44'/5741564'" --curve secp256k1 --curve ed25519 --tlv --targetId 0x33000004 --delete --fileName bin/app.hex --appName "Waves" --appVersion 1.0.1 --dataSize 256 --icon 010000000000ffffff000030001ec00ff807ffe3fff97ffc0ffe013f8007c0000000```
+
+## Blue
+
+```python -m ledgerblue.loadApp --appFlags 0x240 --path "44'/5741564'" --curve secp256k1 --curve ed25519 --tlv --targetId 0x31010004 --delete --fileName bin/app.hex --appName "Waves" --appVersion 1.0.1 --dataSize 0x0000000000000100 --icon 04f9efe900f9f9f900fadaca00fae4da00fbbb9b00fc9c6c00fcb18c00fd925d00fe7e3e00fe691e00ff5f0f00ffc0a000ffe0d000ff601000ffffff00ff55000011111111112176f8ffffffffffffffffff8f671211111111111111111153f9ffffffffffffffffffffffffff9f351111111111111150ffffffffffffffffffffffffffffffffff05111111111121faffffffffffffffffffffffffffffffffffaf1211111111f4ffffffffffffffffffffffffffffffffffffff4f11111121ffffffffffffffffffffffffffffffffffffffffff121111a0ffffffffffffffffffffffffffffffffffffffffff0a1111f5ffffffffffffffffffffffffffffffffffffffffff5f1131ffffffffffffffffffffffddffffffffffffffffffffff1351ffffffffffffffffffffdfccfdffffffffffffffffffff1591ffffffffffffffffffffcdeedcffffffffffffffffffff19f2ffffffffffffffffffdfeceecefdffffffffffffffffff2ff6ffffffffffffffffffcdeebbeedcffffffffffffffffff6ff7ffffffffffffffffdfecbeffebcefdffffffffffffffff7ff8ffffffffffffffffcdeefbffbfeedcffffffffffffffff8fffffffffffffffffdfecbeffffffebcefdffffffffffffffffffffffffffffffffcdeefbffffffbfeedcffffffffffffffffffffffffffffffdfecbeffffffffffebcefdffffffffffffffffffffffffffffcdeefbffffffffffbfeedcffffffffffffffffffffffffffdfecbeffffffffffffffebcefdffffffffffffffffffffffffcdeefbffffffffffffffbfeedcffffffffffffffffffffffdfecbeffffffffffffffffffebcefdffffffffffffffffffffcdeefbffffffffffffffffffbfeedcffffffffffffffffffdfecbeffffffffffffffffffffffebcefdffffffffffffffffcdeefbffffffffffffffffffffffbfeedcffffffffffffffffcdeefbffffffffffffffffffffffbfeedcffffffffffffffffdfecbeffffffffffffffffffffffebcefdffffffffffffffffffcdeefbffffffffffffffffffbfeedcffffffffffffffffffffdfecbeffffffffffffffffffebcefdffffffffffffffffffffffcdeefbffffffffffffffbfeedcffffffffffffffffffffffffdfecbeffffffffffffffebcefdffffffffffffffffffffffffffcdeefbffffffffffbfeedcffffffffffffffffffffffffffffdfecbeffffffffffebcefdffffffffffffffffffffffffffffffcdeefbffffffbfeedcffffffffffffffffffffffffffffffffdfecbeffffffebcefdfffffffffffffffff8ffffffffffffffffcdeefbffbfeedcffffffffffffffff8ff7ffffffffffffffffdfecbeffebcefdffffffffffffffff7ff6ffffffffffffffffffcdeebbeedcffffffffffffffffff6ff2ffffffffffffffffffdfeceecefdffffffffffffffffff2f91ffffffffffffffffffffcdeedcffffffffffffffffffff1951ffffffffffffffffffffdfccfdffffffffffffffffffff1531ffffffffffffffffffffffddffffffffffffffffffffff1311f5ffffffffffffffffffffffffffffffffffffffffff5f1111a0ffffffffffffffffffffffffffffffffffffffffff0a111121ffffffffffffffffffffffffffffffffffffffffff12111111f4ffffffffffffffffffffffffffffffffffffff4f1111111121faffffffffffffffffffffffffffffffffffaf12111111111150ffffffffffffffffffffffffffffffffff051111111111111153f9ffffffffffffffffffffffffff9f351111111111111111112176f8ffffffffffffffffff8f67121111111111```

@@ -31,7 +31,7 @@ Also there're [my ledger dev env docker image](https://github.com/Tolsi/ledger-d
 
 You can download the official version of this application, signed and verified by the Ledger team, from [the official Ledger Live application](https://www.ledger.com/ledger-live).
 
-Building and installing from the source code is usually required in order to develop or customize the application. Try to avoid this, it may be unsafe.
+Building and installing from the source code is usually required in order to develop or customize the application. In addition, you will receive a warning that this application was received from an unreliable source. Try to avoid this, it may be unsafe.
 
 ## Nano S
 

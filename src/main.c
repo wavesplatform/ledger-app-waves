@@ -114,9 +114,8 @@ void make_sign_step() {
     uint8_t chunk_data_size = G_io_apdu_buffer[4];
 
     if (tmp_ctx.signing_context.chunk == 0) {
-        // todo sign all data for now
-        chunk_data_start_index += 26;
-        chunk_data_size -= 26;
+        chunk_data_start_index += 28;
+        chunk_data_size -= 28;
 
         // then there is the bip32 path in the first chunk - first 20 bytes of data
         read_path_from_bytes(G_io_apdu_buffer + 5, (uint32_t *) tmp_ctx.signing_context.bip32);
@@ -129,18 +128,8 @@ void make_sign_step() {
         // 27 byte - data size
         tmp_ctx.signing_context.data_size = deserialize_uint32_t(&G_io_apdu_buffer[27]);
         // first byte of data
-        uint8_t may_be_type = G_io_apdu_buffer[31];
-
-        if (may_be_type == 0) {
-            tmp_ctx.signing_context.data_type = G_io_apdu_buffer[32];
-            tmp_ctx.signing_context.data_version = G_io_apdu_buffer[33];
-            // don't sign zero for tx v2+
-            tmp_ctx.signing_context.sign_from = 1;
-        } else {
-            tmp_ctx.signing_context.data_type = G_io_apdu_buffer[31];
-            tmp_ctx.signing_context.data_version = 1;
-            tmp_ctx.signing_context.sign_from = 0;
-        }
+        tmp_ctx.signing_context.data_type = G_io_apdu_buffer[31];
+        tmp_ctx.signing_context.data_version = G_io_apdu_buffer[32];
     }
 
     // else wait for next chunk
@@ -248,18 +237,21 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 if (tmp_ctx.signing_context.step > 0) {
                     tmp_ctx.signing_context.chunk += 1;
                 } else {
+                    os_memset((unsigned char *) &ui_context, 0, sizeof(uiContext_t));
                     tmp_ctx.signing_context.step = 1;
+                    tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
                 }
 
                 tmp_ctx.signing_context.chunk_used = 0;
-
+                ui_context.chunk_used = 0;
                 if (G_io_apdu_buffer[2] == P1_LAST) {
-                    tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
                     make_sign_step();
-                    menu_sign_init();
+                    build_ui_step(true);
+                    show_sign_ui();
                     *flags |= IO_ASYNCH_REPLY;
                 } else {
                     make_sign_step();
+                    build_ui_step(false);
                     THROW(SW_OK);
                 }
 

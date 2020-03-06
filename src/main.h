@@ -71,7 +71,14 @@ typedef struct uiContext_t {
 	unsigned char line7[45];
 	unsigned char line8[45];
 	unsigned char id[32];
-	uint32_t processed;
+	unsigned char buffer[150];
+	uint8_t step;
+	uint8_t wait_in_buffer;
+	uint8_t buffer_used;
+	uint32_t chunk_used;
+    uint16_t alias_size;
+    uint16_t attachment_size;
+    bool finished;
 } uiContext_t;
 
 // A place to store data during the signing
@@ -85,6 +92,7 @@ typedef struct signingContext_t {
 	unsigned char network_byte;
 	uint32_t data_size;
     uint32_t data_read;
+    // todo remove it? pass by params
     uint32_t chunk_used;
     uint32_t chunk;
     uint8_t step;

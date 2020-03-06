@@ -47,6 +47,8 @@ void ui_idle();
 extern int ux_step;
 extern int ux_step_count;
 
+void build_ui_step(bool is_last);
+void show_sign_ui();
 void menu_address_init();
 
 #define MAX_CHARS_PER_LINE 49

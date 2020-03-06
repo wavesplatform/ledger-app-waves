@@ -165,20 +165,68 @@ def build_transfer_bytes(publicKey, recipient, asset, amount, attachment='', fee
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
 
+    # 2 first bytes aren't the tx, but info for the legder
     sData = b'\4' + version + b'\4'
 
     if version == b'\2':
         sData += version
+        
+    start_index = 31
 
-    sData += base58.b58decode(publicKey) + \
-            (b'\1' + base58.b58decode(asset.assetId) if asset else b'\0') + \
-            (b'\1' + base58.b58decode(feeAsset.assetId) if feeAsset else b'\0') + \
-            struct.pack(">Q", timestamp) + \
-            struct.pack(">Q", amount) + \
-            struct.pack(">Q", txFee) + \
-            base58.b58decode(recipient.address) + \
-            struct.pack(">H", len(attachment)) + \
-            pwcrypto.str2bytes(attachment)
+    start_len = len(sData) + start_index
+    field = base58.b58decode(publicKey)
+    sData += field
+    end_len = start_len + len(field)
+    print('public key [{} - {}]'.format(start_len, end_len))
+    
+    start_len = len(sData) + start_index
+    field = (b'\1' + base58.b58decode(asset.assetId) if asset else b'\0')
+    sData += field
+    end_len = start_len + len(field)
+    print('asset [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = (b'\1' + base58.b58decode(feeAsset.assetId) if feeAsset else b'\0')
+    sData += field
+    end_len = start_len + len(field)
+    print('fee asset [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = struct.pack(">Q", timestamp)
+    sData += field
+    end_len = start_len + len(field)
+    print('timestamp [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = struct.pack(">Q", amount)
+    sData += field
+    end_len = start_len + len(field)
+    print('amount key [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = struct.pack(">Q", txFee)
+    sData += field
+    end_len = start_len + len(field)
+    print('fee [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = base58.b58decode(recipient.address)
+    sData += field
+    end_len = start_len + len(field)
+    print('recipient [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = struct.pack(">H", len(attachment))
+    sData += field
+    end_len = start_len + len(field)
+    print('attachment size [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = pwcrypto.str2bytes(attachment)
+    sData += field
+    end_len = start_len + len(field)
+    print('attachment [{} - {}]'.format(start_len, end_len))
+
     return sData
 
 while (True):

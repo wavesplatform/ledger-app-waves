@@ -148,7 +148,7 @@ void build_ui_step(bool is_last) {
             chunk_data_size -= 28;
         }
 
-        if (ui_context.step >= 10) {
+        if (ui_context.step >= 9) {
             return THROW(SW_OK);
         }
 
@@ -253,7 +253,9 @@ void build_ui_step(bool is_last) {
                   break;
                case 8:
                   // fee
-//                  copy_in_reverse_order((unsigned char *) &fee, (unsigned char *) ui_context.buffer, 8);
+                  copy_in_reverse_order((unsigned char *) &fee, (const unsigned char *) ui_context.buffer, 8);
+
+                  // todo freeze here, uncomment me
 //                  print_amount(fee, tmp_ctx.signing_context.fee_decimals, (unsigned char*) ui_context.line4, 45);
 
                   ui_context.step = 9;
@@ -262,7 +264,6 @@ void build_ui_step(bool is_last) {
                   build_ui_step(is_last);
                   break;
                case 9:
-                  // todo freeze here
                   // address or alias flag is a part of address
                   if (ui_context.buffer[0] == 1) {
                     ui_context.step = 10;

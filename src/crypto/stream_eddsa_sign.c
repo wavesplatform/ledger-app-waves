@@ -101,12 +101,6 @@ static void cx_eddsa_get_public_key_internal(const cx_ecfp_private_key_t *pv_key
 
   size = domain->length;
 
-//  cx_scc_assert_param(CX_CURVE_RANGE(domain->curve,TWISTED_EDWARD));
-//  cx_scc_assert_param((pv_key->d_len == size) || (pv_key->d_len == (2*size)));
-//  cx_scc_assert_param(pv_key->curve == domain->curve);
-//  cx_scc_assert_param(((a==NULL)&&(a_len==0)) || ((a_len) && (a_len >= size)));
-//  cx_scc_assert_param(((h==NULL)&&(h_len==0)) || ((h_len) && (h_len >= size)));
-
   switch(hashID) {
   case CX_SHA512:
     cx_sha512_init(&hash_ctx);
@@ -151,98 +145,6 @@ static void cx_eddsa_get_public_key_internal(const cx_ecfp_private_key_t *pv_key
   os_memmove(pu_key->W+1+size, domain->Gy, size);
   cx_ecfp_scalar_mult(domain->curve, pu_key->W, pu_key->W_len, scal, size);
 }
-
-/* ----------------------------------------------------------------------- */
-/*                                                                         */
-/* ----------------------------------------------------------------------- */
-//int stream_eddsa_sign(const cx_ecfp_private_key_t *pv_key,
-//                  int mode,  cx_md_t hashID,
-//                  const unsigned char  *hash ,unsigned int hash_len,
-//                  const unsigned char  *ctx , unsigned int ctx_len,
-//                  unsigned char *sig, unsigned int sig_len,
-//                  unsigned int *info) {
-//
-//  cx_curve_twisted_edward_t *domain;
-//  unsigned int size,hsize;
-//  union {
-//    unsigned char Q[32*2+1];
-//    cx_ecfp_256_public_key_t internal_pu_key;
-//  }u;
-//  unsigned char Y[32]; //pu_key'
-//  unsigned char a[32]; // a
-//  unsigned char r[32]; //r
-//  unsigned char scal[64];
-//  cx_sha512_t hash_ctx;
-//  UNUSED(mode);UNUSED(&ctx);UNUSED(&ctx_len);
-//
-//  domain = (cx_curve_twisted_edward_t *) &C_cx_Ed25519;
-//  size = domain->length;
-////  cx_scc_assert_param(CX_CURVE_RANGE(domain->curve,TWISTED_EDWARD));
-////  cx_scc_assert_param((pv_key->d_len == size) || (pv_key->d_len == 2*size));
-////  cx_scc_assert_param(((&ctx==NULL)&&(&ctx_len==0)) || (&ctx));
-////  cx_scc_assert_param(sig_len >= 2*size);
-//
-//  //get domain
-//  if (info) {
-//    *info = 0;
-//  }
-//
-//  //check hashID as H function
-//  switch(hashID) {
-//  case CX_SHA512:
-//    break;
-//
-//  default:
-//    THROW(INVALID_PARAMETER);
-//  }
-//  hsize = 2*size;
-//
-// // retrieve public key,private scalar a, and private prefix h (stored in r)
-// cx_eddsa_get_public_key_internal(pv_key, hashID, (cx_ecfp_public_key_t *)&u.internal_pu_key, a, sizeof(a), r, sizeof(r), scal);
-//
-// //compress public_key
-// cx_edward_compress_point(domain->curve, &u.internal_pu_key.W[0], u.internal_pu_key.W_len);
-// memmove(Y, &u.internal_pu_key.W[1], size);
-//
-//  //compute r
-//  // - last size (32/57) bytes of H(sk), h,  as big endian bytes ordered. stored in r
-//  // - r = H(h,m) as little endian
-//  cx_sha512_init(&hash_ctx);
-//
-//  cx_hash(&hash_ctx.header, CX_NONE, r, size, NULL, 0);
-//  cx_hash(&hash_ctx.header, CX_NONE, hash, hash_len, NULL, 0);
-//  cx_hash(&hash_ctx.header, CX_LAST, NULL, 0, scal, 64);
-//  cx_encode_int(scal,hsize);
-//  cx_math_modm(scal, hsize,  domain->n, size);
-//  memmove(r,scal+size,size);                   // r
-//
-//  //compute R = r.B
-//  u.Q[0] = 0x04;
-//  memmove(u.Q+1,      domain->Gx, size);
-//  memmove(u.Q+1+size, domain->Gy, size);
-//  cx_ecfp_scalar_mult(CX_CURVE_Ed25519, u.Q, 1+2*domain->length, r, size);
-//  cx_compress(u.Q+1,size);
-//  memmove(sig,u.Q+1+size,size);                // sig <- R
-//
-//  //compute S = r+H(R,A,M).a
-//  // - compute H(R,A,M)
-//  cx_sha512_init(&hash_ctx);
-//
-//  cx_hash(&hash_ctx.header, CX_NONE, sig, size, NULL, 0);
-//  cx_hash(&hash_ctx.header, CX_NONE,Y, size, NULL, 0);
-//  cx_hash(&hash_ctx.header, CX_NONE,hash, hash_len, NULL, 0);
-//  cx_hash(&hash_ctx.header, CX_LAST, NULL, 0, scal, 64);
-//  cx_encode_int(scal, hsize);
-//  // - compute S = r+H(.)a
-//  cx_math_modm(scal, hsize, domain->n, size);
-//  cx_math_modm(a, size, domain->n, size);
-//  cx_math_multm(sig+size, scal+size, a, domain->n, size);
-//  cx_math_addm (sig+size, sig+size,  r, domain->n, size);
-//  cx_encode_int(sig+size, size);
-//
-//  return 2*size;
-//  #undef H
-//}
 
 void stream_eddsa_sign_step1(streamEddsaContext_t *eddsa_context, const cx_ecfp_private_key_t *pv_key) {
     os_memset((unsigned char *) eddsa_context, 0, sizeof(streamEddsaContext_t));

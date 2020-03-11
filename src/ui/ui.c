@@ -1,22 +1,22 @@
-
 /*******************************************************************************
-*   Burstcoin Wallet App for Nano Ledger S. Updated By Waves community.
-*   Copyright (c) 2017-2018 Jake B.
-* 
-*   Based on Sample code provided and (c) 2016 Ledger
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   Waves Platform Wallet App for Nano Ledger devices
+ *   Copyright (c) 2017-2020 Sergey Tolmachev (Tolsi) <tolsi.ru@gmail.com>
+ *
+ *   Based on Sample code provided (c) 2016 Ledger and
+ *                                 (c) 2017-2018 Jake B. (Burstcoin app)
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 
 #include "ui.h"
 #include <stdbool.h>
@@ -160,7 +160,6 @@ void build_ui_step(bool is_last) {
             uint64_t amount = 0;
             uint64_t fee = 0;
             uint32_t chunk_data_left = chunk_data_size - ui_context.chunk_used;
-            uint32_t step_read_bytes_left = MIN(chunk_data_left, ui_context.wait_in_buffer);
 
             switch (ui_context.step) {
                case 0:

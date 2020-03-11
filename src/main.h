@@ -83,8 +83,8 @@ typedef struct uiContext_t {
 
 // A place to store data during the signing
 typedef struct signingContext_t {
-	// bip32 path
     uint32_t bip32[5];
+    unsigned char sign_bit;
     unsigned char amount_decimals;
 	unsigned char fee_decimals;
 	unsigned char data_type;
@@ -92,7 +92,6 @@ typedef struct signingContext_t {
 	unsigned char network_byte;
 	uint32_t data_size;
     uint32_t data_read;
-    // todo remove it? pass by params
     uint32_t chunk_used;
     uint32_t chunk;
     uint8_t step;

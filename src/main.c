@@ -120,16 +120,11 @@ void make_sign_step() {
         // then there is the bip32 path in the first chunk - first 20 bytes of data
         read_path_from_bytes(G_io_apdu_buffer + 5, (uint32_t *) tmp_ctx.signing_context.bip32);
 
-        // 25th byte - amount decimals
         tmp_ctx.signing_context.amount_decimals = G_io_apdu_buffer[25];
-        // 26th byte - fee decimals
         tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[26];
-
-        // 27 byte - data size
-        tmp_ctx.signing_context.data_size = deserialize_uint32_t(&G_io_apdu_buffer[27]);
-        // first byte of data
-        tmp_ctx.signing_context.data_type = G_io_apdu_buffer[31];
-        tmp_ctx.signing_context.data_version = G_io_apdu_buffer[32];
+        tmp_ctx.signing_context.data_type = G_io_apdu_buffer[27];
+        tmp_ctx.signing_context.data_version = G_io_apdu_buffer[28];
+        tmp_ctx.signing_context.data_size = deserialize_uint32_t(&G_io_apdu_buffer[29]);
     }
 
     // else wait for next chunk
@@ -139,6 +134,7 @@ void make_sign_step() {
             cx_ecfp_private_key_t private_key;
             get_keypair_by_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key, &private_key);
             stream_eddsa_sign_step1(&tmp_ctx.signing_context.eddsa_context, &private_key);
+            tmp_ctx.signing_context.sign_bit = public_key.W[31] & 0x80;
             os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
             os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
             tmp_ctx.signing_context.step = 2;
@@ -177,19 +173,9 @@ uint32_t set_result_sign() {
 
     stream_eddsa_sign_step5(&tmp_ctx.signing_context.eddsa_context, signature);
 
-    cx_ecfp_public_key_t public_key;
-    if (!get_curve25519_public_key_for_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key)) {
-        THROW(INVALID_PARAMETER);
-    }
-    // set the sign bit from ed25519 public key (using 31 byte) for curve25519 validation used in waves (this makes the ed25519 signature invalid)
-    unsigned char sign_bit = public_key.W[31] & 0x80;
-
-    os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
-
-    signature[63] |= sign_bit;
-
     init_context();
 
+    signature[63] |= tmp_ctx.signing_context.sign_bit;
     os_memmove((char *) G_io_apdu_buffer, signature, sizeof(signature));
 
     return 64;
@@ -198,6 +184,7 @@ uint32_t set_result_sign() {
 uint32_t set_result_get_address() {
     os_memmove((char *) G_io_apdu_buffer, (char *) tmp_ctx.address_context.public_key, 32);
     os_memmove((char *) G_io_apdu_buffer + 32, (char *) tmp_ctx.address_context.address, 35);
+    init_context();
     return 67;
 }
 
@@ -322,6 +309,9 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 break;
             }
             // Unexpected exception => report
+            if (sw != 0x9000) {
+                init_context();
+            }
             G_io_apdu_buffer[*tx] = sw >> 8;
             G_io_apdu_buffer[*tx + 1] = sw;
             *tx += 2;

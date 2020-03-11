@@ -23,25 +23,15 @@
 #include "../glyphs.h"
 #include "../main.h"
 #include "../crypto/waves.h"
-#ifdef TARGET_NANOS
-#include "nanox/ui_menus_nanox.h"
-#endif
 #ifdef TARGET_BLUE
 #include "blue/ui_menus_blue.h"
 #include "blue/ui_menus_blue_prepro.h"
-#endif
-
-#ifdef TARGET_NANOX
+#else
 #include "nanox/ui_menus_nanox.h"
+#include "ux.h"
+ux_state_t G_ux;
+bolos_ux_params_t G_ux_params;
 #endif
-
-//#ifdef TARGET_NANOX
-//#include "ux.h"
-//ux_state_t G_ux;
-//bolos_ux_params_t G_ux_params;
-//#else
-ux_state_t ux;
-//#endif // TARGET_NANOX
 
 // UI currently displayed
 enum UI_STATE ui_state;
@@ -55,10 +45,7 @@ void menu_address_init() {
     ux_step_count = 2;
     #if defined(TARGET_BLUE)
         UX_DISPLAY(ui_address_blue, ui_address_blue_prepro);
-//    #elif defined(TARGET_NANOS)
-//        UX_DISPLAY(ui_address_nanos, ui_address_prepro);
     #else
-        // UX_DISPLAY(ui_address_nanos, ui_address_prepro);
         ux_flow_init(0, ux_display_address_flow, NULL);
     #endif // #if TARGET_ID
 }
@@ -416,9 +403,7 @@ void show_sign_ui() {
         ui_state = UI_VERIFY;
         #if defined(TARGET_BLUE)
             UX_DISPLAY(ui_approval_blue, ui_approval_blue_prepro);
-        #elif defined(TARGET_NANOS)
-            UX_DISPLAY(ui_verify_transaction_nanos, ui_verify_transaction_prepro);
-        #elif defined(TARGET_NANOX)
+        #else
             ux_flow_init(0, ux_verify_transaction_flow, NULL);
         #endif // #if TARGET_ID
     }

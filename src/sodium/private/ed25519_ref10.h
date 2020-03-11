@@ -23,36 +23,36 @@ void fe25519_invert(fe25519 out, const fe25519 z);
  */
 
 typedef struct {
-    fe25519 X;
-    fe25519 Y;
-    fe25519 Z;
+  fe25519 X;
+  fe25519 Y;
+  fe25519 Z;
 } ge25519_p2;
 
 typedef struct {
-    fe25519 X;
-    fe25519 Y;
-    fe25519 Z;
-    fe25519 T;
+  fe25519 X;
+  fe25519 Y;
+  fe25519 Z;
+  fe25519 T;
 } ge25519_p3;
 
 typedef struct {
-    fe25519 X;
-    fe25519 Y;
-    fe25519 Z;
-    fe25519 T;
+  fe25519 X;
+  fe25519 Y;
+  fe25519 Z;
+  fe25519 T;
 } ge25519_p1p1;
 
 typedef struct {
-    fe25519 yplusx;
-    fe25519 yminusx;
-    fe25519 xy2d;
+  fe25519 yplusx;
+  fe25519 yminusx;
+  fe25519 xy2d;
 } ge25519_precomp;
 
 typedef struct {
-    fe25519 YplusX;
-    fe25519 YminusX;
-    fe25519 Z;
-    fe25519 T2d;
+  fe25519 YplusX;
+  fe25519 YminusX;
+  fe25519 Z;
+  fe25519 T2d;
 } ge25519_cached;
 
 void ge25519_tobytes(unsigned char *s, const ge25519_p2 *h);

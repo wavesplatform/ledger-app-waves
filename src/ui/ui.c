@@ -160,7 +160,6 @@ void build_ui_step(bool is_last) {
             uint64_t amount = 0;
             uint64_t fee = 0;
             uint32_t chunk_data_left = chunk_data_size - ui_context.chunk_used;
-            uint32_t step_read_bytes_left = MIN(chunk_data_left, ui_context.wait_in_buffer);
 
             switch (ui_context.step) {
                case 0:

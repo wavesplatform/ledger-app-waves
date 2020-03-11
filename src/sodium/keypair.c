@@ -11,8 +11,6 @@ int ed25519_pk_to_curve25519(unsigned char *curve25519_pk, const unsigned char *
     if (
         ge25519_has_small_order(ed25519_pk) != 0 ||
         ge25519_frombytes_negate_vartime(&A, ed25519_pk) != 0) {
-        // todo ge25519_is_on_main_subgroup freezes the device!
-//        ge25519_is_on_main_subgroup(&A) == 0) {
         return -1;
     }
     fe25519_1(one_minus_y);

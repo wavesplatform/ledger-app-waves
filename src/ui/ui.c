@@ -114,6 +114,8 @@ void update_wait_in_buffer() {
             ui_context.wait_in_buffer = 8;
             break;
         case 10:
+            // use first byte from step 9
+            ui_context.chunk_used -= 1;
             ui_context.wait_in_buffer = 26;
             break;
         case 1:
@@ -146,10 +148,6 @@ void build_ui_step(bool is_last) {
         if (tmp_ctx.signing_context.chunk == 0) {
             chunk_data_start_index += 28;
             chunk_data_size -= 28;
-        }
-
-        if (ui_context.step >= 9) {
-            return THROW(SW_OK);
         }
 
         if (ui_context.wait_in_buffer > 0) {
@@ -244,7 +242,7 @@ void build_ui_step(bool is_last) {
                case 7:
                   // amount
                   copy_in_reverse_order((unsigned char *) &amount, (const unsigned char *) ui_context.buffer, 8);
-                  print_amount(amount, tmp_ctx.signing_context.amount_decimals, (unsigned char*) ui_context.line1, 45);
+                  print_amount(amount, tmp_ctx.signing_context.amount_decimals, (unsigned char*) ui_context.line1, 20);
 
                   ui_context.step = 8;
 
@@ -254,9 +252,7 @@ void build_ui_step(bool is_last) {
                case 8:
                   // fee
                   copy_in_reverse_order((unsigned char *) &fee, (const unsigned char *) ui_context.buffer, 8);
-
-                  // todo freeze here, uncomment me
-//                  print_amount(fee, tmp_ctx.signing_context.fee_decimals, (unsigned char*) ui_context.line4, 45);
+                  print_amount(fee, tmp_ctx.signing_context.fee_decimals, (unsigned char*) ui_context.line4, 20);
 
                   ui_context.step = 9;
 

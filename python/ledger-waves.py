@@ -165,8 +165,7 @@ def build_transfer_bytes(publicKey, recipient, asset, amount, attachment='', fee
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
 
-    # 2 first bytes aren't the tx, but info for the legder
-    sData = b'\4' + version + b'\4'
+    sData = b'\4'
 
     if version == b'\2':
         sData += version
@@ -201,7 +200,7 @@ def build_transfer_bytes(publicKey, recipient, asset, amount, attachment='', fee
     field = struct.pack(">Q", amount)
     sData += field
     end_len = start_len + len(field)
-    print('amount key [{} - {}]'.format(start_len, end_len))
+    print('amount [{} - {}]'.format(start_len, end_len))
 
     start_len = len(sData) + start_index
     field = struct.pack(">Q", txFee)
@@ -289,6 +288,8 @@ while (True):
         input = raw_input(colors.fg.lightblue + "Please input message to sign (for example \"" + base58.b58encode(
             str(some_transfer_bytes)) + "\")> " + colors.reset)
         if len(input) == 0:
+            # 2 first bytes aren't the tx data, but info type for the ledger
+            binary_data += b'\4\2'
             binary_data += struct.pack(">I", len(some_transfer_bytes))
             binary_data += some_transfer_bytes
             binary_data += some_transfer_bytes

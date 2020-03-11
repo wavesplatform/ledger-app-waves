@@ -23,8 +23,8 @@ include $(BOLOS_SDK)/Makefile.defines
 # Main app configuration
 
 APPVERSION_M=1
-APPVERSION_N=0
-APPVERSION_P=1
+APPVERSION_N=1
+APPVERSION_P=0
 
 APPNAME = "Waves"
 APPVERSION = $(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
@@ -71,7 +71,7 @@ DEFINES   += USB_SEGMENT_SIZE=64
 
 DEFINES   += UNUSED\(x\)=\(void\)x
 DEFINES   += APPVERSION=\"$(APPVERSION)\"
-DEFINES   += MAX_DATA_SIZE=650
+DEFINES   += MAX_DATA_SIZE=128
 
 WEBUSB_URL     = www.ledgerwallet.com
 DEFINES       += HAVE_WEBUSB WEBUSB_URL_SIZE_B=$(shell echo -n $(WEBUSB_URL) | wc -c) WEBUSB_URL=$(shell echo -n $(WEBUSB_URL) | sed -e "s/./\\\'\0\\\',/g")

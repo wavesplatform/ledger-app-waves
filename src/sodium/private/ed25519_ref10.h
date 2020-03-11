@@ -73,4 +73,11 @@ int ge25519_is_on_main_subgroup(const ge25519_p3 *p);
 
 int ge25519_has_small_order(const unsigned char s[32]);
 
+void sc25519_reduce(unsigned char s[64]);
+
+void ge25519_scalarmult_base(ge25519_p3 *h, const unsigned char *a);
+
+void sc25519_muladd(unsigned char s[32], const unsigned char a[32],
+                    const unsigned char b[32], const unsigned char c[32]);
+
 #endif

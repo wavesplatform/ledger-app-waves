@@ -22,6 +22,7 @@
 #define __MAIN_H__
 #include "os.h"
 #include "cx.h"
+#include "stream_eddsa_sign.h"
 #include <stdbool.h>
 
 // Host innteration communication protocol
@@ -69,21 +70,33 @@ typedef struct uiContext_t {
 	unsigned char line6[45];
 	unsigned char line7[45];
 	unsigned char line8[45];
+	unsigned char id[32];
+	unsigned char buffer[150];
+	uint8_t step;
+	uint8_t wait_in_buffer;
+	uint8_t buffer_used;
+	uint32_t chunk_used;
+    uint16_t alias_size;
+    uint16_t attachment_size;
+    bool finished;
 } uiContext_t;
 
 // A place to store data during the signing
 typedef struct signingContext_t {
-    // bip32 path
-	uint32_t bip32[5];
-	unsigned char amount_decimals;
+    uint32_t bip32[5];
+    unsigned char sign_bit;
+    unsigned char amount_decimals;
 	unsigned char fee_decimals;
-	// Stuff for the SHA-256 hashing
-    // Curve25519 support only full message hash
 	unsigned char data_type;
 	unsigned char data_version;
-	unsigned char buffer[MAX_DATA_SIZE];
-	uint32_t buffer_used;
 	unsigned char network_byte;
+	uint32_t data_size;
+    uint32_t data_read;
+    uint32_t chunk_used;
+    uint32_t chunk;
+    uint8_t step;
+    uint8_t sign_from;
+    streamEddsaContext_t eddsa_context;
 } signingContext_t;
 
 // A place to store data during the confirming the address

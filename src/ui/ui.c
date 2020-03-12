@@ -142,7 +142,6 @@ void build_ui_step(bool is_last) {
             bool is_flag_set = ui_context.buffer[0] == 1;
             uint64_t amount = 0;
             uint64_t fee = 0;
-            uint32_t chunk_data_left = chunk_data_size - ui_context.chunk_used;
 
             switch (ui_context.step) {
                case 0:

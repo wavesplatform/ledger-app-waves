@@ -35,7 +35,7 @@ Building and installing from the source code is usually required in order to dev
 
 If you build the app not in the Docker, but in your host OS then just call `make load`. Note that you should have the python env with `ledgerblue` installed. [There're some more details.](https://github.com/wavesplatform/nanos-app-waves/wiki)
 
-If you use Docker, then call this from app root:
+If you use Docker to build the app, then call this from app root on you host OS:
 
 ## Nano S
 

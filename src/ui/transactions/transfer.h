@@ -18,44 +18,11 @@
  *  limitations under the License.
  ********************************************************************************/
 
-#ifndef __UI_H__
-#define __UI_H__
+#ifndef __TRANSFER_H__
+#define __TRANSFER_H__
 
-#include "os.h"
-#include "cx.h"
 #include <stdbool.h>
-#include "../main.h"
-#include "../crypto/ledger_crypto.h"
-#include "os_io_seproxyhal.h"
 
-#ifdef HAVE_BOLOS_UX
-extern ux_state_t G_ux;
-extern bolos_ux_params_t G_ux_params;
-#endif
+void build_transfer_ui_step(bool is_last);
 
-enum UI_STATE { UI_IDLE, UI_VERIFY };
-extern enum UI_STATE ui_state;
-
-static const unsigned char WAVES_CONST[] = "Waves";
-
-void menu_sign_init();
-void ui_idle();
-
-extern int ux_step;
-extern int ux_step_count;
-
-void make_allowed_ui_steps(bool is_last);
-void show_sign_ui();
-void menu_address_init();
-
-void try_to_fill_buffer(uint8_t chunk_data_start_index,
-                        uint8_t chunk_data_size);
-
-#define MAX_CHARS_PER_LINE 49
-#define DEFAULT_FONT BAGL_FONT_OPEN_SANS_LIGHT_16px | BAGL_FONT_ALIGNMENT_LEFT
-#define TEXT_HEIGHT 15
-#define TEXT_SPACE 4
-
-#define COLOR_WAVES 0x0055FF
-#define COLOR_WHITE 0xF9F9F9
 #endif

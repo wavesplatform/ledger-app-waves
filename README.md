@@ -4,7 +4,9 @@
 
 This is a Ledger devices wallet app for Waves platform.
 
-Special thanks to Jean Passot and Oto from the Ledger team, Jake Bordens from the Ledger/Birst community for their support and advices.
+Special thanks to Jean Passot, Cédric Mesnil, and Oto from the Ledger team, Jake Bordens from the Ledger/Birst community for their support and advices. Thanks to the Waves community for trusting the tokens on this application.
+
+For app APDU protocol and an integration manual please take a look at [this](https://github.com/wavesplatform/nanos-app-waves/wiki/Integration-manual). 
 
 # Building 👷
 

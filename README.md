@@ -61,6 +61,6 @@ To simplify the development and debugging process, it is recommended to follow [
   Now the device should ask you only one confirmation instead of several! Take care of your buttons, fingers and time 😊
 
 6. Start `usbtool` on the PC, then your app on Ledger device, send some APDU and look at the debug output in `usbtool` stdout!
-7. Check [the Ledger device emulator](https://github.com/LedgerHQ/speculos), but at the time of writing (March 2020), it does not support most system calls.
+7. Check [the Ledger device emulator](https://github.com/LedgerHQ/speculos), but at the time of writing (March 2020), it does not support most system calls. For now it perhaps only suitable for debugging an app UI on Ubuntu.
 
 Happy hacking!

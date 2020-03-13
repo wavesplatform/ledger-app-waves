@@ -110,7 +110,39 @@ void hash_stream_data(uint8_t chunk_data_size, uint8_t chunk_data_start_index) {
 // Handle a signing request -- called both from the main apdu loop as well as from
 // the button handler after the user verifies the transaction.
 
-void make_sign_step() {
+void make_sign_step(uint8_t chunk_data_start_index, uint8_t chunk_data_size) {
+    PRINTF("make_sign_step start step: %d\n", tmp_ctx.signing_context.step);
+    if (tmp_ctx.signing_context.step == 1) {
+        cx_ecfp_public_key_t public_key;
+        cx_ecfp_private_key_t private_key;
+        get_keypair_by_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key, &private_key);
+        stream_eddsa_sign_step1(&tmp_ctx.signing_context.eddsa_context, &private_key);
+        tmp_ctx.signing_context.sign_bit = public_key.W[31] & 0x80;
+        os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
+        os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
+        tmp_ctx.signing_context.step = 2;
+    } else if (tmp_ctx.signing_context.step == 2) {
+        if (tmp_ctx.signing_context.data_read < tmp_ctx.signing_context.data_size) {
+            hash_stream_data(chunk_data_size, chunk_data_start_index);
+        } else {
+            stream_eddsa_sign_step3(&tmp_ctx.signing_context.eddsa_context);
+            tmp_ctx.signing_context.step = 4;
+            tmp_ctx.signing_context.data_read = 0;
+        }
+    } else if (tmp_ctx.signing_context.step == 4) {
+        if (tmp_ctx.signing_context.data_read < tmp_ctx.signing_context.data_size) {
+            hash_stream_data(chunk_data_size, chunk_data_start_index);
+            // not call make_sign_step() because tmp_ctx.signing_context.chunk_used < chunk_data_size will be false
+            if (tmp_ctx.signing_context.data_read == tmp_ctx.signing_context.data_size) {
+                os_memmove(ui_context.id, tmp_ctx.signing_context.eddsa_context.first_data_hash, 32);
+                tmp_ctx.signing_context.step = 5;
+            }
+        }
+      }
+    PRINTF("make_sign_step end step: %d\n", tmp_ctx.signing_context.step);
+}
+
+void make_allowed_sign_steps() {
     uint8_t chunk_data_start_index = 5;
     uint8_t chunk_data_size = G_io_apdu_buffer[4];
 
@@ -128,41 +160,10 @@ void make_sign_step() {
         tmp_ctx.signing_context.data_size = deserialize_uint32_t(&G_io_apdu_buffer[29]);
     }
 
-    // else wait for next chunk
-    if (tmp_ctx.signing_context.chunk_used < chunk_data_size) {
-        if (tmp_ctx.signing_context.step == 1) {
-            cx_ecfp_public_key_t public_key;
-            cx_ecfp_private_key_t private_key;
-            get_keypair_by_path((uint32_t *) tmp_ctx.signing_context.bip32, &public_key, &private_key);
-            stream_eddsa_sign_step1(&tmp_ctx.signing_context.eddsa_context, &private_key);
-            tmp_ctx.signing_context.sign_bit = public_key.W[31] & 0x80;
-            os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
-            os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
-            tmp_ctx.signing_context.step = 2;
-            make_sign_step();
-        } else if (tmp_ctx.signing_context.step == 2) {
-            if (tmp_ctx.signing_context.data_read < tmp_ctx.signing_context.data_size) {
-                hash_stream_data(chunk_data_size, chunk_data_start_index);
-                make_sign_step();
-            } else {
-                stream_eddsa_sign_step3(&tmp_ctx.signing_context.eddsa_context);
-                tmp_ctx.signing_context.step = 4;
-                tmp_ctx.signing_context.data_read = 0;
-                make_sign_step();
-            }
-        } else if (tmp_ctx.signing_context.step == 4) {
-            if (tmp_ctx.signing_context.data_read < tmp_ctx.signing_context.data_size) {
-                hash_stream_data(chunk_data_size, chunk_data_start_index);
-                // not call make_sign_step() because tmp_ctx.signing_context.chunk_used < chunk_data_size will be false
-                if (tmp_ctx.signing_context.data_read == tmp_ctx.signing_context.data_size) {
-                    os_memmove(ui_context.id, tmp_ctx.signing_context.eddsa_context.first_data_hash, 32);
-                    tmp_ctx.signing_context.step = 5;
-                } else {
-                    make_sign_step();
-                }
-            }
-          }
+    while (tmp_ctx.signing_context.chunk_used < chunk_data_size) {
+        make_sign_step(chunk_data_start_index, chunk_data_size);
     }
+    // else wait for next chunk
 }
 
 // like https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
@@ -233,13 +234,13 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
                 tmp_ctx.signing_context.chunk_used = 0;
                 ui_context.chunk_used = 0;
                 if (G_io_apdu_buffer[2] == P1_LAST) {
-                    make_sign_step();
-                    build_ui_step(true);
+                    make_allowed_sign_steps();
+                    make_allowed_ui_steps(true);
                     show_sign_ui();
                     *flags |= IO_ASYNCH_REPLY;
                 } else {
-                    make_sign_step();
-                    build_ui_step(false);
+                    make_allowed_sign_steps();
+                    make_allowed_ui_steps(false);
                     THROW(SW_OK);
                 }
 
@@ -313,6 +314,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
             if (sw != 0x9000) {
                 init_context();
             }
+            PRINTF("Return Code %d\n", sw);
             G_io_apdu_buffer[*tx] = sw >> 8;
             G_io_apdu_buffer[*tx + 1] = sw;
             *tx += 2;

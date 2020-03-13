@@ -71,6 +71,7 @@ typedef struct uiContext_t {
   unsigned char line8[45];
   unsigned char id[32];
   unsigned char buffer[150];
+  unsigned char tmp[50];
   uint8_t step;
   uint8_t wait_in_buffer;
   uint8_t buffer_used;

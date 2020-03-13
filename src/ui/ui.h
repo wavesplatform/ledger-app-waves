@@ -43,7 +43,7 @@ void ui_idle();
 extern int ux_step;
 extern int ux_step_count;
 
-void build_ui_step(bool is_last);
+void make_allowed_ui_steps(bool is_last);
 void show_sign_ui();
 void menu_address_init();
 

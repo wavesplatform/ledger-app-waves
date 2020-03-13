@@ -33,6 +33,10 @@ You can download the official version of this application, signed and verified b
 
 Building and installing from the source code is usually required in order to develop or customize the application. In addition, you will receive a warning that this application was received from an unreliable source. Try to avoid this, it may be unsafe.
 
+If you build the app not in the Docker, but in your host OS then just call `make load`. Note that you should have the python env with `ledgerblue` installed. [There're some more details.](https://github.com/wavesplatform/nanos-app-waves/wiki)
+
+If you use Docker, then call this from app root:
+
 ## Nano S
 
 ```python -m ledgerblue.loadApp --appFlags 0x240 --path "44'/5741564'" --curve secp256k1 --curve ed25519 --tlv --targetId 0x31100004 --delete --fileName bin/app.hex --appName Waves --appVersion 1.0.1 --dataSize 64 --icon 010000000000ffffffffffffff7ffe3ffc1ff80ff007e003c003c007e00ff01ff83ffc7ffeffffffff```

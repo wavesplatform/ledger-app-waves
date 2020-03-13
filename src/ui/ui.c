@@ -220,7 +220,6 @@ void build_transfer_ui_step(bool is_last) {
               update_wait_in_buffer();
               break;
            case 8:
-              PRINTF("8\n");
               // fee
               copy_in_reverse_order((unsigned char *) &fee, (const unsigned char *) ui_context.buffer, 8);
               print_amount(fee, tmp_ctx.signing_context.fee_decimals, (unsigned char*) ui_context.line4, 20);
@@ -230,7 +229,6 @@ void build_transfer_ui_step(bool is_last) {
               update_wait_in_buffer();
               break;
            case 9:
-              PRINTF("9\n");
               // address or alias flag is a part of address
               if (ui_context.buffer[0] == 1) {
                 ui_context.step = 10;
@@ -243,7 +241,6 @@ void build_transfer_ui_step(bool is_last) {
               update_wait_in_buffer();
               break;
            case 10:
-              PRINTF("10\n");
               // address
               if (!b58enc((char *) ui_context.line3, &length, (const void *) ui_context.buffer, 26)) {
                   return THROW(SW_CONDITIONS_NOT_SATISFIED);
@@ -271,7 +268,6 @@ void build_transfer_ui_step(bool is_last) {
               update_wait_in_buffer();
               break;
            case 13:
-              PRINTF("13\n");
               // attachment size in bytes
               copy_in_reverse_order((unsigned char *) &ui_context.attachment_size, (unsigned char *) ui_context.buffer, 2);
 

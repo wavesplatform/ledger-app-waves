@@ -314,7 +314,6 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx, volati
             if (sw != 0x9000) {
                 init_context();
             }
-            PRINTF("Return Code %d\n", sw);
             G_io_apdu_buffer[*tx] = sw >> 8;
             G_io_apdu_buffer[*tx + 1] = sw;
             *tx += 2;

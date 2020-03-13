@@ -99,42 +99,6 @@ fe25519_sub(fe25519 h, const fe25519 f, const fe25519 g)
 }
 
 /*
- h = -f
- *
- Preconditions:
- |f| bounded by 1.1*2^25,1.1*2^24,1.1*2^25,1.1*2^24,etc.
- *
- Postconditions:
- |h| bounded by 1.1*2^25,1.1*2^24,1.1*2^25,1.1*2^24,etc.
- */
-
-void
-fe25519_neg(fe25519 h, const fe25519 f)
-{
-    int32_t h0 = -f[0];
-    int32_t h1 = -f[1];
-    int32_t h2 = -f[2];
-    int32_t h3 = -f[3];
-    int32_t h4 = -f[4];
-    int32_t h5 = -f[5];
-    int32_t h6 = -f[6];
-    int32_t h7 = -f[7];
-    int32_t h8 = -f[8];
-    int32_t h9 = -f[9];
-
-    h[0] = h0;
-    h[1] = h1;
-    h[2] = h2;
-    h[3] = h3;
-    h[4] = h4;
-    h[5] = h5;
-    h[6] = h6;
-    h[7] = h7;
-    h[8] = h8;
-    h[9] = h9;
-}
-
-/*
  Replace (f,g) with (g,g) if b == 1;
  replace (f,g) with (f,g) if b == 0.
  *
@@ -221,24 +185,6 @@ fe25519_copy(fe25519 h, const fe25519 f)
     h[9] = f9;
 }
 
-/*
- return 1 if f is in {1,3,5,...,q-2}
- return 0 if f is in {0,2,4,...,q-1}
-
- Preconditions:
- |f| bounded by 1.1*2^26,1.1*2^25,1.1*2^26,1.1*2^25,etc.
- */
-
-int
-fe25519_isnegative(const fe25519 f)
-{
-    unsigned char s[32];
-
-    fe25519_tobytes(s, f);
-
-    return s[0] & 1;
-}
-
 int
 sodium_is_zero(const unsigned char *n, const size_t nlen)
 {
@@ -249,24 +195,6 @@ sodium_is_zero(const unsigned char *n, const size_t nlen)
         d |= n[i];
     }
     return 1 & ((d - 1) >> 8);
-}
-
-/*
- return 1 if f == 0
- return 0 if f != 0
-
- Preconditions:
- |f| bounded by 1.1*2^26,1.1*2^25,1.1*2^26,1.1*2^25,etc.
- */
-
-int
-fe25519_iszero(const fe25519 f)
-{
-    unsigned char s[32];
-
-    fe25519_tobytes(s, f);
-
-    return sodium_is_zero(s, 32);
 }
 
 /*

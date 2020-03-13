@@ -346,6 +346,7 @@ void build_other_data_ui() {
   } else if (tx_type == 9) {
     os_memmove(&ui_context.line1, &"cancel leasing\0", 15);
   } else if (tx_type == 10) {
+    os_memmove(&ui_context.line2, &"Transaction Hash\0", 17);
     os_memmove(&ui_context.line1, &"creating an alias\0", 18);
   } else if (tx_type == 11) {
     os_memmove(&ui_context.line1, &"mass transfer\0", 14);
@@ -361,7 +362,7 @@ void build_other_data_ui() {
     os_memmove(&ui_context.line1, &"script invocation\0", 18);
   } else if (tx_type == 17) {
     os_memmove(&ui_context.line1, &"update asset info\0", 18);
-  } else {
+  } else if (tx_type > 200) {
     // type byte >200 are 'reserved', it will not be signed
     os_memmove(&ui_context.line2, &"Hash\0", 5);
     if (tx_type == 252) {
@@ -372,6 +373,8 @@ void build_other_data_ui() {
       os_memmove(&ui_context.line1, &"request\0", 8);
     } else if (tx_type == 255) {
       os_memmove(&ui_context.line1, &"message\0", 8);
+    } else {
+      os_memmove(&ui_context.line1, &"something\0", 10);
     }
   }
 

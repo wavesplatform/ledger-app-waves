@@ -359,6 +359,8 @@ void build_other_data_ui() {
     os_memmove(&ui_context.line1, &"asset script\0", 13);
   } else if (tx_type == 16) {
     os_memmove(&ui_context.line1, &"script invocation\0", 18);
+  } else if (tx_type == 17) {
+    os_memmove(&ui_context.line1, &"update asset info\0", 18);
   } else {
     // type byte >200 are 'reserved', it will not be signed
     os_memmove(&ui_context.line2, &"Hash\0", 5);

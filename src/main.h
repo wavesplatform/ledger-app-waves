@@ -54,7 +54,7 @@ typedef struct internal_storage_t {
   uint8_t initialized;
 } internal_storage_t;
 
-extern WIDE internal_storage_t const N_storage_real;
+extern internal_storage_t const N_storage_real;
 #define N_storage (*(volatile internal_storage_t *)PIC(&N_storage_real))
 
 // A place to store information about the transaction
@@ -71,6 +71,7 @@ typedef struct uiContext_t {
   unsigned char line8[45];
   unsigned char id[32];
   unsigned char buffer[150];
+  unsigned char tmp[50];
   uint8_t step;
   uint8_t wait_in_buffer;
   uint8_t buffer_used;

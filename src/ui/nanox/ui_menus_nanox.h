@@ -23,10 +23,8 @@
 
 #include "os.h"
 
-#if defined(TARGET_NANOX)
-
 #include "cx.h"
-#include "ux.h"
+#include "../ui_logic.h"
 
 //////////////////////////////////////////////////////////////////////
 UX_STEP_NOCB(ux_idle_flow_1_step, pnn,
@@ -79,7 +77,7 @@ UX_FLOW(ux_display_address_flow, &ux_display_address_flow_1_step,
 
 //////////////////////////////////////////////////////////////////////
 
-void display_if_buffer_not_empty(char *buffer, size_t buffer_len) {
+void display_if_buffer_not_empty(const char *buffer, size_t buffer_len) {
   if (strnlen(buffer, buffer_len) == 0) {
     if (G_ux.flow_stack[0].index < G_ux.flow_stack[0].prev_index) {
       ux_flow_prev();
@@ -121,7 +119,7 @@ UX_STEP_NOCB(ux_transfer_6_step, bnnn_paging,
                  .text = (const char *)ui_context.line5,
              });
 UX_STEP_NOCB_INIT(ux_transfer_7_step, bnnn_paging,
-                  display_if_buffer_not_empty(ui_context.line6,
+                  display_if_buffer_not_empty((const char *)ui_context.line6,
                                               sizeof(ui_context.line6)),
                   {
                       .title = "Attachment",
@@ -186,7 +184,5 @@ UX_FLOW(ux_verify_transaction_flow, &ux_verify_transaction_1_step,
         &ux_verify_transaction_4_step, &ux_verify_transaction_5_step);
 
 //////////////////////////////////////////////////////////////////////
-
-#endif
 
 #endif

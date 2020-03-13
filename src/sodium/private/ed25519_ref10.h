@@ -19,7 +19,6 @@ void fe25519_invert(fe25519 out, const fe25519 z);
  ge25519_p2 (projective): (X:Y:Z) satisfying x=X/Z, y=Y/Z
  ge25519_p3 (extended): (X:Y:Z:T) satisfying x=X/Z, y=Y/Z, XY=ZT
  ge25519_p1p1 (completed): ((X:Z),(Y:T)) satisfying x=X/Z, y=Y/T
- ge25519_precomp (Duif): (y+x,y-x,2dxy)
  */
 
 typedef struct {
@@ -41,21 +40,6 @@ typedef struct {
   fe25519 Z;
   fe25519 T;
 } ge25519_p1p1;
-
-typedef struct {
-  fe25519 yplusx;
-  fe25519 yminusx;
-  fe25519 xy2d;
-} ge25519_precomp;
-
-typedef struct {
-  fe25519 YplusX;
-  fe25519 YminusX;
-  fe25519 Z;
-  fe25519 T2d;
-} ge25519_cached;
-
-int ge25519_frombytes_negate_vartime(ge25519_p3 *h, const unsigned char *s);
 
 int ge25519_has_small_order(const unsigned char s[32]);
 

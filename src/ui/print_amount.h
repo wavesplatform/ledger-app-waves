@@ -18,44 +18,51 @@
  *  limitations under the License.
  ********************************************************************************/
 
-#ifndef __UI_H__
-#define __UI_H__
+#ifndef __PRINT_AMOUNT_H__
+#define __PRINT_AMOUNT_H__
 
-#include "os.h"
-#include "cx.h"
-#include <stdbool.h>
-#include "../main.h"
-#include "../crypto/ledger_crypto.h"
-#include "os_io_seproxyhal.h"
+// borrowed from the Stellar wallet code and modified
+bool print_amount(uint64_t amount, int decimals, unsigned char *out,
+                  uint8_t len) {
+  uint64_t dVal = amount;
+  int i, j;
 
-#ifdef HAVE_BOLOS_UX
-extern ux_state_t G_ux;
-extern bolos_ux_params_t G_ux_params;
-#endif
+  if (decimals == 0)
+    decimals--;
 
-enum UI_STATE { UI_IDLE, UI_VERIFY };
-extern enum UI_STATE ui_state;
+  memset(ui_context.tmp, 0, len);
+  for (i = 0; dVal > 0 || i < decimals + 2; i++) {
+    if (dVal > 0) {
+      ui_context.tmp[i] = (char)((dVal % 10) + '0');
+      dVal /= 10;
+    } else {
+      ui_context.tmp[i] = '0';
+    }
+    if (i == decimals - 1) {
+      i += 1;
+      ui_context.tmp[i] = '.';
+    }
+    if (i >= len) {
+      return false;
+    }
+  }
+  // reverse order
+  for (i -= 1, j = 0; i >= 0 && j < len - 1; i--, j++) {
+    out[j] = ui_context.tmp[i];
+  }
+  if (decimals > 0) {
+    // strip trailing 0s
+    for (j -= 1; j > 0; j--) {
+      if (out[j] != '0')
+        break;
+    }
+    j += 1;
+    if (out[j - 1] == '.')
+      j -= 1;
+  }
 
-static const unsigned char WAVES_CONST[] = "Waves";
+  out[j] = '\0';
+  return true;
+}
 
-void menu_sign_init();
-void ui_idle();
-
-extern int ux_step;
-extern int ux_step_count;
-
-void make_allowed_ui_steps(bool is_last);
-void show_sign_ui();
-void menu_address_init();
-
-void try_to_fill_buffer(uint8_t chunk_data_start_index,
-                        uint8_t chunk_data_size);
-
-#define MAX_CHARS_PER_LINE 49
-#define DEFAULT_FONT BAGL_FONT_OPEN_SANS_LIGHT_16px | BAGL_FONT_ALIGNMENT_LEFT
-#define TEXT_HEIGHT 15
-#define TEXT_SPACE 4
-
-#define COLOR_WAVES 0x0055FF
-#define COLOR_WHITE 0xF9F9F9
 #endif

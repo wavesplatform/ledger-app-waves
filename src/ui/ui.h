@@ -28,9 +28,10 @@
 #include "../crypto/ledger_crypto.h"
 #include "os_io_seproxyhal.h"
 
-#include "ux.h"
+#ifdef HAVE_BOLOS_UX
 extern ux_state_t G_ux;
 extern bolos_ux_params_t G_ux_params;
+#endif
 
 enum UI_STATE { UI_IDLE, UI_VERIFY };
 extern enum UI_STATE ui_state;

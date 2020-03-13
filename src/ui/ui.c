@@ -26,6 +26,7 @@
 #ifdef TARGET_BLUE
 #include "blue/ui_menus_blue.h"
 #include "blue/ui_menus_blue_prepro.h"
+ux_state_t ux;
 #else
 #include "nanox/ui_menus_nanox.h"
 #include "ux.h"

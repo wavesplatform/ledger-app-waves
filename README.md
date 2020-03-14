@@ -53,7 +53,7 @@ Note that at the time of publication of this manual (March 2020), the installati
 
 # Debugging 🙇
 
-To simplify the development and debugging process, it is recommended to follow [the Ledger debugging instructions](https://ledger.readthedocs.io/en/latest/userspace/debugging.html). All this has been tested only with the Ledger Nano S.
+To simplify the development and debugging process, it is recommended to follow [the Ledger debugging instructions](https://ledger.readthedocs.io/en/latest/userspace/debugging.html) and try to find a solution of your problem [here](https://ledger.readthedocs.io/en/latest/userspace/troubleshooting.html). All this has been tested only with the Ledger Nano S.
 
 1. Install a debug firmware (according to the instructions above)
 2. Install a custom CA for PIN bypass (according to the instructions above)

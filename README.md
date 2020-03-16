@@ -1,4 +1,4 @@
-# nanos-app-waves 🔷 [![Build Status](https://travis-ci.com/wavesplatform/nanos-app-waves.svg?branch=master)](https://travis-ci.com/wavesplatform/nanos-app-waves)
+# ledger-app-waves 🔷 [![Build Status](https://travis-ci.com/wavesplatform/ledger-app-waves.svg?branch=master)](https://travis-ci.com/wavesplatform/ledger-app-waves)
 
 # Introduction
 
@@ -6,12 +6,12 @@ This is a Ledger devices wallet app for Waves platform.
 
 Special thanks to Jean Passot, Cédric Mesnil, and Oto from the Ledger team, Jake Bordens from the Ledger/Birst community for their support and advices. Thanks to the Waves community for trusting the tokens on this application.
 
-For app APDU protocol and an integration manual please take a look at [this](https://github.com/wavesplatform/nanos-app-waves/wiki/Integration-manual). 
+For app APDU protocol and an integration manual please take a look at [this](https://github.com/wavesplatform/ledger-app-waves/wiki/Integration-manual). 
 
 # Building 👷
 
 You'll need a Ledger Nano S development environment.  More information can be 
-found [here](https://github.com/wavesplatform/nanos-app-waves/wiki).
+found [here](https://github.com/wavesplatform/ledger-app-waves/wiki).
 
 Also there're [my ledger dev env docker image](https://github.com/Tolsi/ledger-devenv), you can use it to build it.
 
@@ -33,7 +33,7 @@ You can download the official version of this application, signed and verified b
 
 Building and installing from the source code is usually required in order to develop or customize the application. In addition, you will receive a warning that this application was received from an unreliable source. Try to avoid this, it may be unsafe.
 
-If you build the app not in the Docker, but in your host OS then just call `make load`. Note that you should have the python env with `ledgerblue` installed. [There're some more details.](https://github.com/wavesplatform/nanos-app-waves/wiki)
+If you build the app not in the Docker, but in your host OS then just call `make load`. Note that you should have the python env with `ledgerblue` installed. [There're some more details.](https://github.com/wavesplatform/ledger-app-waves/wiki)
 
 If you use Docker to build the app, then call this from app root on you host OS:
 

@@ -9,4 +9,4 @@ before_install:
   - docker pull tolsi/ledger-devenv
 
 script:
-  - docker run -t -v `pwd`:/home/app -i tolsi/ledger-devenv:nanos-160-blue-211 /bin/bash -c "cd /home && git clone --branch nanos-og-1601 https://github.com/LedgerHQ/nanos-secure-sdk.git && git clone --branch blue-r21.1 https://github.com/LedgerHQ/blue-secure-sdk.git && cd app && rm -rf bin/ debug/ dep/ obj/ app.hex src/glyphs.c src/glyphs.h && make BOLOS_ENV=/opt/ledger/ BOLOS_SDK=/home/nanos-secure-sdk && rm -rf bin/ debug/ dep/ obj/ app.hex src/glyphs.c src/glyphs.h && make BOLOS_ENV=/opt/ledger/ BOLOS_SDK=/home/blue-secure-sdk"
+  - docker run -t -v `pwd`:/home/app -i tolsi/ledger-devenv:nanos-160-blue-211 /bin/bash -c "cd /home && git clone --branch nanos-160 https://github.com/LedgerHQ/nanos-secure-sdk.git && git clone --branch blue-r21.1 https://github.com/LedgerHQ/blue-secure-sdk.git && cd app && rm -rf bin/ debug/ dep/ obj/ app.hex src/glyphs.c src/glyphs.h && make BOLOS_ENV=/opt/ledger/ BOLOS_SDK=/home/nanos-secure-sdk && rm -rf bin/ debug/ dep/ obj/ app.hex src/glyphs.c src/glyphs.h && make BOLOS_ENV=/opt/ledger/ BOLOS_SDK=/home/blue-secure-sdk"

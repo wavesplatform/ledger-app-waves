@@ -33,7 +33,7 @@ You can download the official version of this application, signed and verified b
 
 Building and installing from the source code is usually required in order to develop or customize the application. In addition, you will receive a warning that this application was received from an unreliable source. Try to avoid this, it may be unsafe.
 
-If you build the app not in the Docker, but in your host OS then just call `make load`. Note that you should have the python env with `ledgerblue` installed. [There're some more details.](https://github.com/wavesplatform/ledger-app-waves/wiki)
+If you build the app not in the Docker, but in your host OS then just call `make load`. Note that you should have the python env with `ledgerblue` installed. [If you can't install ledgerblue, try install the dependencies into your system.](https://github.com/LedgerHQ/blue-loader-python) [There're some more details also.](https://github.com/wavesplatform/ledger-app-waves/wiki)
 
 If you use Docker to build the app, then call this from app root on you host OS:
 

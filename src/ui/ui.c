@@ -141,7 +141,7 @@ void build_other_data_ui() {
   }
   // id should be calculated on sign step
   size_t length = 45;
-  if (!b58enc((char *)ui_context.line8, &length, (const void *)&ui_context.id,
+  if (!b58enc((char *)ui_context.line3, &length, (const void *)&ui_context.id,
               32)) {
     THROW(SW_CONDITIONS_NOT_SATISFIED);
   }

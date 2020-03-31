@@ -332,6 +332,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
       }
       G_io_apdu_buffer[*tx] = sw >> 8;
       G_io_apdu_buffer[*tx + 1] = sw;
+      PRINTF("SW:\n%.*H\n", 2, G_io_apdu_buffer + *tx);
       *tx += 2;
     }
     FINALLY {}

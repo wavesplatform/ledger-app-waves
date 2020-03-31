@@ -188,6 +188,8 @@ uint32_t set_result_sign() {
   signature[63] |= tmp_ctx.signing_context.sign_bit;
   os_memmove((char *)G_io_apdu_buffer, signature, sizeof(signature));
 
+  PRINTF("Signature:\n%.*H\n", 64, signature);
+
   return 64;
 }
 

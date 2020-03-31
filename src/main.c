@@ -122,6 +122,7 @@ void make_sign_step(uint8_t chunk_data_start_index, uint8_t chunk_data_size) {
                         &private_key);
     stream_eddsa_sign_step1(&tmp_ctx.signing_context.eddsa_context,
                             &private_key);
+    public_key_le_to_be(&public_key);
     tmp_ctx.signing_context.sign_bit = public_key.W[31] & 0x80;
     os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
     os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
@@ -183,12 +184,12 @@ uint32_t set_result_sign() {
 
   stream_eddsa_sign_step5(&tmp_ctx.signing_context.eddsa_context, signature);
 
-  init_context();
-
   signature[63] |= tmp_ctx.signing_context.sign_bit;
   os_memmove((char *)G_io_apdu_buffer, signature, sizeof(signature));
 
   PRINTF("Signature:\n%.*H\n", 64, signature);
+
+  init_context();
 
   return 64;
 }
@@ -327,9 +328,9 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
         break;
       }
       // Unexpected exception => report
-      if (sw != 0x9000) {
-        init_context();
-      }
+//      if (sw != 0x9000 || flags & IO_ASYNCH_REPLY == 1) {
+//        init_context();
+//      }
       G_io_apdu_buffer[*tx] = sw >> 8;
       G_io_apdu_buffer[*tx + 1] = sw;
       PRINTF("SW:\n%.*H\n", 2, G_io_apdu_buffer + *tx);

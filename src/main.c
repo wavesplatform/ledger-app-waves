@@ -180,9 +180,6 @@ void make_allowed_sign_steps() {
 // https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
 uint32_t set_result_sign() {
   uint8_t signature[64];
-  if (tmp_ctx.signing_context.step != 5) {
-    THROW(SW_CONDITIONS_NOT_SATISFIED);
-  }
 
   stream_eddsa_sign_step5(&tmp_ctx.signing_context.eddsa_context, signature);
 
@@ -249,9 +246,13 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
         ui_context.chunk_used = 0;
         if (G_io_apdu_buffer[2] == P1_LAST) {
           make_allowed_sign_steps();
-          make_allowed_ui_steps(true);
-          show_sign_ui();
-          *flags |= IO_ASYNCH_REPLY;
+          if (tmp_ctx.signing_context.step == 5) {
+            make_allowed_ui_steps(true);
+            show_sign_ui();
+            *flags |= IO_ASYNCH_REPLY;
+          } else {
+            THROW(SW_DEPRECATED_SIGN_PROTOCOL);
+          }
         } else {
           make_allowed_sign_steps();
           make_allowed_ui_steps(false);

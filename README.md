@@ -1,6 +1,6 @@
 # ledger-app-waves 🔷 [![Build Status](https://travis-ci.com/wavesplatform/ledger-app-waves.svg?branch=master)](https://travis-ci.com/wavesplatform/ledger-app-waves)
 
-# Introduction
+# Introduction 🔐
 
 This is a Ledger devices wallet app for Waves platform.
 

@@ -237,9 +237,14 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
           THROW(SW_INCORRECT_P1_P2);
         }
 
+        if (tmp_ctx.signing_context.step == 5) {
+          THROW(SW_INCORRECT_P1_P2);
+        }
+
         if (tmp_ctx.signing_context.step > 0) {
           tmp_ctx.signing_context.chunk += 1;
         } else {
+          show_processing();
           os_memset((unsigned char *)&ui_context, 0, sizeof(uiContext_t));
           tmp_ctx.signing_context.step = 1;
           tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
@@ -328,9 +333,10 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
         break;
       }
       // Unexpected exception => report
-//      if (sw != 0x9000 || flags & IO_ASYNCH_REPLY == 1) {
-//        init_context();
-//      }
+      if (sw != 0x9000) {
+        init_context();
+        ui_idle();
+      }
       G_io_apdu_buffer[*tx] = sw >> 8;
       G_io_apdu_buffer[*tx + 1] = sw;
       PRINTF("SW:\n%.*H\n", 2, G_io_apdu_buffer + *tx);

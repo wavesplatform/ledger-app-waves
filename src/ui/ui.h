@@ -47,6 +47,7 @@ extern int ux_step_count;
 void make_allowed_ui_steps(bool is_last);
 void show_sign_ui();
 void menu_address_init();
+void show_processing();
 
 void try_to_fill_buffer(uint8_t chunk_data_start_index,
                         uint8_t chunk_data_size);

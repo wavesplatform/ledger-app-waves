@@ -186,10 +186,10 @@ UX_FLOW(ux_verify_transaction_flow, &ux_verify_transaction_1_step,
 //////////////////////////////////////////////////////////////////////
 
 UX_STEP_NOCB(ux_processing_step, pb,
-              {
-                  &C_badge_loading_v2,
-                  "Processing",
-              });
+             {
+                 &C_badge_loading_v2,
+                 "Processing",
+             });
 
 UX_FLOW(ux_processing_flow, &ux_processing_step);
 

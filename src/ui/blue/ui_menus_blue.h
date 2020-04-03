@@ -755,7 +755,7 @@ unsigned int ui_approval_blue_button(unsigned int button_mask,
   return 0;
 }
 unsigned int ui_processing_blue_button(unsigned int button_mask,
-                                     unsigned int button_mask_counter) {
+                                       unsigned int button_mask_counter) {
   return 0;
 }
 

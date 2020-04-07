@@ -185,7 +185,7 @@ void make_allowed_ui_steps(bool is_last) {
   bool status;
 
   /* Encode our message */
-  //{
+  {
   /* Allocate space on the stack to store the message data.
    *
    * Nanopb generates simple struct definitions for all the messages.
@@ -207,7 +207,7 @@ void make_allowed_ui_steps(bool is_last) {
     PRINTF("Encoding failed: %s\n", PB_GET_ERROR(&stream));
     return;
   }
-  //}
+  }
 
   /* Now we could transmit the message over network, store it in a file or
    * wrap it to a pigeon's leg.
@@ -215,28 +215,27 @@ void make_allowed_ui_steps(bool is_last) {
 
   /* But because we are lazy, we will just decode it immediately. */
 
-  //{
-  // PRINTF("init message\n");
+  {
+   PRINTF("init message\n");
   /* Allocate space for the decoded message. */
-  // SimpleMessage message = SimpleMessage_init_zero;
-  // PRINTF("create stream\n");
+   SimpleMessage message = SimpleMessage_init_zero;
+   PRINTF("create stream\n");
   /* Create a stream that reads from the buffer. */
-  // pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
-  // PRINTF("decode message\n");
+   pb_istream_t stream = pb_istream_from_buffer(buffer, message_length);
+   PRINTF("decode message\n");
   /* Now we are ready to decode the message. */
-  // status = pb_decode(&stream, SimpleMessage_fields, &message);
+   status = pb_decode(&stream, SimpleMessage_fields, &message);
 
   /* Check for errors... */
-  // if (!status)
-  //{
-  //  PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
-  // return ;
-  //}
+   if (!status)
+  {
+    PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
+   return ;
+  }
 
   /* Print the data contained in the message. */
-  // PRINTF("Your lucky number was %d!\n", (int)message.lucky_number);
-  //}
-  //*****END TESTING SIMPLE*****
+   PRINTF("Your lucky number was %d!\n", (int)message.lucky_number);
+  }
 }
 
 // Show the transaction details for the user to approve

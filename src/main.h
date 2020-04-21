@@ -34,6 +34,7 @@
 #define P1_NON_CONFIRM 0x00            // Don't show address confirmation
 #define P1_LAST 0x80 // Parameter 1 = End of Bytes to Sign (finalize)
 #define P1_MORE 0x00 // Parameter 1 = More bytes coming
+#define PB_FIRST_BYTE 0x0A //First byte of protobuf transaction message
 
 #define SW_OK 0x9000
 #define SW_USER_CANCELLED 0x9100

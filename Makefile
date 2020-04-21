@@ -103,8 +103,10 @@ ifneq ($(DEBUG),0)
 
         ifeq ($(TARGET_NAME),TARGET_NANOX)
                 DEFINES   += HAVE_PRINTF PRINTF=mcu_usb_printf
+                DEFINES   += HAVE_PRINTF_PB PRINTF_PB=mcu_usb_printf
         else
                 DEFINES   += HAVE_PRINTF PRINTF=screen_printf
+                DEFINES   += HAVE_PRINTF_PB PRINTF_PB=screen_printf
         endif
 else
         DEFINES   += PRINTF\(...\)=

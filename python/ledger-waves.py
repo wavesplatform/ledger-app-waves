@@ -23,6 +23,10 @@ import sys
 import pywaves.crypto as pwcrypto
 import pywaves as pw
 import time
+import binascii
+from amount_pb2 import Amount
+from transaction_pb2 import Transaction, TransferTransactionData, Attachment
+from recipient_pb2 import Recipient
 
 global dongle
 dongle = None
@@ -228,6 +232,17 @@ def build_transfer_bytes(publicKey, recipient, asset, amount, attachment='', fee
 
     return sData
 
+def build_transfer_protobuf(publicKey, recipient, asset, amount, attachment='', feeAsset='', txFee=100000, timestamp=0, version = 2):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    msg = Attachment(string_value = attachment)
+    to = Recipient(public_key_hash=base58.b58decode(recipient.address))
+    amountTx= Amount(asset_id=base58.b58decode(asset.assetId), amount=amount)
+    transfer = TransferTransactionData(recipient=to, amount=amountTx, attachment=msg)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b''), amount=txFee)
+    trx = Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, transfer=transfer)
+    return trx.SerializeToString()
+
 while (True):
     while (dongle == None):
         try:
@@ -244,7 +259,8 @@ while (True):
     print(colors.fg.white + "\t 1. Get PublicKey/Address from Ledger Nano S" + colors.reset)
     print(colors.fg.white + "\t 2. Sign tx using Ledger Nano S" + colors.reset)
     print(colors.fg.white + "\t 3. Get app version from Ledger Nano S" + colors.reset)
-    print(colors.fg.white + "\t 4. Exit" + colors.reset)
+    print(colors.fg.white + "\t 4. Sign protobuf tx using Ledger Nano S" + colors.reset)
+    print(colors.fg.white + "\t 5. Exit" + colors.reset)
     select = raw_input(colors.fg.cyan + "Please select> " + colors.reset)
 
     if (select == "1"):
@@ -289,6 +305,7 @@ while (True):
             str(some_transfer_bytes)) + "\")> " + colors.reset)
         if len(input) == 0:
             # 2 first bytes aren't the tx data, but info type for the ledger
+            print(len(some_transfer_bytes))
             binary_data += b'\4\2'
             binary_data += struct.pack(">I", len(some_transfer_bytes))
             binary_data += some_transfer_bytes
@@ -341,5 +358,87 @@ while (True):
     elif (select == "3"):
         version = getVersionFromDongle()
         print('App version is {}.{}.{}'.format(version[0],version[1],version[2]))
+    elif (select == "4"):
+        path = raw_input(
+            colors.fg.lightblue + "Please input BIP-32 path (for example \"44'/5741564'/0'/0'/1'\")> " + colors.reset)
+        if len(path) == 0:
+            path = "44'/5741564'/0'/0'/1'"
+        binary_data = path_to_bytes(expand_path(path))
+        print(colors.fg.lightgrey + "path bytes: " + base58.b58encode(str(path_to_bytes(expand_path(path)))))
+
+        # tx amount asset decimals
+        binary_data += chr(8)
+        # fee amount asset decimals
+        binary_data += chr(8)
+
+        # Tx info
+        #
+        # amount: 1
+        # asset: 9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t
+        # from: 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+        # to: 3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK
+        # attachment: privet
+        # fee: 0.001
+        # fee asset: WAVES
+        some_transfer_bytes = build_transfer_protobuf('4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
+                                                   pw.Address('3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK'),
+                                                   pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 1,
+                                                   'privet', timestamp = 1526477921829)
+        #some_transfer_bytes = b"0aa40108571220b985d724da1564a6354040b1718b8c8e8c59533a20b71ba3c64d5dfe7f379f381a270a200080800142003a8024017fef3519e54affbcae5c01347f648064019b0081c92c10d2b9ea0a20f398cdf7b3ca8fd03e2802c206480a160a1496639366f56efd312248d1edf056070fd5b8941c122a0a204a83e780ff016100147f073b2580ff80ffb9eba30087f400cdb2dc3b5d017c4e1099eebaf4c6b2121a021a00121100d716230100d88280edcdc30ce97f64ed122001807701fd7f01d37fb87f88ffbe01c0ff01ff010005afffcb7fb201a0f4b974122c8c8000ff0a7fff8015381f807801c1007f7f01d700c521ff018dc700017f80807680097f39378e01b500804f122980099e8b80ffff00ad2500870080017f7f880b2ca72e7fff175a00f0da00ff00803dbd2bff8000995c"
+
+        input = raw_input(colors.fg.lightblue + "Please input message to sign (for example \"" + base58.b58encode(
+            str(some_transfer_bytes)) + "\")> " + colors.reset)
+        if len(input) == 0:
+            # 2 first bytes aren't the tx data, but info type for the ledger
+            binary_data += b'\4\2'
+            binary_data += struct.pack(">I", len(some_transfer_bytes))
+            binary_data += some_transfer_bytes
+            binary_data += some_transfer_bytes
+            print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(some_transfer_bytes)))
+        else:
+            binary_input = base58.b58decode(input)
+            binary_data += struct.pack(">I", len(binary_input))
+            binary_data += binary_input
+            binary_data += binary_input
+            print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(binary_input)))
+        print(colors.fg.lightgrey + "all request bytes:   " + base58.b58encode(str(binary_data)))
+        signature = None
+        while (True):
+            try:
+                offset = 0
+                while offset != len(binary_data):
+                    if (len(binary_data) - offset) > CHUNK_SIZE:
+                        chunk = binary_data[offset: offset + CHUNK_SIZE]
+                    else:
+                        chunk = binary_data[offset:]
+                    if (offset + len(chunk)) == len(binary_data):
+                        p1 = 0x80
+                    else:
+                        p1 = 0x00
+
+                    if (offset == 0):
+                        print("Waiting for approval to sign on the Ledger Nano S")
+
+                    apdu = bytes("8002".decode('hex')) + chr(p1) + chain_id + chr(len(chunk)) + bytes(chunk)
+                    signature = dongle.exchange(apdu)
+                    offset += len(chunk)
+                    
+                print("signature " + base58.b58encode(str(signature)))
+                break
+            except CommException as e:
+                if (e.sw == 0x6990):
+                    print(colors.fg.red + "Transaction buffer max size reached." + colors.reset)
+                if (e.sw == 0x6985):
+                    print(colors.fg.red + "Required condition failed." + colors.reset)
+                if (e.sw == 0x9100):
+                    print(colors.fg.red + "User denied signing request on Ledger Nano S device." + colors.reset)
+                break
+            except Exception as e:
+                print(e, type(e))
+                answer = raw_input(
+                    "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
+                if (answer.upper() == 'Q'):
+                    sys.exit(0)
+                sys.exc_clear()
     else:
         break

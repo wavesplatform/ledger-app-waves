@@ -30,7 +30,17 @@
 #include "os.h"
 #include "cx.h"
 #include "os_io_seproxyhal.h"
+#include "nanopb/pb_custom.h"
+#include "nanopb/pb_decode.h"
+#include "nanopb/pb_encode.h"
+#include "nanopb_stubs/transaction.pb.h"
 
+#define OFFSET_CLA 0
+#define OFFSET_INS 1
+#define OFFSET_P1 2
+#define OFFSET_P2 3
+#define OFFSET_LC 4
+#define OFFSET_CDATA 5
 // Temporary area to store stuff and reuse the same memory
 tmpContext_t tmp_ctx;
 uiContext_t ui_context;
@@ -240,22 +250,64 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
         if (tmp_ctx.signing_context.step == 5) {
           THROW(SW_INCORRECT_P1_P2);
         }
-
         if (tmp_ctx.signing_context.step > 0) {
           tmp_ctx.signing_context.chunk += 1;
         } else {
-          show_processing();
+          //show_processing();
           os_memset((unsigned char *)&ui_context, 0, sizeof(uiContext_t));
           tmp_ctx.signing_context.step = 1;
           tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
         }
 
-        tmp_ctx.signing_context.chunk_used = 0;
+        uint8_t chunk_data_start_index = 5;
+        uint8_t chunk_data_size = G_io_apdu_buffer[4];
+
+        if (tmp_ctx.signing_context.chunk == 0) {
+          chunk_data_start_index += 28;
+          chunk_data_size -= 28;
+
+          // then there is the bip32 path in the first chunk - first 20 bytes of data
+          read_path_from_bytes(G_io_apdu_buffer + 5,
+                              (uint32_t *)tmp_ctx.signing_context.bip32);
+
+          tmp_ctx.signing_context.amount_decimals = G_io_apdu_buffer[25];
+          tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[26];
+          tmp_ctx.signing_context.data_type = G_io_apdu_buffer[27];
+          tmp_ctx.signing_context.data_version = G_io_apdu_buffer[28];
+          tmp_ctx.signing_context.data_size =
+              deserialize_uint32_t(&G_io_apdu_buffer[29]);
+        }
+
+        uint8_t status;
+        uint16_t total_message_size = tmp_ctx.signing_context.data_size;
+
+        PRINTF("total_message_size: %d\n", total_message_size);
+
+        pb_istream_from_apdu_ctx_t pb_apdu_ctx;
+
+        waves_Transaction tx = waves_Transaction_init_zero;
+        
+        /* Create an input stream that will deserialize the nanopb message coming from successives APDUs */
+        pb_istream_t stream = pb_istream_from_apdu(&pb_apdu_ctx, G_io_apdu_buffer + chunk_data_start_index, G_io_apdu_buffer[4] - chunk_data_start_index + 5, total_message_size);
+
+        /* Now we are ready to decode the message. */
+        status = pb_decode(&stream, waves_Transaction_fields, &tx);
+        /* Check for errors... */
+        if (!status)
+        {
+            PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
+            THROW(0x6D00);
+        }
+
+        THROW(0x9000);
+        break;
+
+        /*tmp_ctx.signing_context.chunk_used = 0;
         ui_context.chunk_used = 0;
         if (G_io_apdu_buffer[2] == P1_LAST) {
           make_allowed_sign_steps();
           if (tmp_ctx.signing_context.step == 5) {
-            make_allowed_ui_steps(true);
+            //make_allowed_ui_steps(true);
             show_sign_ui();
             *flags |= IO_ASYNCH_REPLY;
           } else {
@@ -263,9 +315,9 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
           }
         } else {
           make_allowed_sign_steps();
-          make_allowed_ui_steps(false);
+          //make_allowed_ui_steps(false);
           THROW(SW_OK);
-        }
+        }*/
 
       } break;
 

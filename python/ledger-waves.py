@@ -243,6 +243,12 @@ def build_transfer_protobuf(publicKey, recipient, asset, amount, attachment='', 
     trx = Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, transfer=transfer)
     return trx.SerializeToString()
 
+build_transfer_protobuf('4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
+                                                   pw.Address('3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK'),
+                                                   pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 1,
+                                                   'privet', timestamp = 1526477921829)
+        
+
 while (True):
     while (dongle == None):
         try:
@@ -385,7 +391,7 @@ while (True):
                                                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 1,
                                                    'privet', timestamp = 1526477921829)
         #some_transfer_bytes = b"0aa40108571220b985d724da1564a6354040b1718b8c8e8c59533a20b71ba3c64d5dfe7f379f381a270a200080800142003a8024017fef3519e54affbcae5c01347f648064019b0081c92c10d2b9ea0a20f398cdf7b3ca8fd03e2802c206480a160a1496639366f56efd312248d1edf056070fd5b8941c122a0a204a83e780ff016100147f073b2580ff80ffb9eba30087f400cdb2dc3b5d017c4e1099eebaf4c6b2121a021a00121100d716230100d88280edcdc30ce97f64ed122001807701fd7f01d37fb87f88ffbe01c0ff01ff010005afffcb7fb201a0f4b974122c8c8000ff0a7fff8015381f807801c1007f7f01d700c521ff018dc700017f80807680097f39378e01b500804f122980099e8b80ffff00ad2500870080017f7f880b2ca72e7fff175a00f0da00ff00803dbd2bff8000995c"
-
+        some_transfer_bytes = base58.b58decode("uq4YDsWuUhQ2ajpzvHxWeikWkF8XodVWi8F1VdYsqFESLGc2k6g5UvtxVrER4a")
         input = raw_input(colors.fg.lightblue + "Please input message to sign (for example \"" + base58.b58encode(
             str(some_transfer_bytes)) + "\")> " + colors.reset)
         if len(input) == 0:

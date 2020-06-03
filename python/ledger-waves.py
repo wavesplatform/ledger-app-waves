@@ -18,7 +18,6 @@
 from ledgerblue.comm import getDongle
 from ledgerblue.commException import CommException
 import base58
-import hashlib
 import struct
 import sys
 import pywaves.crypto as pwcrypto
@@ -166,20 +165,67 @@ def build_transfer_bytes(publicKey, recipient, asset, amount, attachment='', fee
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
 
-    sData = b'\4' + version + b'\4'
+    sData = b'\4'
 
     if version == b'\2':
         sData += version
+        
+    start_index = 31
 
-    sData += base58.b58decode(publicKey) + \
-            (b'\1' + base58.b58decode(asset.assetId) if asset else b'\0') + \
-            (b'\1' + base58.b58decode(feeAsset.assetId) if feeAsset else b'\0') + \
-            struct.pack(">Q", timestamp) + \
-            struct.pack(">Q", amount) + \
-            struct.pack(">Q", txFee) + \
-            base58.b58decode(recipient.address) + \
-            struct.pack(">H", len(attachment)) + \
-            pwcrypto.str2bytes(attachment)
+    start_len = len(sData) + start_index
+    field = base58.b58decode(publicKey)
+    sData += field
+    end_len = start_len + len(field)
+    print('public key [{} - {}]'.format(start_len, end_len))
+    
+    start_len = len(sData) + start_index
+    field = (b'\1' + base58.b58decode(asset.assetId) if asset else b'\0')
+    sData += field
+    end_len = start_len + len(field)
+    print('asset [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = (b'\1' + base58.b58decode(feeAsset.assetId) if feeAsset else b'\0')
+    sData += field
+    end_len = start_len + len(field)
+    print('fee asset [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = struct.pack(">Q", timestamp)
+    sData += field
+    end_len = start_len + len(field)
+    print('timestamp [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = struct.pack(">Q", amount)
+    sData += field
+    end_len = start_len + len(field)
+    print('amount [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = struct.pack(">Q", txFee)
+    sData += field
+    end_len = start_len + len(field)
+    print('fee [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = base58.b58decode(recipient.address)
+    sData += field
+    end_len = start_len + len(field)
+    print('recipient [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = struct.pack(">H", len(attachment))
+    sData += field
+    end_len = start_len + len(field)
+    print('attachment size [{} - {}]'.format(start_len, end_len))
+
+    start_len = len(sData) + start_index
+    field = pwcrypto.str2bytes(attachment)
+    sData += field
+    end_len = start_len + len(field)
+    print('attachment [{} - {}]'.format(start_len, end_len))
+
     return sData
 
 while (True):
@@ -242,11 +288,19 @@ while (True):
         input = raw_input(colors.fg.lightblue + "Please input message to sign (for example \"" + base58.b58encode(
             str(some_transfer_bytes)) + "\")> " + colors.reset)
         if len(input) == 0:
+            # 2 first bytes aren't the tx data, but info type for the ledger
+            binary_data += b'\4\2'
+            binary_data += struct.pack(">I", len(some_transfer_bytes))
+            binary_data += some_transfer_bytes
             binary_data += some_transfer_bytes
             print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(some_transfer_bytes)))
         else:
-            binary_data += base58.b58decode(input)
-            print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(input)))
+            binary_input = base58.b58decode(input)
+            binary_data += struct.pack(">I", len(binary_input))
+            binary_data += binary_input
+            binary_data += binary_input
+            print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(binary_input)))
+        print(colors.fg.lightgrey + "all request bytes:   " + base58.b58encode(str(binary_data)))
         signature = None
         while (True):
             try:

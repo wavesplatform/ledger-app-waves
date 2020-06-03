@@ -18,14 +18,11 @@
  *  limitations under the License.
  ********************************************************************************/
 
-#ifndef __UI_LOGIC_H__
-#define __UI_LOGIC_H__
+#ifndef __TRANSFER_H__
+#define __TRANSFER_H__
 
-#include "os_io_seproxyhal.h"
+#include <stdbool.h>
 
-unsigned int io_seproxyhal_touch_address_ok(const bagl_element_t *e);
-unsigned int io_seproxyhal_cancel(const bagl_element_t *e);
-unsigned int io_seproxyhal_touch_sign_approve(const bagl_element_t *e);
-unsigned int io_seproxyhal_touch_exit(const bagl_element_t *e);
+void build_transfer_ui_step(bool is_last);
 
 #endif

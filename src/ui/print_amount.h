@@ -18,14 +18,51 @@
  *  limitations under the License.
  ********************************************************************************/
 
-#ifndef __UI_LOGIC_H__
-#define __UI_LOGIC_H__
+#ifndef __PRINT_AMOUNT_H__
+#define __PRINT_AMOUNT_H__
 
-#include "os_io_seproxyhal.h"
+// borrowed from the Stellar wallet code and modified
+bool print_amount(uint64_t amount, int decimals, unsigned char *out,
+                  uint8_t len) {
+  uint64_t dVal = amount;
+  int i, j;
 
-unsigned int io_seproxyhal_touch_address_ok(const bagl_element_t *e);
-unsigned int io_seproxyhal_cancel(const bagl_element_t *e);
-unsigned int io_seproxyhal_touch_sign_approve(const bagl_element_t *e);
-unsigned int io_seproxyhal_touch_exit(const bagl_element_t *e);
+  if (decimals == 0)
+    decimals--;
+
+  memset(ui_context.tmp, 0, len);
+  for (i = 0; dVal > 0 || i < decimals + 2; i++) {
+    if (dVal > 0) {
+      ui_context.tmp[i] = (char)((dVal % 10) + '0');
+      dVal /= 10;
+    } else {
+      ui_context.tmp[i] = '0';
+    }
+    if (i == decimals - 1) {
+      i += 1;
+      ui_context.tmp[i] = '.';
+    }
+    if (i >= len) {
+      return false;
+    }
+  }
+  // reverse order
+  for (i -= 1, j = 0; i >= 0 && j < len - 1; i--, j++) {
+    out[j] = ui_context.tmp[i];
+  }
+  if (decimals > 0) {
+    // strip trailing 0s
+    for (j -= 1; j > 0; j--) {
+      if (out[j] != '0')
+        break;
+    }
+    j += 1;
+    if (out[j - 1] == '.')
+      j -= 1;
+  }
+
+  out[j] = '\0';
+  return true;
+}
 
 #endif

@@ -34,7 +34,6 @@
 #define P1_NON_CONFIRM 0x00            // Don't show address confirmation
 #define P1_LAST 0x80 // Parameter 1 = End of Bytes to Sign (finalize)
 #define P1_MORE 0x00 // Parameter 1 = More bytes coming
-#define PB_FIRST_BYTE 0x0A //First byte of protobuf transaction message
 
 #define SW_OK 0x9000
 #define SW_USER_CANCELLED 0x9100
@@ -59,46 +58,73 @@ typedef struct internal_storage_t {
 extern internal_storage_t const N_storage_real;
 #define N_storage (*(volatile internal_storage_t *)PIC(&N_storage_real))
 
-// A place to store information about the transaction
-// for displaying to the user when requesting approval
-// 44 for address/id and +1 for \0
-typedef struct uiContext_t {
-  unsigned char line1[45];
-  unsigned char line2[45];
-  unsigned char line3[45];
-  unsigned char line4[45];
-  unsigned char line5[45];
-  unsigned char line6[45];
-  unsigned char line7[45];
-  unsigned char line8[45];
-  unsigned char id[32];
+// A place to store information and parser state of the byte message
+typedef struct uiByte_t {
   unsigned char buffer[150];
-  unsigned char tmp[50];
   uint8_t step;
   uint8_t wait_in_buffer;
   uint8_t buffer_used;
   uint32_t chunk_used;
   uint16_t alias_size;
   uint16_t attachment_size;
+} uiByte_t;
+
+// A place to store information and parser state of the protobuf message
+typedef struct uiProtobuf_t {
+  uint16_t read_offset;    // nanopb read offset, everything before it has been
+                           // succesfully decoded
+  uint16_t bytes_stored;   // number of bytes currently stored in "data"
+  uint16_t total_size;     // total size of the nanopb structure being received
+  uint16_t total_received; // number of bytes received since decoding began
+  uint16_t total_read;     // number of bytes readed since decoding began
+  uint8_t data[150];       // size of the biggest nanopb element serialized
+} uiProtobuf_t;
+
+// A place to store information about the transaction
+// for displaying to the user when requesting approval
+// 44 for address/id and +1 for \0
+typedef struct uiContext_t {
+  unsigned char tmp[10];
+  unsigned char txid[45];
+  unsigned char from[35];
+  unsigned char fee_amount[20];
+  unsigned char fee_asset[45];
+  unsigned char line1[45];
+  unsigned char line2[45];
+  unsigned char line3[45];
+  unsigned char line4[45];
+  unsigned char line5[45];
+  bool pkhash;
+  cx_blake2b_t hash_ctx;
+  union {
+    uiByte_t byte;
+    uiProtobuf_t proto;
+  };
   bool finished;
 } uiContext_t;
 
 // A place to store data during the signing
 typedef struct signingContext_t {
-  uint32_t bip32[5];
   unsigned char sign_bit;
   unsigned char amount_decimals;
   unsigned char fee_decimals;
   unsigned char data_type;
   unsigned char data_version;
   unsigned char network_byte;
-  uint32_t data_size;
-  uint32_t data_read;
-  uint32_t chunk_used;
-  uint32_t chunk;
+  unsigned char signature[64];
+  unsigned char first_data_hash[32];
   uint8_t step;
   uint8_t sign_from;
-  streamEddsaContext_t eddsa_context;
+  uint32_t bip32[5];
+  uint32_t data_read;
+  uint32_t data_size;
+  uint32_t chunk_used;
+  uint32_t chunk;
+  union {
+    uiContext_t ui;
+    streamEddsaContext_t eddsa_context;
+  };
+
 } signingContext_t;
 
 // A place to store data during the confirming the address
@@ -112,14 +138,14 @@ typedef union {
   addressesContext_t address_context;
 } tmpContext_t;
 
-extern uiContext_t ui_context;
-
 extern tmpContext_t tmp_ctx; // Temporary area to store stuff
 
 bool get_curve25519_public_key_for_path(const uint32_t *path,
                                         cx_ecfp_public_key_t *public_key);
 
 void init_context();
+void init_sign();
+void make_allowed_sign_steps();
 uint32_t set_result_get_address();
 uint32_t set_result_sign();
 

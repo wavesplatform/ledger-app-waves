@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 #include "stream_eddsa_sign.h"
+#include "../main.h"
 
 static uint8_t const C_cx_Ed25519_a[] = {
     0x7f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -229,7 +230,7 @@ void stream_eddsa_sign_step3(streamEddsaContext_t *eddsa_context) {
   unsigned int hsize = 2 * size;
 
   cx_hash(&eddsa_context->data_hash_ctx.header, CX_LAST, NULL, 0,
-          eddsa_context->first_data_hash, 32);
+          tmp_ctx.signing_context.first_data_hash, 32);
   cx_hash(&eddsa_context->hash_ctx.header, CX_LAST, NULL, 0, scal, 64);
   cx_encode_int(scal, hsize);
   cx_math_modm(scal, hsize, domain->n, size);
@@ -274,7 +275,8 @@ int stream_eddsa_sign_step5(streamEddsaContext_t *eddsa_context,
   unsigned char second_data_hash[64];
   cx_hash(&eddsa_context->data_hash_ctx.header, CX_LAST, NULL, 0,
           second_data_hash, 32);
-  if (os_memcmp(&eddsa_context->first_data_hash, &second_data_hash, 32) != 0) {
+  if (os_memcmp(&tmp_ctx.signing_context.first_data_hash, &second_data_hash,
+                32) != 0) {
     THROW(SW_SIGN_DATA_NOT_MATCH);
   }
   cx_hash(&eddsa_context->hash_ctx.header, CX_LAST, NULL, 0, scal, 64);

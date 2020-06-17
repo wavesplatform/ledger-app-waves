@@ -24,8 +24,10 @@ import pywaves.crypto as pwcrypto
 import pywaves as pw
 import time
 import binascii
+import base64
 from amount_pb2 import Amount
-from transaction_pb2 import Transaction, TransferTransactionData, Attachment
+import transaction_pb2 as tpb
+#from transaction_pb2 import Transaction, TransferTransactionData, DataTransactionData, IssueTransactionData, ReissueTransactionData, BurnTransactionData, LeaseTransactionData Attachment
 from recipient_pb2 import Recipient
 
 global dongle
@@ -232,22 +234,139 @@ def build_transfer_bytes(publicKey, recipient, asset, amount, attachment='', fee
 
     return sData
 
-def build_transfer_protobuf(publicKey, recipient, asset, amount, attachment='', feeAsset='', txFee=100000, timestamp=0, version = 2):
+def build_transfer_protobuf(publicKey, recipient, asset, amount, attachment='', feeAsset='', txFee=100000, timestamp=0, version = 3):
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
-    msg = Attachment(string_value = attachment)
-    to = Recipient(public_key_hash=base58.b58decode(recipient.address))
-    amountTx= Amount(asset_id=base58.b58decode(asset.assetId), amount=amount)
-    transfer = TransferTransactionData(recipient=to, amount=amountTx, attachment=msg)
-    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b''), amount=txFee)
-    trx = Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, transfer=transfer)
+    to = Recipient(public_key_hash=base58.b58decode(recipient))
+    amountTx= Amount(asset_id=(base58.b58decode(asset.assetId) if asset else b'\0'), amount=amount)
+    transfer = tpb.TransferTransactionData(recipient=to, amount=amountTx, attachment=attachment)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, transfer=transfer)
     return trx.SerializeToString()
 
-build_transfer_protobuf('4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
-                                                   pw.Address('3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK'),
-                                                   pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 1,
-                                                   'privet', timestamp = 1526477921829)
-        
+def build_masstransfer_protobuf(publicKey, recipient, asset, amount, attachment='', feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    to = Recipient(public_key_hash=base58.b58decode(recipient))
+    transfers = list()
+    transfers.append(tpb.MassTransferTransactionData.Transfer(recipient=to, amount=amount)) 
+    transfers.append(tpb.MassTransferTransactionData.Transfer(recipient=to, amount=amount)) 
+    transfers.append(tpb.MassTransferTransactionData.Transfer(recipient=to, amount=amount)) 
+    mass_transfer = tpb.MassTransferTransactionData(asset_id=(base58.b58decode(asset.assetId) if asset else b'\0'), transfers = transfers, attachment=attachment)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, mass_transfer=mass_transfer)
+    return trx.SerializeToString()
+
+def build_issue_protobuf(publicKey, name, descr, amount, decimals, reissue, feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    issue = tpb.IssueTransactionData(name = name, description = descr, amount=amount, decimals=decimals, reissuable = reissue)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, issue=issue)
+    return trx.SerializeToString()
+
+def build_set_ac_script_protobuf(publicKey, script, feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    scr = tpb.SetScriptTransactionData(script=script)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, set_script=scr)
+    return trx.SerializeToString()
+
+def build_set_as_script_protobuf(publicKey, asset, script, feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    scr = tpb.SetAssetScriptTransactionData(asset_id=base58.b58decode(asset.assetId), script=script)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, set_asset_script=scr)
+    return trx.SerializeToString()
+
+def build_reissue_protobuf(publicKey, asset, amount, re, feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    amountTx= Amount(asset_id=base58.b58decode(asset.assetId), amount=amount)
+    reissue = tpb.ReissueTransactionData(asset_amount=amountTx,  reissuable = re)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, reissue=reissue)
+    return trx.SerializeToString()
+
+def build_burn_protobuf(publicKey, asset, amount, feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    amountTx= Amount(asset_id=base58.b58decode(asset.assetId), amount=amount)
+    burn = tpb.BurnTransactionData(asset_amount=amountTx)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, burn=burn)
+    return trx.SerializeToString()
+
+def build_lease_protobuf(publicKey, to, amount, feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    recipient = Recipient(public_key_hash=base58.b58decode(to))
+    lease = tpb.LeaseTransactionData(recipient=recipient, amount=amount)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, lease=lease)
+    return trx.SerializeToString()
+
+def build_cancel_lease_protobuf(publicKey, leaseId, feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    lease_cancel = tpb.LeaseCancelTransactionData(lease_id = base58.b58decode(leaseId))
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, lease_cancel=lease_cancel)
+    return trx.SerializeToString()
+
+def build_creating_alias_protobuf(publicKey, alias, feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    alias = tpb.CreateAliasTransactionData(alias = alias)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, create_alias=alias)
+    return trx.SerializeToString()
+
+def build_update_asset_protobuf(publicKey, asset, name, description, feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    update_asset = tpb.UpdateAssetInfoTransactionData(asset_id = base58.b58decode(asset.assetId),  name=name, description=description)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, update_asset_info=update_asset)
+    return trx.SerializeToString()
+
+def build_data_protobuf(publicKey, feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    list = []
+    for x in range(3):
+        k = "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj" + str(x)
+        s = "jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj"  + str(x)
+        dataEntery = tpb.DataTransactionData.DataEntry(key=k, string_value=s )
+        list.append(dataEntery)
+    data = tpb.DataTransactionData(data = list)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b''), amount=txFee)
+    trx = tpb.Transaction(chain_id=84, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, data_transaction=data)
+    return trx.SerializeToString()
+
+def build_sponsorship_protobuf(publicKey, asset, amount, feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    amountTx= Amount(asset_id=(base58.b58decode(asset.assetId) if feeAsset else b'\0'), amount=amount)
+    sponsorship = tpb.SponsorFeeTransactionData(min_fee=amountTx)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, sponsor_fee=sponsorship)
+    return trx.SerializeToString()  
+
+def build_invoke_protobuf(publicKey, dapp, function, asset, amount, feeAsset='', txFee=100000, timestamp=0, version = 3):
+    if timestamp == 0:
+        timestamp = int(time.time() * 1000)
+    amounts = []
+    amountTx= Amount(asset_id=base58.b58decode(asset.assetId), amount=amount)
+    amounts.append(amountTx)
+    amounts.append(amountTx)
+    to = Recipient(public_key_hash=base58.b58decode(dapp))
+    invoke = tpb.InvokeScriptTransactionData(d_app = to, function_call = function, payments = amounts)
+    fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId) if feeAsset else b'\0'), amount=txFee)
+    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, invoke_script=invoke)
+    return trx.SerializeToString()    
 
 while (True):
     while (dongle == None):
@@ -293,7 +412,6 @@ while (True):
         binary_data += chr(8)
         # fee amount asset decimals
         binary_data += chr(8)
-
         # Tx info
         #
         # amount: 1
@@ -305,21 +423,22 @@ while (True):
         # fee asset: WAVES
         some_transfer_bytes = build_transfer_bytes('4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
                                                    pw.Address('3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK'),
-                                                   pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 1,
+                                                   pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 100000000,
                                                    'privet', timestamp = 1526477921829)
         input = raw_input(colors.fg.lightblue + "Please input message to sign (for example \"" + base58.b58encode(
             str(some_transfer_bytes)) + "\")> " + colors.reset)
         if len(input) == 0:
             # 2 first bytes aren't the tx data, but info type for the ledger
-            print(len(some_transfer_bytes))
             binary_data += b'\4\2'
             binary_data += struct.pack(">I", len(some_transfer_bytes))
+            binary_data += some_transfer_bytes
             binary_data += some_transfer_bytes
             binary_data += some_transfer_bytes
             print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(some_transfer_bytes)))
         else:
             binary_input = base58.b58decode(input)
             binary_data += struct.pack(">I", len(binary_input))
+            binary_data += binary_input
             binary_data += binary_input
             binary_data += binary_input
             print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(binary_input)))
@@ -365,86 +484,249 @@ while (True):
         version = getVersionFromDongle()
         print('App version is {}.{}.{}'.format(version[0],version[1],version[2]))
     elif (select == "4"):
-        path = raw_input(
-            colors.fg.lightblue + "Please input BIP-32 path (for example \"44'/5741564'/0'/0'/1'\")> " + colors.reset)
-        if len(path) == 0:
-            path = "44'/5741564'/0'/0'/1'"
-        binary_data = path_to_bytes(expand_path(path))
-        print(colors.fg.lightgrey + "path bytes: " + base58.b58encode(str(path_to_bytes(expand_path(path)))))
-
-        # tx amount asset decimals
-        binary_data += chr(8)
-        # fee amount asset decimals
-        binary_data += chr(8)
-
-        # Tx info
-        #
-        # amount: 1
-        # asset: 9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t
-        # from: 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
-        # to: 3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK
-        # attachment: privet
-        # fee: 0.001
-        # fee asset: WAVES
-        some_transfer_bytes = build_transfer_protobuf('4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
-                                                   pw.Address('3PMpANFyKGBwzvv1UVk2KdN23fJZ8sXSVEK'),
-                                                   pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 1,
-                                                   'privet', timestamp = 1526477921829)
-        #some_transfer_bytes = b"0aa40108571220b985d724da1564a6354040b1718b8c8e8c59533a20b71ba3c64d5dfe7f379f381a270a200080800142003a8024017fef3519e54affbcae5c01347f648064019b0081c92c10d2b9ea0a20f398cdf7b3ca8fd03e2802c206480a160a1496639366f56efd312248d1edf056070fd5b8941c122a0a204a83e780ff016100147f073b2580ff80ffb9eba30087f400cdb2dc3b5d017c4e1099eebaf4c6b2121a021a00121100d716230100d88280edcdc30ce97f64ed122001807701fd7f01d37fb87f88ffbe01c0ff01ff010005afffcb7fb201a0f4b974122c8c8000ff0a7fff8015381f807801c1007f7f01d700c521ff018dc700017f80807680097f39378e01b500804f122980099e8b80ffff00ad2500870080017f7f880b2ca72e7fff175a00f0da00ff00803dbd2bff8000995c"
-        some_transfer_bytes = base58.b58decode("uq4YDsWuUhQ2ajpzvHxWeikWkF8XodVWi8F1VdYsqFESLGc2k6g5UvtxVrER4a")
-        input = raw_input(colors.fg.lightblue + "Please input message to sign (for example \"" + base58.b58encode(
-            str(some_transfer_bytes)) + "\")> " + colors.reset)
-        if len(input) == 0:
-            # 2 first bytes aren't the tx data, but info type for the ledger
-            binary_data += b'\4\2'
-            binary_data += struct.pack(">I", len(some_transfer_bytes))
-            binary_data += some_transfer_bytes
-            binary_data += some_transfer_bytes
-            print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(some_transfer_bytes)))
-        else:
-            binary_input = base58.b58decode(input)
-            binary_data += struct.pack(">I", len(binary_input))
-            binary_data += binary_input
-            binary_data += binary_input
-            print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(binary_input)))
-        print(colors.fg.lightgrey + "all request bytes:   " + base58.b58encode(str(binary_data)))
-        signature = None
         while (True):
-            try:
-                offset = 0
-                while offset != len(binary_data):
-                    if (len(binary_data) - offset) > CHUNK_SIZE:
-                        chunk = binary_data[offset: offset + CHUNK_SIZE]
-                    else:
-                        chunk = binary_data[offset:]
-                    if (offset + len(chunk)) == len(binary_data):
-                        p1 = 0x80
-                    else:
-                        p1 = 0x00
+            print("")
+            print(colors.fg.lightcyan + colors.bold + "Ledger Nano S - Waves test app" + colors.reset)
+            print(colors.fg.lightcyan + colors.bold + "Test protobuf transactions" + colors.reset)
+            print(colors.fg.white + "\t 3. Issue" + colors.reset)
+            print(colors.fg.white + "\t 4. Transfer" + colors.reset)
+            print(colors.fg.white + "\t 5. Reissue" + colors.reset)
+            print(colors.fg.white + "\t 6. Burn" + colors.reset)
+            print(colors.fg.white + "\t 7. Exchange" + colors.reset)
+            print(colors.fg.white + "\t 8. Lease" + colors.reset)
+            print(colors.fg.white + "\t 9. Lease Cancel" + colors.reset)
+            print(colors.fg.white + "\t 10. Create Alias" + colors.reset)
+            print(colors.fg.white + "\t 11. MassTransfer" + colors.reset)
+            print(colors.fg.white + "\t 12. Data" + colors.reset)
+            print(colors.fg.white + "\t 13. Set Account Script" + colors.reset)
+            print(colors.fg.white + "\t 14. Sponsor Fee" + colors.reset)
+            print(colors.fg.white + "\t 15. Set Asset Script" + colors.reset)
+            print(colors.fg.white + "\t 16. Invoke Script" + colors.reset)
+            print(colors.fg.white + "\t 17. Update Asset Info" + colors.reset)
+            print(colors.fg.white + "\t 0. Exit" + colors.reset)
+            select = raw_input(colors.fg.cyan + "Please select transaction type> " + colors.reset)
+            decimals = 8 # tx amount asset decimals
+            feeDecimals = 8 #fee amount asset decimals
+            if (select == "3"):
+                decimals = 3
+                some_transfer_bytes = build_issue_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt 
+                    "Test asset name", 
+                    "Test asset description, Test asset description, Test asset description", 
+                    1000000000, 
+                    decimals, 
+                    True, 
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    100000, 
+                    1526477921829, 
+                    3
+                )
+            elif (select == "4"):
+                decimals = 8
+                some_transfer_bytes = build_transfer_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt  
+                    "23edvPK94JRdmDj7rKwzLbu22Sem", #3P8mkuJyiFvVRLjVNfDvdqVqH92bZZkQtAL 
+                    pw.Asset('B3mFpuCTpShBkSNiKaVbKeipktYWufEMAEGvBAdNP6tu'), 
+                    100000000, 
+                    'privet', 
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    100000, 
+                    1526477921829, 
+                    3
+                )
+            elif (select == "5"):
+                decimals = 8
+                some_transfer_bytes = build_reissue_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+                    pw.Asset('B3mFpuCTpShBkSNiKaVbKeipktYWufEMAEGvBAdNP6tu'),
+                    100000000, 
+                    True,
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    100000, 
+                    1526477921829, 
+                    3
+                )    
+            elif (select == "6"):
+                decimals = 8
+                some_transfer_bytes = build_burn_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+                    pw.Asset('B3mFpuCTpShBkSNiKaVbKeipktYWufEMAEGvBAdNP6tu'),
+                    1000000000,
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    100000, 
+                    1526477921829, 
+                    3
+                )
+            #elif (select == "7"):
+                
+            elif (select == "8"):
+                some_transfer_bytes = build_lease_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+                    "23edvPK94JRdmDj7rKwzLbu22Sem", #3P8mkuJyiFvVRLjVNfDvdqVqH92bZZkQtAL 
+                    100000000000,
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    100000, 
+                    1526477921829, 
+                    3
+                )
+            elif (select == "9"):
+                some_transfer_bytes = build_cancel_lease_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+                    'B3mFpuCTpShBkSNiKaVbKeipktYWufEMAEGvBAdNP6tu',
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    100000, 
+                    1526477921829, 
+                    3
+                )
+            elif (select == "10"):
+                some_transfer_bytes = build_creating_alias_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+                    "Test Alias",
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    100000, 
+                    1526477921829, 
+                    3
+                )
+            elif (select == "11"):
+                some_transfer_bytes = build_masstransfer_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+                    "23edvPK94JRdmDj7rKwzLbu22Sem", #3P8mkuJyiFvVRLjVNfDvdqVqH92bZZkQtAL,
+                    pw.Asset('B3mFpuCTpShBkSNiKaVbKeipktYWufEMAEGvBAdNP6tu'),
+                    10000000,
+                    'privet0000privet0000privet0000privet0000privet0000privet0000privet0000privet0000privet0000privet0000privet0000',
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
+                    100000, 
+                    1526477921829, 
+                    3
+                )
+            elif (select == "12"):
+                some_transfer_bytes = build_data_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    100000, 
+                    1526477921829, 
+                    3
+                )
+            elif (select == "13"):
+                script = base64.b64decode("AAIDAAAAAAAAAAYIARIAEgAAAAAEAAAAAAVscEtleQIAAAALbGFzdFBheW1lbnQAAAAABWxpS2V5AgAAAApiZXN0Rm9tb2VyAAAAAAVsaEtleQIAAAAGaGVpZ2h0AAAAAANkYXkAAAAAAAAABaAAAAACAAAAAWkBAAAAC2ZlYXJtaXNzaW5nAAAAAAQAAAAHcGF5bWVudAQAAAAHJG1hdGNoMAgFAAAAAWkAAAAHcGF5bWVudAMJAAABAAAAAgUAAAAHJG1hdGNoMAIAAAAPQXR0YWNoZWRQYXltZW50BAAAAAFwBQAAAAckbWF0Y2gwBAAAAAckbWF0Y2gxCAUAAAABcAAAAAdhc3NldElkAwkAAAEAAAACBQAAAAckbWF0Y2gxAgAAAApCeXRlVmVjdG9yBAAAAAdhc3NldElkBQAAAAckbWF0Y2gxCQAAAgAAAAECAAAAD2ZvbW8gd2F2ZXMgb25seQgFAAAAAXAAAAAGYW1vdW50CQAAAgAAAAECAAAAGHBheW1lbnQgbXVzdCBiZSBhdHRhY2hlZAQAAAALbGFzdFBheW1lbnQEAAAAByRtYXRjaDAJAAQaAAAAAgUAAAAEdGhpcwIAAAALbGFzdFBheW1lbnQDCQAAAQAAAAIFAAAAByRtYXRjaDACAAAAA0ludAQAAAABcAUAAAAHJG1hdGNoMAUAAAABcAAAAAAAAAAAAAMJAABnAAAAAgUAAAALbGFzdFBheW1lbnQFAAAAB3BheW1lbnQJAAACAAAAAQkAASwAAAACAgAAAA9taW4gcGF5bWVudCBpcyAJAAGkAAAAAQUAAAAHcGF5bWVudAkBAAAACFdyaXRlU2V0AAAAAQkABEwAAAACCQEAAAAJRGF0YUVudHJ5AAAAAgUAAAAFbHBLZXkFAAAAB3BheW1lbnQJAARMAAAAAgkBAAAACURhdGFFbnRyeQAAAAIFAAAABWxpS2V5CAgFAAAAAWkAAAAGY2FsbGVyAAAABWJ5dGVzCQAETAAAAAIJAQAAAAlEYXRhRW50cnkAAAACBQAAAAVsaEtleQUAAAAGaGVpZ2h0BQAAAANuaWwAAAABaQEAAAAId2l0aGRyYXcAAAAABAAAAA1jYWxsZXJDb3JyZWN0CQAAAAAAAAIICAUAAAABaQAAAAZjYWxsZXIAAAAFYnl0ZXMJAQAAAAdleHRyYWN0AAAAAQkABBwAAAACBQAAAAR0aGlzBQAAAAVsaUtleQQAAAANaGVpZ2h0Q29ycmVjdAkAAGcAAAACCQAAZQAAAAIJAQAAAAdleHRyYWN0AAAAAQkABBoAAAACBQAAAAR0aGlzBQAAAAVsaEtleQUAAAAGaGVpZ2h0BQAAAANkYXkEAAAAC2NhbldpdGhkcmF3AwUAAAANaGVpZ2h0Q29ycmVjdAUAAAANY2FsbGVyQ29ycmVjdAcDBQAAAAtjYW5XaXRoZHJhdwkBAAAAC1RyYW5zZmVyU2V0AAAAAQkABEwAAAACCQEAAAAOU2NyaXB0VHJhbnNmZXIAAAADCAUAAAABaQAAAAZjYWxsZXIJAQAAAAx3YXZlc0JhbGFuY2UAAAABBQAAAAR0aGlzBQAAAAR1bml0BQAAAANuaWwJAAACAAAAAQIAAAAGYmVob2xkAAAAACSiqig=")
+                some_transfer_bytes =  build_set_ac_script_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+                    script,
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    100000, 
+                    1526477921829, 
+                    3
+                )   
+            elif (select == "14"):
+                decimals = 6
+                some_transfer_bytes = build_sponsorship_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+                    pw.Asset('51LxAtwBXapvvTFSbbh4nLyWFxH6x8ocfNvrXxbTChze'),
+                    10000,
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    100000, 
+                    1526477921829, 
+                    3
+                )
+            elif (select == "15"):
+                script = base64.b64decode("AAIDAAAAAAAAAAYIARIAEgAAAAAEAAAAAAVscEtleQIAAAALbGFzdFBheW1lbnQAAAAABWxpS2V5AgAAAApiZXN0Rm9tb2VyAAAAAAVsaEtleQIAAAAGaGVpZ2h0AAAAAANkYXkAAAAAAAAABaAAAAACAAAAAWkBAAAAC2ZlYXJtaXNzaW5nAAAAAAQAAAAHcGF5bWVudAQAAAAHJG1hdGNoMAgFAAAAAWkAAAAHcGF5bWVudAMJAAABAAAAAgUAAAAHJG1hdGNoMAIAAAAPQXR0YWNoZWRQYXltZW50BAAAAAFwBQAAAAckbWF0Y2gwBAAAAAckbWF0Y2gxCAUAAAABcAAAAAdhc3NldElkAwkAAAEAAAACBQAAAAckbWF0Y2gxAgAAAApCeXRlVmVjdG9yBAAAAAdhc3NldElkBQAAAAckbWF0Y2gxCQAAAgAAAAECAAAAD2ZvbW8gd2F2ZXMgb25seQgFAAAAAXAAAAAGYW1vdW50CQAAAgAAAAECAAAAGHBheW1lbnQgbXVzdCBiZSBhdHRhY2hlZAQAAAALbGFzdFBheW1lbnQEAAAAByRtYXRjaDAJAAQaAAAAAgUAAAAEdGhpcwIAAAALbGFzdFBheW1lbnQDCQAAAQAAAAIFAAAAByRtYXRjaDACAAAAA0ludAQAAAABcAUAAAAHJG1hdGNoMAUAAAABcAAAAAAAAAAAAAMJAABnAAAAAgUAAAALbGFzdFBheW1lbnQFAAAAB3BheW1lbnQJAAACAAAAAQkAASwAAAACAgAAAA9taW4gcGF5bWVudCBpcyAJAAGkAAAAAQUAAAAHcGF5bWVudAkBAAAACFdyaXRlU2V0AAAAAQkABEwAAAACCQEAAAAJRGF0YUVudHJ5AAAAAgUAAAAFbHBLZXkFAAAAB3BheW1lbnQJAARMAAAAAgkBAAAACURhdGFFbnRyeQAAAAIFAAAABWxpS2V5CAgFAAAAAWkAAAAGY2FsbGVyAAAABWJ5dGVzCQAETAAAAAIJAQAAAAlEYXRhRW50cnkAAAACBQAAAAVsaEtleQUAAAAGaGVpZ2h0BQAAAANuaWwAAAABaQEAAAAId2l0aGRyYXcAAAAABAAAAA1jYWxsZXJDb3JyZWN0CQAAAAAAAAIICAUAAAABaQAAAAZjYWxsZXIAAAAFYnl0ZXMJAQAAAAdleHRyYWN0AAAAAQkABBwAAAACBQAAAAR0aGlzBQAAAAVsaUtleQQAAAANaGVpZ2h0Q29ycmVjdAkAAGcAAAACCQAAZQAAAAIJAQAAAAdleHRyYWN0AAAAAQkABBoAAAACBQAAAAR0aGlzBQAAAAVsaEtleQUAAAAGaGVpZ2h0BQAAAANkYXkEAAAAC2NhbldpdGhkcmF3AwUAAAANaGVpZ2h0Q29ycmVjdAUAAAANY2FsbGVyQ29ycmVjdAcDBQAAAAtjYW5XaXRoZHJhdwkBAAAAC1RyYW5zZmVyU2V0AAAAAQkABEwAAAACCQEAAAAOU2NyaXB0VHJhbnNmZXIAAAADCAUAAAABaQAAAAZjYWxsZXIJAQAAAAx3YXZlc0JhbGFuY2UAAAABBQAAAAR0aGlzBQAAAAR1bml0BQAAAANuaWwJAAACAAAAAQIAAAAGYmVob2xkAAAAACSiqig=")
+                some_transfer_bytes =  build_set_as_script_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+                    pw.Asset('51LxAtwBXapvvTFSbbh4nLyWFxH6x8ocfNvrXxbTChze'),
+                    script,
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    100000, 
+                    1526477921829, 
+                    3
+                )   
+            #elif (select == "16"):
+                #fname = "function_name"
+                #function_call = ""
+                #fcal=chr(1) + chr(9) + chr(1) + fname.encode() + function_call.encode()
+                
+            elif (select == "17"):
+                some_transfer_bytes = build_update_asset_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+                    pw.Asset('51LxAtwBXapvvTFSbbh4nLyWFxH6x8ocfNvrXxbTChze'),
+                    "Test name 1",
+                    "Test descr", 
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    100000, 
+                    1526477921829, 
+                    3
+                )   
+            else:
+                break;
+            
+            path = raw_input(colors.fg.lightblue + "Please input BIP-32 path (for example \"44'/5741564'/0'/0'/1'\")> " + colors.reset)
+            if len(path) == 0:
+                path = "44'/5741564'/0'/0'/1'"
+            binary_data = path_to_bytes(expand_path(path))
+            print(colors.fg.lightgrey + "path bytes: " + base58.b58encode(str(path_to_bytes(expand_path(path)))))
 
-                    if (offset == 0):
-                        print("Waiting for approval to sign on the Ledger Nano S")
+            # tx amount asset decimals
+            binary_data += chr(decimals)
+            # fee amount asset decimals
+            binary_data += chr(feeDecimals)
 
-                    apdu = bytes("8002".decode('hex')) + chr(p1) + chain_id + chr(len(chunk)) + bytes(chunk)
-                    signature = dongle.exchange(apdu)
-                    offset += len(chunk)
-                    
-                print("signature " + base58.b58encode(str(signature)))
-                break
-            except CommException as e:
-                if (e.sw == 0x6990):
-                    print(colors.fg.red + "Transaction buffer max size reached." + colors.reset)
-                if (e.sw == 0x6985):
-                    print(colors.fg.red + "Required condition failed." + colors.reset)
-                if (e.sw == 0x9100):
-                    print(colors.fg.red + "User denied signing request on Ledger Nano S device." + colors.reset)
-                break
-            except Exception as e:
-                print(e, type(e))
-                answer = raw_input(
-                    "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
-                if (answer.upper() == 'Q'):
-                    sys.exit(0)
-                sys.exc_clear()
+            #some_transfer_bytes = base58.b58decode("uq4YDsWuUhQ2ajpzvHxWeikWkF8XodVWi8F1VdYsqFESLGc2k6g5UvtxVrER4a")
+            #some_transfer_bytes = base58.b58decode("c4wP1kugNdzm3Sm88YVaJ3dVZ73S1RshSZNxvqmCZbQUW5yDSCGuXVK666EwipM4yqoA7EeDzseLjSDRQFaoG7pcGvSMrHEqVxw8z3qoBb3zjEvpMhFG598koLXBTZS8RXvN4U4LLJpUcEnqAbDrM4jeUwcYkqekMM3Mbm8tWAaTUbwHgE4DbUPoUid3xncWovvcZ5j9RBExrKpNhxmN1YDS2mwK59GnN4KxUxMnwAuQ5dgrbkAnDGCV9TjeJemj6eCLHKr6mhGUns7W69fRioUmJMADbkYTvgJe1nFgG5n8GiavNfDeCNKD8CYjwZBgZtRZma88pcfAtgBG293JTgcBgSdJWAMTT5J4B5URhrJWyF3mNdq6rbumTGWTGpA8HgYEPA2VgD6EGRprm1DYwdr8UD7HEx2gzDTV6A31")
+            input = raw_input(colors.fg.lightblue + "Please input message to sign (for example \"" + base58.b58encode(
+            str(some_transfer_bytes)) + "\")> " + colors.reset)
+            if len(input) == 0:
+                # 2 first bytes aren't the tx data, but info type for the ledger
+                binary_data += chr(int(select)) + chr(3)
+                binary_data += struct.pack(">I", len(some_transfer_bytes))
+                binary_data += some_transfer_bytes
+                binary_data += some_transfer_bytes
+                binary_data += some_transfer_bytes
+                print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(some_transfer_bytes)))
+            else:
+                binary_input = base58.b58decode(input)
+                binary_data += struct.pack(">I", len(binary_input))
+                binary_data += binary_input
+                binary_data += binary_input
+                binary_data += binary_input
+                print(colors.fg.lightgrey + "tx bytes:   " + base58.b58encode(str(binary_input)))
+            print(colors.fg.lightgrey + "all request bytes:   " + base58.b58encode(str(binary_data)))
+            
+            signature = None
+            while (True):
+                try:
+                    offset = 0
+                    while offset != len(binary_data):
+                        if (len(binary_data) - offset) > CHUNK_SIZE:
+                            chunk = binary_data[offset: offset + CHUNK_SIZE]
+                        else:
+                            chunk = binary_data[offset:]
+                        if (offset + len(chunk)) == len(binary_data):
+                            p1 = 0x80
+                        else:
+                            p1 = 0x00
+
+                        if (offset == 0):
+                            print("Waiting for approval to sign on the Ledger Nano S")
+
+                        apdu = bytes("8002".decode('hex')) + chr(p1) + chain_id + chr(len(chunk)) + bytes(chunk)
+                        signature = dongle.exchange(apdu)
+                        offset += len(chunk)
+                        
+                    print("signature " + base58.b58encode(str(signature)))
+                    break
+                except CommException as e:
+                    if (e.sw == 0x6990):
+                        print(colors.fg.red + "Transaction buffer max size reached." + colors.reset)
+                    if (e.sw == 0x6985):
+                        print(colors.fg.red + "Required condition failed." + colors.reset)
+                    if (e.sw == 0x9100):
+                        print(colors.fg.red + "User denied signing request on Ledger Nano S device." + colors.reset)
+                    break
+                except Exception as e:
+                    print(e, type(e))
+                    answer = raw_input(
+                        "Please connect your Ledger Nano S, unlock, and launch the Waves app. Press <enter> when ready. (Q quits)")
+                    if (answer.upper() == 'Q'):
+                        sys.exit(0)
+                    sys.exc_clear()
     else:
         break

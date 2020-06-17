@@ -18,28 +18,47 @@
  *  limitations under the License.
  ********************************************************************************/
 
-#ifndef __WAVES_H__
-#define __WAVES_H__
+#include "print_amount.h"
 
-#include <stdint.h>
-#include <stdbool.h>
+bool print_amount(uint64_t amount, int decimals, unsigned char *out,
+                  uint8_t len) {
+  uint64_t dVal = amount;
+  int i, j;
 
-#include "base58.h"
-#include "os.h"
-#include "cx.h"
-#include "stream_eddsa_sign.h"
+  if (decimals == 0)
+    decimals--;
 
-typedef unsigned char ed25519_signature[64];
-typedef unsigned char ed25519_public_key_hash[20];
-typedef unsigned char ed25519_public_key[32];
-typedef unsigned char ed25519_secret_key[32];
+  os_memset(tmp_ctx.signing_context.ui.tmp, 0, len);
+  for (i = 0; dVal > 0 || i < decimals + 2; i++) {
+    if (dVal > 0) {
+      tmp_ctx.signing_context.ui.tmp[i] = (char)((dVal % 10) + '0');
+      dVal /= 10;
+    } else {
+      tmp_ctx.signing_context.ui.tmp[i] = '0';
+    }
+    if (i == decimals - 1) {
+      i += 1;
+      tmp_ctx.signing_context.ui.tmp[i] = '.';
+    }
+    if (i >= len) {
+      return false;
+    }
+  }
+  // reverse order
+  for (i -= 1, j = 0; i >= 0 && j < len - 1; i--, j++) {
+    out[j] = tmp_ctx.signing_context.ui.tmp[i];
+  }
+  if (decimals > 0) {
+    // strip trailing 0s
+    for (j -= 1; j > 0; j--) {
+      if (out[j] != '0')
+        break;
+    }
+    j += 1;
+    if (out[j - 1] == '.')
+      j -= 1;
+  }
 
-void waves_public_key_to_address(const ed25519_public_key public_key,
-                                 const unsigned char network_byte,
-                                 unsigned char *output);
-void waves_public_key_hash_to_address(
-    const ed25519_public_key_hash public_key_hash,
-    const unsigned char network_byte, unsigned char *output);
-void copy_in_reverse_order(unsigned char *to, const unsigned char *from,
-                           const unsigned int len);
-#endif
+  out[j] = '\0';
+  return true;
+}

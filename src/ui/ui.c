@@ -24,6 +24,8 @@
 #include "../main.h"
 #include "../crypto/waves.h"
 #include "transactions/transfer.h"
+#include "transactions/protobuf.h"
+#include "cx.h"
 
 #ifdef TARGET_BLUE
 #include "blue/ui_menus_blue.h"
@@ -40,9 +42,6 @@ bolos_ux_params_t G_ux_params;
 enum UI_STATE ui_state;
 
 int ux_step, ux_step_count;
-
-bool print_amount(uint64_t amount, int decimals, unsigned char *out,
-                  uint8_t len);
 
 void menu_address_init() {
   ux_step = 0;
@@ -72,78 +71,76 @@ void ui_idle() {
 
 void try_to_fill_buffer(uint8_t chunk_data_start_index,
                         uint8_t chunk_data_size) {
-  uint32_t chunk_data_left = chunk_data_size - ui_context.chunk_used;
+  uint32_t chunk_data_left =
+      chunk_data_size - tmp_ctx.signing_context.ui.byte.chunk_used;
   uint32_t step_read_bytes_left =
-      MIN(chunk_data_left, ui_context.wait_in_buffer);
-  if (ui_context.wait_in_buffer <= 0 ||
-      chunk_data_start_index + ui_context.chunk_used > 150) {
+      MIN(chunk_data_left, tmp_ctx.signing_context.ui.byte.wait_in_buffer);
+  if (tmp_ctx.signing_context.ui.byte.wait_in_buffer <= 0 ||
+      chunk_data_start_index + tmp_ctx.signing_context.ui.byte.chunk_used >
+          150) {
     return THROW(EXCEPTION_OVERFLOW);
   }
-  os_memmove((unsigned char *)&ui_context.buffer[ui_context.buffer_used],
-             &G_io_apdu_buffer[chunk_data_start_index + ui_context.chunk_used],
+  os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.byte
+                 .buffer[tmp_ctx.signing_context.ui.byte.buffer_used],
+             &G_io_apdu_buffer[chunk_data_start_index +
+                               tmp_ctx.signing_context.ui.byte.chunk_used],
              step_read_bytes_left);
-  ui_context.chunk_used += step_read_bytes_left;
-  ui_context.buffer_used += step_read_bytes_left;
-  ui_context.wait_in_buffer -= step_read_bytes_left;
+  tmp_ctx.signing_context.ui.byte.chunk_used += step_read_bytes_left;
+  tmp_ctx.signing_context.ui.byte.buffer_used += step_read_bytes_left;
+  tmp_ctx.signing_context.ui.byte.wait_in_buffer -= step_read_bytes_left;
 }
 
 void build_other_data_ui() {
   unsigned char tx_type = tmp_ctx.signing_context.data_type;
   // just one step here
-  os_memmove(&ui_context.line2, &"Transaction Id\0", 15);
+  os_memmove(&tmp_ctx.signing_context.ui.line2, &"Transaction Id\0", 15);
   if (tx_type == 3) {
-    os_memmove(&ui_context.line1, &"issue\0", 6);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"issue\0", 6);
   } else if (tx_type == 4) {
-    os_memmove(&ui_context.line1, &"transfer\0", 9);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"transfer\0", 9);
   } else if (tx_type == 5) {
-    os_memmove(&ui_context.line1, &"reissue\0", 8);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"reissue\0", 8);
   } else if (tx_type == 6) {
-    os_memmove(&ui_context.line1, &"burn\0", 5);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"burn\0", 5);
   } else if (tx_type == 8) {
-    os_memmove(&ui_context.line1, &"start leasing\0", 14);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"start leasing\0", 14);
   } else if (tx_type == 9) {
-    os_memmove(&ui_context.line1, &"cancel leasing\0", 15);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"cancel leasing\0", 15);
   } else if (tx_type == 10) {
-    os_memmove(&ui_context.line2, &"Transaction Hash\0", 17);
-    os_memmove(&ui_context.line1, &"creating an alias\0", 18);
+    os_memmove(&tmp_ctx.signing_context.ui.line2, &"Transaction Hash\0", 17);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"creating an alias\0", 18);
   } else if (tx_type == 11) {
-    os_memmove(&ui_context.line1, &"mass transfer\0", 14);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"mass transfer\0", 14);
   } else if (tx_type == 12) {
-    os_memmove(&ui_context.line1, &"data\0", 5);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"data\0", 5);
   } else if (tx_type == 13) {
-    os_memmove(&ui_context.line1, &"set script\0", 11);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"set script\0", 11);
   } else if (tx_type == 14) {
-    os_memmove(&ui_context.line1, &"sponsorship\0", 12);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"sponsorship\0", 12);
   } else if (tx_type == 15) {
-    os_memmove(&ui_context.line1, &"asset script\0", 13);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"asset script\0", 13);
   } else if (tx_type == 16) {
-    os_memmove(&ui_context.line1, &"script invocation\0", 18);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"script invocation\0", 18);
   } else if (tx_type == 17) {
-    os_memmove(&ui_context.line1, &"update asset info\0", 18);
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"update asset info\0", 18);
   } else if (tx_type > 200) {
     // type byte >200 are 'reserved', it will not be signed
-    os_memmove(&ui_context.line2, &"Hash\0", 5);
+    os_memmove(&tmp_ctx.signing_context.ui.line2, &"Hash\0", 5);
     if (tx_type == 252) {
-      os_memmove(&ui_context.line1, &"order\0", 6);
+      os_memmove(&tmp_ctx.signing_context.ui.line1, &"order\0", 6);
     } else if (tx_type == 253) {
-      os_memmove(&ui_context.line1, &"data\0", 5);
+      os_memmove(&tmp_ctx.signing_context.ui.line1, &"data\0", 5);
     } else if (tx_type == 254) {
-      os_memmove(&ui_context.line1, &"request\0", 8);
+      os_memmove(&tmp_ctx.signing_context.ui.line1, &"request\0", 8);
     } else if (tx_type == 255) {
-      os_memmove(&ui_context.line1, &"message\0", 8);
+      os_memmove(&tmp_ctx.signing_context.ui.line1, &"message\0", 8);
     } else {
-      os_memmove(&ui_context.line1, &"something\0", 10);
+      os_memmove(&tmp_ctx.signing_context.ui.line1, &"something\0", 10);
     }
   }
 
-  if (strlen((const char *)ui_context.line1) == 0) {
-    os_memmove(&ui_context.line1, &"transaction\0", 12);
-  }
-  // id should be calculated on sign step
-  size_t length = 45;
-  if (!b58enc((char *)ui_context.line3, &length, (const void *)&ui_context.id,
-              32)) {
-    THROW(SW_CONDITIONS_NOT_SATISFIED);
+  if (strlen((const char *)tmp_ctx.signing_context.ui.line1) == 0) {
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"transaction\0", 12);
   }
 
   // Get the public key and return it.
@@ -154,24 +151,47 @@ void build_other_data_ui() {
     THROW(INVALID_PARAMETER);
   }
 
-  waves_public_key_to_address(
-      public_key.W, tmp_ctx.signing_context.network_byte, ui_context.line4);
+  os_memmove(&tmp_ctx.signing_context.ui.from, public_key.W, 32);
+  tmp_ctx.signing_context.ui.finished = true;
 }
 
 void make_allowed_ui_steps(bool is_last) {
+  uint32_t start_index;
   PRINTF("make_allowed_ui_steps start\n");
-  if (tmp_ctx.signing_context.data_type == 4) {
-    uint8_t chunk_data_size = G_io_apdu_buffer[4];
-    if (tmp_ctx.signing_context.chunk == 0) {
-      chunk_data_size -= 28;
+  if (tmp_ctx.signing_context.data_version > 2) {
+    if (tmp_ctx.signing_context.ui.finished != true) {
+      build_protobuf_ui(
+          &tmp_ctx.signing_context.ui.proto,
+          G_io_apdu_buffer + 5 + tmp_ctx.signing_context.chunk_used,
+          G_io_apdu_buffer[4] - tmp_ctx.signing_context.chunk_used,
+          tmp_ctx.signing_context.data_size);
+    } else {
+      THROW(SW_INS_NOT_SUPPORTED);
     }
-    while (
-        (chunk_data_size - ui_context.chunk_used > 0 && ui_context.step < 15) ||
-        (ui_context.step == 15 && !ui_context.finished && is_last)) {
-      build_transfer_ui_step(is_last);
+  } else {
+    if (tmp_ctx.signing_context.ui.byte.step == 0) {
+      start_index = tmp_ctx.signing_context.chunk_used;
+    } else {
+      start_index = tmp_ctx.signing_context.ui.byte.chunk_used;
     }
-  } else if (is_last) {
-    build_other_data_ui();
+
+    if (tmp_ctx.signing_context.data_type == 4) {
+      uint8_t chunk_data_size = G_io_apdu_buffer[4];
+      while (
+          (chunk_data_size - tmp_ctx.signing_context.ui.byte.chunk_used > 0 &&
+           tmp_ctx.signing_context.ui.byte.step < 15) ||
+          (tmp_ctx.signing_context.ui.byte.step == 15 &&
+           !tmp_ctx.signing_context.ui.finished && is_last)) {
+        build_transfer_ui_step(is_last);
+      }
+    } else if (is_last) {
+      build_other_data_ui();
+      tmp_ctx.signing_context.step = 7;
+    }
+    cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_NONE,
+            G_io_apdu_buffer + 5 + start_index,
+            G_io_apdu_buffer[4] - start_index, NULL, 0);
+    tmp_ctx.signing_context.ui.byte.chunk_used = 0;
   }
   PRINTF("make_allowed_ui_steps end\n");
 }
@@ -198,6 +218,106 @@ void show_sign_ui() {
     UX_DISPLAY(ui_approval_blue, ui_approval_blue_prepro);
 #else
     ux_flow_init(0, ux_verify_transaction_flow, NULL);
+#endif // #if TARGET_ID
+  }
+}
+
+void show_sign_protobuf_ui() {
+  unsigned char tx_type = tmp_ctx.signing_context.data_type;
+  ux_step = 0;
+  ui_state = UI_VERIFY;
+  if (tx_type == 3) {
+    ux_step_count = 10;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_issue_blue, NULL);
+#else
+    ux_flow_init(0, ux_issue_flow, NULL);
+#endif // #if TARGET_ID
+  } else if (tx_type == 4) {
+    ux_step_count = 9;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_transfer_blue, NULL);
+#else
+    ux_flow_init(0, ux_transfer_flow, NULL);
+#endif // #if TARGET_ID
+  } else if (tx_type == 5) {
+    ux_step_count = 7;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_reissue_blue, NULL);
+#else
+    ux_flow_init(0, ux_reissue_flow, NULL);
+#endif // #if TARGET_ID
+  } else if (tx_type == 6) {
+    ux_step_count = 7;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_burn_blue, NULL);
+#else
+    ux_flow_init(0, ux_burn_flow, NULL);
+#endif // #if TARGET_ID
+  } else if (tx_type == 8) {
+    ux_step_count = 7;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_lease_blue, NULL);
+#else
+    ux_flow_init(0, ux_lease_flow, NULL);
+#endif // #if TARGET_ID
+  } else if (tx_type == 9) {
+    ux_step_count = 6;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_cancel_lease_blue, NULL);
+#else
+    ux_flow_init(0, ux_cancel_lease_flow, NULL);
+#endif // #if TARGET_ID
+  } else if (tx_type == 10) {
+    ux_step_count = 6;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_create_alias_blue, NULL);
+#else
+    ux_flow_init(0, ux_create_alias_flow, NULL);
+#endif // #if TARGET_ID
+  } else if (tx_type == 11) {
+    ux_step_count = 7;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_masstransfer_blue, NULL);
+#else
+    ux_flow_init(0, ux_masstransfer_flow, NULL);
+#endif // #if TARGET_ID
+  } else if (tx_type == 12) {
+    ux_step_count = 5;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_data_blue, NULL);
+#else
+    ux_flow_init(0, ux_data_flow, NULL);
+#endif // #if TARGET_ID
+  } else if (tx_type == 13) {
+    ux_step_count = 5;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_set_ac_script_blue, NULL);
+#else
+    ux_flow_init(0, ux_set_ac_script_flow, NULL);
+#endif // #if TARGET_ID
+  } else if (tx_type == 14) {
+    ux_step_count = 7;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_sponsorship_blue, NULL);
+#else
+    ux_flow_init(0, ux_sponsorship_flow, NULL);
+#endif // #if TARGET_ID
+  } else if (tx_type == 15) {
+    ux_step_count = 6;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_set_as_script_blue, NULL);
+#else
+    ux_flow_init(0, ux_set_as_script_flow, NULL);
+#endif // #if TARGET_ID
+  } else if (tx_type == 16) {
+    os_memmove(&tmp_ctx.signing_context.ui.line1, &"script invocation\0", 18);
+  } else if (tx_type == 17) {
+    ux_step_count = 8;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_update_asset_blue, NULL);
+#else
+    ux_flow_init(0, ux_update_asset_flow, NULL);
 #endif // #if TARGET_ID
   }
 }

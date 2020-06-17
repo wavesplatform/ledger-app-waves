@@ -1,6 +1,6 @@
 /*******************************************************************************
  *   Waves Platform Wallet App for Nano Ledger devices
- *   Copyright (c) 2017-2020 Sergey Tolmachev (Tolsi) <tolsi.ru@gmail.com>
+ *   Copyright (c) 2017-2020 Vladislav Petushkov <vladislav.petushkov@gmail.com>
  *
  *   Based on Sample code provided (c) 2016 Ledger and
  *                                 (c) 2017-2018 Jake B. (Burstcoin app)
@@ -18,28 +18,17 @@
  *  limitations under the License.
  ********************************************************************************/
 
-#ifndef __WAVES_H__
-#define __WAVES_H__
+#ifndef __PROTOBUF_H__
+#define __PROTOBUF_H__
 
-#include <stdint.h>
 #include <stdbool.h>
+#include "../../main.h"
+#include "../../nanopb/pb.h"
+#include "../../nanopb/pb_decode.h"
+#include "../../nanopb/pb_custom.h"
+#include "../../nanopb_stubs/transaction.pb.h"
 
-#include "base58.h"
-#include "os.h"
-#include "cx.h"
-#include "stream_eddsa_sign.h"
+void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
+                       uint8_t init_buffer_size, uint16_t total_buffer_size);
 
-typedef unsigned char ed25519_signature[64];
-typedef unsigned char ed25519_public_key_hash[20];
-typedef unsigned char ed25519_public_key[32];
-typedef unsigned char ed25519_secret_key[32];
-
-void waves_public_key_to_address(const ed25519_public_key public_key,
-                                 const unsigned char network_byte,
-                                 unsigned char *output);
-void waves_public_key_hash_to_address(
-    const ed25519_public_key_hash public_key_hash,
-    const unsigned char network_byte, unsigned char *output);
-void copy_in_reverse_order(unsigned char *to, const unsigned char *from,
-                           const unsigned int len);
 #endif

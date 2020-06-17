@@ -30,20 +30,9 @@
 #include "os.h"
 #include "cx.h"
 #include "os_io_seproxyhal.h"
-#include "nanopb/pb_custom.h"
-#include "nanopb/pb_decode.h"
-#include "nanopb/pb_encode.h"
-#include "nanopb_stubs/transaction.pb.h"
 
-#define OFFSET_CLA 0
-#define OFFSET_INS 1
-#define OFFSET_P1 2
-#define OFFSET_P2 3
-#define OFFSET_LC 4
-#define OFFSET_CDATA 5
 // Temporary area to store stuff and reuse the same memory
 tmpContext_t tmp_ctx;
-uiContext_t ui_context;
 
 // Non-volatile storage for the wallet app's stuff
 internal_storage_t const N_storage_real;
@@ -54,6 +43,18 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 #if !defined(TARGET_NANOS) && !defined(TARGET_BLUE) && !defined(TARGET_NANOX)
 #error This application only supports the Ledger Nano S, Nano X and the Ledger Blue
 #endif
+
+extern void _ebss;
+
+// Return true if there is less than MIN_BSS_STACK_GAP bytes available in the
+// stack
+void check_stack_overflow(int step) {
+  uint32_t stack_top = 0;
+  // PRINTF("Stack remaining on step %d: CUR STACK ADDR: %p, EBSS: %p, diff:
+  // %d\n", step, &stack_top, &_ebss, ((uintptr_t)&stack_top) -
+  // ((uintptr_t)&_ebss));
+  PRINTF("+++++++diff: %d\n", ((uintptr_t)&stack_top) - ((uintptr_t)&_ebss));
+}
 
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
   switch (channel & ~(IO_FLAGS)) {
@@ -124,7 +125,6 @@ void hash_stream_data(uint8_t chunk_data_size, uint8_t chunk_data_start_index) {
 // from the button handler after the user verifies the transaction.
 
 void make_sign_step(uint8_t chunk_data_start_index, uint8_t chunk_data_size) {
-  PRINTF("make_sign_step start step: %d\n", tmp_ctx.signing_context.step);
   if (tmp_ctx.signing_context.step == 1) {
     cx_ecfp_public_key_t public_key;
     cx_ecfp_private_key_t private_key;
@@ -152,15 +152,12 @@ void make_sign_step(uint8_t chunk_data_start_index, uint8_t chunk_data_size) {
       // chunk_data_size will be false
       if (tmp_ctx.signing_context.data_read ==
           tmp_ctx.signing_context.data_size) {
-        os_memmove(ui_context.id,
-                   tmp_ctx.signing_context.eddsa_context.first_data_hash, 32);
         tmp_ctx.signing_context.step = 5;
+        return;
       }
     }
   }
-  PRINTF("make_sign_step end step: %d\n", tmp_ctx.signing_context.step);
 }
-
 void make_allowed_sign_steps() {
   uint8_t chunk_data_start_index = 5;
   uint8_t chunk_data_size = G_io_apdu_buffer[4];
@@ -181,7 +178,8 @@ void make_allowed_sign_steps() {
         deserialize_uint32_t(&G_io_apdu_buffer[29]);
   }
 
-  while (tmp_ctx.signing_context.chunk_used < chunk_data_size) {
+  while (tmp_ctx.signing_context.chunk_used < chunk_data_size &&
+         tmp_ctx.signing_context.step < 5) {
     make_sign_step(chunk_data_start_index, chunk_data_size);
   }
   // else wait for next chunk
@@ -190,14 +188,11 @@ void make_allowed_sign_steps() {
 // like
 // https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
 uint32_t set_result_sign() {
-  uint8_t signature[64];
+  tmp_ctx.signing_context.signature[63] |= tmp_ctx.signing_context.sign_bit;
+  os_memmove((char *)G_io_apdu_buffer, tmp_ctx.signing_context.signature,
+             sizeof(tmp_ctx.signing_context.signature));
 
-  stream_eddsa_sign_step5(&tmp_ctx.signing_context.eddsa_context, signature);
-
-  signature[63] |= tmp_ctx.signing_context.sign_bit;
-  os_memmove((char *)G_io_apdu_buffer, signature, sizeof(signature));
-
-  PRINTF("Signature:\n%.*H\n", 64, signature);
+  PRINTF("Signature:\n%.*H\n", 64, tmp_ctx.signing_context.signature);
 
   init_context();
 
@@ -246,79 +241,70 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
             (G_io_apdu_buffer[2] != P1_LAST)) {
           THROW(SW_INCORRECT_P1_P2);
         }
-
-        if (tmp_ctx.signing_context.step == 5) {
-          THROW(SW_INCORRECT_P1_P2);
-        }
-        if (tmp_ctx.signing_context.step > 0) {
-          tmp_ctx.signing_context.chunk += 1;
-        } else {
-          //show_processing();
-          os_memset((unsigned char *)&ui_context, 0, sizeof(uiContext_t));
-          tmp_ctx.signing_context.step = 1;
-          tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
-        }
-
-        uint8_t chunk_data_start_index = 5;
-        uint8_t chunk_data_size = G_io_apdu_buffer[4];
-
-        if (tmp_ctx.signing_context.chunk == 0) {
-          chunk_data_start_index += 28;
-          chunk_data_size -= 28;
-
-          // then there is the bip32 path in the first chunk - first 20 bytes of data
-          read_path_from_bytes(G_io_apdu_buffer + 5,
-                              (uint32_t *)tmp_ctx.signing_context.bip32);
-
-          tmp_ctx.signing_context.amount_decimals = G_io_apdu_buffer[25];
-          tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[26];
-          tmp_ctx.signing_context.data_type = G_io_apdu_buffer[27];
-          tmp_ctx.signing_context.data_version = G_io_apdu_buffer[28];
-          tmp_ctx.signing_context.data_size =
-              deserialize_uint32_t(&G_io_apdu_buffer[29]);
-        }
-
-        uint8_t status;
-        uint16_t total_message_size = tmp_ctx.signing_context.data_size;
-
-        PRINTF("total_message_size: %d\n", total_message_size);
-
-        pb_istream_from_apdu_ctx_t pb_apdu_ctx;
-
-        waves_Transaction tx = waves_Transaction_init_zero;
-        
-        /* Create an input stream that will deserialize the nanopb message coming from successives APDUs */
-        pb_istream_t stream = pb_istream_from_apdu(&pb_apdu_ctx, G_io_apdu_buffer + chunk_data_start_index, G_io_apdu_buffer[4] - chunk_data_start_index + 5, total_message_size);
-
-        /* Now we are ready to decode the message. */
-        status = pb_decode(&stream, waves_Transaction_fields, &tx);
-        /* Check for errors... */
-        if (!status)
-        {
-            PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
-            THROW(0x6D00);
-        }
-
-        THROW(0x9000);
-        break;
-
-        /*tmp_ctx.signing_context.chunk_used = 0;
-        ui_context.chunk_used = 0;
-        if (G_io_apdu_buffer[2] == P1_LAST) {
+        if (tmp_ctx.signing_context.step <= 5) {
+          if (tmp_ctx.signing_context.step > 0) {
+            tmp_ctx.signing_context.chunk += 1;
+          } else {
+            PRINTF("make_sign_steps start\n");
+            show_processing();
+            tmp_ctx.signing_context.step = 1;
+            tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
+          }
+          tmp_ctx.signing_context.chunk_used = 0;
           make_allowed_sign_steps();
           if (tmp_ctx.signing_context.step == 5) {
-            //make_allowed_ui_steps(true);
-            show_sign_ui();
-            *flags |= IO_ASYNCH_REPLY;
+            stream_eddsa_sign_step5(&tmp_ctx.signing_context.eddsa_context,
+                                    tmp_ctx.signing_context.signature);
+            tmp_ctx.signing_context.step = 6;
+            PRINTF("make_sign_steps end\n");
+            os_memset(&tmp_ctx.signing_context.ui, 0,
+                      sizeof(tmp_ctx.signing_context.ui));
+            cx_blake2b_init(&tmp_ctx.signing_context.ui.hash_ctx, 256);
           } else {
+            THROW(SW_OK);
+            // wait for next chunk for sign
+          }
+        }
+        if (G_io_apdu_buffer[2] == P1_LAST) {
+          make_allowed_ui_steps(true);
+          if (tmp_ctx.signing_context.step != 7) {
             THROW(SW_DEPRECATED_SIGN_PROTOCOL);
           }
         } else {
-          make_allowed_sign_steps();
-          //make_allowed_ui_steps(false);
-          THROW(SW_OK);
-        }*/
-
+          make_allowed_ui_steps(false);
+        }
+        if (tmp_ctx.signing_context.step == 7) {
+          unsigned char third_data_hash[64];
+          cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
+                  third_data_hash, 32);
+          if (os_memcmp(&tmp_ctx.signing_context.first_data_hash,
+                        &third_data_hash, 32) != 0) {
+            THROW(SW_SIGN_DATA_NOT_MATCH);
+          }
+          size_t length = 45;
+          if (!b58enc((char *)tmp_ctx.signing_context.ui.txid, &length,
+                      (const void *)&tmp_ctx.signing_context.first_data_hash,
+                      32)) {
+            THROW(SW_CONDITIONS_NOT_SATISFIED);
+          }
+          // convert sender public key to address
+          waves_public_key_to_address(tmp_ctx.signing_context.ui.from,
+                                      tmp_ctx.signing_context.network_byte,
+                                      tmp_ctx.signing_context.ui.from);
+          if (tmp_ctx.signing_context.ui.pkhash) {
+            waves_public_key_hash_to_address(
+                tmp_ctx.signing_context.ui.line3,
+                tmp_ctx.signing_context.network_byte,
+                tmp_ctx.signing_context.ui.line3);
+          }
+          if (tmp_ctx.signing_context.data_version > 2) {
+            show_sign_protobuf_ui();
+          } else {
+            show_sign_ui();
+          }
+          *flags |= IO_ASYNCH_REPLY;
+        }
+        THROW(SW_OK);
       } break;
 
       case INS_GET_PUBLIC_KEY: {
@@ -432,7 +418,7 @@ static void waves_main(void) {
           THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
         }
 
-        PRINTF("New APDU received:\n%.*H\n", rx, G_io_apdu_buffer);
+        // PRINTF("New APDU received:\n%.*H\n", rx, G_io_apdu_buffer);
 
         // Call the Apdu handler,
         handle_apdu(&flags, &tx, rx);

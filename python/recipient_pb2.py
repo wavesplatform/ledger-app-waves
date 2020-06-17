@@ -11,6 +11,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+import nanopb_pb2 as nanopb__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -18,8 +19,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='waves',
   syntax='proto3',
   serialized_options=b'\n&com.wavesplatform.protobuf.transaction\252\002\005Waves',
-  serialized_pb=b'\n\x0frecipient.proto\x12\x05waves\"D\n\tRecipient\x12\x19\n\x0fpublic_key_hash\x18\x01 \x01(\x0cH\x00\x12\x0f\n\x05\x61lias\x18\x02 \x01(\tH\x00\x42\x0b\n\trecipientB0\n&com.wavesplatform.protobuf.transaction\xaa\x02\x05Wavesb\x06proto3'
-)
+  serialized_pb=b'\n\x0frecipient.proto\x12\x05waves\x1a\x0cnanopb.proto\"j\n\tRecipient\x12,\n\x0fpublic_key_hash\x18\x01 \x01(\x0c\x42\x11\x92?\x0e\x92\x01\x0b\x63onst char*H\x00\x12\"\n\x05\x61lias\x18\x02 \x01(\tB\x11\x92?\x0e\x92\x01\x0b\x63onst char*H\x00\x42\x0b\n\trecipientB0\n&com.wavesplatform.protobuf.transaction\xaa\x02\x05Wavesb\x06proto3'
+  ,
+  dependencies=[nanopb__pb2.DESCRIPTOR,])
 
 
 
@@ -37,14 +39,14 @@ _RECIPIENT = _descriptor.Descriptor(
       has_default_value=False, default_value=b"",
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=b'\222?\016\222\001\013const char*', file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='alias', full_name='waves.Recipient.alias', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
+      serialized_options=b'\222?\016\222\001\013const char*', file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -60,8 +62,8 @@ _RECIPIENT = _descriptor.Descriptor(
       name='recipient', full_name='waves.Recipient.recipient',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=26,
-  serialized_end=94,
+  serialized_start=40,
+  serialized_end=146,
 )
 
 _RECIPIENT.oneofs_by_name['recipient'].fields.append(
@@ -82,4 +84,6 @@ _sym_db.RegisterMessage(Recipient)
 
 
 DESCRIPTOR._options = None
+_RECIPIENT.fields_by_name['public_key_hash']._options = None
+_RECIPIENT.fields_by_name['alias']._options = None
 # @@protoc_insertion_point(module_scope)

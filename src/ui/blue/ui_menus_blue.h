@@ -3529,7 +3529,7 @@ const bagl_element_t ui_verify_set_as_script_blue[] = {
 
 //////////////////////////////////////////////////////////////////////////////
 
-const bagl_element_t ui_verify_issue_blue[] = {
+const bagl_element_t ui_verify_update_asset_blue[] = {
     {{BAGL_RECTANGLE, 0x00, 0, 68, 320, 413, 0, 0, BAGL_FILL, COLOR_BG_1,
       0x000000, 0, 0},
      NULL,
@@ -4125,10 +4125,18 @@ unsigned int ui_idle_blue_button(unsigned int button_mask,
                                  unsigned int button_mask_counter) {
   return 0;
 }
+
 unsigned int ui_address_blue_button(unsigned int button_mask,
                                     unsigned int button_mask_counter) {
   return 0;
 }
+
+unsigned int ui_verify_transfer_blue_button(unsigned int button_mask,
+                                    unsigned int button_mask_counter) {
+  return 0;
+}
+
+
 unsigned int ui_verify_data_blue_button(unsigned int button_mask,
                                         unsigned int button_mask_counter) {
   return 0;

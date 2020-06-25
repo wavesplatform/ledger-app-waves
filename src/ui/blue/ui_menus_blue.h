@@ -4610,6 +4610,12 @@ ui_verify_set_as_script_blue_button(unsigned int button_mask,
 }
 
 unsigned int
+ui_verify_invoke_blue_button(unsigned int button_mask,
+                                    unsigned int button_mask_counter) {
+  return 0;
+}
+
+unsigned int
 ui_verify_update_asset_blue_button(unsigned int button_mask,
                                    unsigned int button_mask_counter) {
   return 0;

@@ -23,6 +23,9 @@
 #include "../print_amount.h"
 #include "../../crypto/waves.h"
 
+// function to parse recipient in all transactions
+// using autocallback in protofiles
+// saving to 3 field
 bool waves_Recipient_callback(pb_istream_t *istream, pb_ostream_t *ostream,
                               const pb_field_t *field) {
   if (istream) {
@@ -285,15 +288,19 @@ void make_invoke_ui(waves_Transaction *tx) {
 void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
                        uint8_t init_buffer_size, uint16_t total_buffer_size) {
   uint8_t status;
+  // init variable for parsing
   waves_Transaction tx = waves_Transaction_init_default;
+  // set callback for parsing tx data
   tx.cb_data.funcs.decode = transaction_data_callback;
+
   tx.sender_public_key.funcs.decode = from_callback;
   tx.sender_public_key.arg = &tmp_ctx.signing_context.ui.from;
   tx.fee.asset_id.funcs.decode = asset_callback;
   tx.fee.asset_id.arg = &tmp_ctx.signing_context.ui.fee_asset;
-
+  // create stream for parsing
   pb_istream_t stream = pb_istream_from_apdu(ctx, init_buffer, init_buffer_size,
                                              total_buffer_size);
+  //decoding tx message
   status = pb_decode(&stream, waves_Transaction_fields, &tx);
   if (!status) {
     PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
@@ -303,6 +310,7 @@ void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
   print_amount(tx.fee.amount, tmp_ctx.signing_context.fee_decimals,
                (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 20);
   unsigned char tx_type = tmp_ctx.signing_context.data_type;
+  //prepeare non callback data for viewing depend on tx type
   if (tx_type == 3) {
     make_issue_ui(&tx);
   } else if (tx_type == 4) {
@@ -318,6 +326,7 @@ void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
   } else if (tx_type == 16) {
     make_invoke_ui(&tx);
   }
+  //finish parsing and view data
   tmp_ctx.signing_context.step = 7;
   tmp_ctx.signing_context.ui.finished = true;
 }

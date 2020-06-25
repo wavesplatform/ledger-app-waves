@@ -158,7 +158,7 @@ void build_other_data_ui() {
 void make_allowed_ui_steps(bool is_last) {
   uint32_t start_index;
   PRINTF("make_allowed_ui_steps start\n");
-  if (tmp_ctx.signing_context.data_version > 2) {
+  if (tmp_ctx.signing_context.data_version > 2) { // if protobuf
     if (tmp_ctx.signing_context.ui.finished != true) {
       build_protobuf_ui(
           &tmp_ctx.signing_context.ui.proto,

@@ -247,7 +247,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
             tmp_ctx.signing_context.chunk += 1;
           } else {
             PRINTF("make_sign_steps start\n");
-            //show_processing();
+            show_processing();
             tmp_ctx.signing_context.step = 1;
             tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
           }
@@ -275,7 +275,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
           make_allowed_ui_steps(false);
         }
         
-        if (tmp_ctx.signing_context.step == 7) {
+        if (tmp_ctx.signing_context.step == 7) { // all data parsed and prepeared to view
           unsigned char third_data_hash[64];
           cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
                   third_data_hash, 32);
@@ -294,7 +294,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
                                       tmp_ctx.signing_context.network_byte,
                                       tmp_ctx.signing_context.ui.from);
 
-
+          // if transaction has from field and it is pubkey hash will convert to address
           if (tmp_ctx.signing_context.ui.pkhash) {
             waves_public_key_hash_to_address(
                 tmp_ctx.signing_context.ui.line3,

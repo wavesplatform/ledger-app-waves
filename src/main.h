@@ -95,7 +95,7 @@ typedef struct uiContext_t {
   unsigned char fee_asset[45];
   unsigned char line1[45];
   unsigned char line2[45];
-  unsigned char line3[45];
+  unsigned char line3[45]; // reserved for recipient if transaction has resipient message
   unsigned char line4[45];
   unsigned char line5[45];
   unsigned char line6[20];

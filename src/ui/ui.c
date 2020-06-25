@@ -311,7 +311,12 @@ void show_sign_protobuf_ui() {
     ux_flow_init(0, ux_set_as_script_flow, NULL);
 #endif // #if TARGET_ID
   } else if (tx_type == 16) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"script invocation\0", 18);
+    ux_step_count = 11;
+#if defined(TARGET_BLUE)
+    UX_DISPLAY(ui_verify_invoke_blue, NULL);
+#else
+    ux_flow_init(0, ux_invoke_flow, NULL);
+#endif // #if TARGET_ID
   } else if (tx_type == 17) {
     ux_step_count = 8;
 #if defined(TARGET_BLUE)

@@ -163,19 +163,20 @@ void make_allowed_sign_steps() {
   uint8_t chunk_data_size = G_io_apdu_buffer[4];
 
   if (tmp_ctx.signing_context.chunk == 0) {
-    chunk_data_start_index += 28;
-    chunk_data_size -= 28;
+    chunk_data_start_index += 29;
+    chunk_data_size -= 29;
 
     // then there is the bip32 path in the first chunk - first 20 bytes of data
     read_path_from_bytes(G_io_apdu_buffer + 5,
                          (uint32_t *)tmp_ctx.signing_context.bip32);
 
     tmp_ctx.signing_context.amount_decimals = G_io_apdu_buffer[25];
-    tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[26];
-    tmp_ctx.signing_context.data_type = G_io_apdu_buffer[27];
-    tmp_ctx.signing_context.data_version = G_io_apdu_buffer[28];
+    tmp_ctx.signing_context.amount2_decimals = G_io_apdu_buffer[26];
+    tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[27];
+    tmp_ctx.signing_context.data_type = G_io_apdu_buffer[28];
+    tmp_ctx.signing_context.data_version = G_io_apdu_buffer[29];
     tmp_ctx.signing_context.data_size =
-        deserialize_uint32_t(&G_io_apdu_buffer[29]);
+        deserialize_uint32_t(&G_io_apdu_buffer[30]);
   }
 
   while (tmp_ctx.signing_context.chunk_used < chunk_data_size &&
@@ -246,7 +247,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
             tmp_ctx.signing_context.chunk += 1;
           } else {
             PRINTF("make_sign_steps start\n");
-            show_processing();
+            //show_processing();
             tmp_ctx.signing_context.step = 1;
             tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
           }
@@ -273,6 +274,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
         } else {
           make_allowed_ui_steps(false);
         }
+        
         if (tmp_ctx.signing_context.step == 7) {
           unsigned char third_data_hash[64];
           cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
@@ -291,6 +293,8 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
           waves_public_key_to_address(tmp_ctx.signing_context.ui.from,
                                       tmp_ctx.signing_context.network_byte,
                                       tmp_ctx.signing_context.ui.from);
+
+
           if (tmp_ctx.signing_context.ui.pkhash) {
             waves_public_key_hash_to_address(
                 tmp_ctx.signing_context.ui.line3,

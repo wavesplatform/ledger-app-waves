@@ -824,7 +824,7 @@ UX_FLOW(ux_update_asset_flow, &ux_update_asset_1_step, &ux_update_asset_2_step,
         &ux_update_asset_9_step, &ux_update_asset_10_step);
 
 //////////////////////////////////////////////////////////////////////
-/*UX_STEP_NOCB(ux_invoke_1_step, pnn,
+UX_STEP_NOCB(ux_invoke_1_step, pnn,
              {
                  &C_icon_eye,
                  "Confirm",
@@ -833,7 +833,7 @@ UX_FLOW(ux_update_asset_flow, &ux_update_asset_1_step, &ux_update_asset_2_step,
 UX_STEP_NOCB(ux_invoke_2_step, bnnn_paging,
              {
                  .title = "dApp",
-                 .text = (const char *)tmp_ctx.signing_context.ui.line1,
+                 .text = (const char *)tmp_ctx.signing_context.ui.line3,
              });
 UX_STEP_NOCB(ux_invoke_3_step, bnnn_paging,
              {
@@ -842,53 +842,63 @@ UX_STEP_NOCB(ux_invoke_3_step, bnnn_paging,
              });
 UX_STEP_NOCB_INIT(
     ux_invoke_4_step, bnnn_paging,
-    display_if_buffer_not_empty((const char *)tmp_ctx.signing_context.ui.line3,
-                                sizeof(tmp_ctx.signing_context.ui.line2)),
-    {
-        .title = "Payment amount",
-        .text = (const char *)tmp_ctx.signing_context.ui.line3,
-    });
-UX_STEP_NOCB_INIT(
-    ux_invoke_7_step, bnnn_paging,
     display_if_buffer_not_empty((const char *)tmp_ctx.signing_context.ui.line4,
                                 sizeof(tmp_ctx.signing_context.ui.line4)),
     {
-        .title = "Attachment",
+        .title = "Payment 1 amount",
         .text = (const char *)tmp_ctx.signing_context.ui.line4,
     });
 UX_STEP_NOCB_INIT(
-    ux_invoke_7_step, bnnn_paging,
-    display_if_buffer_not_empty((const char *)tmp_ctx.signing_context.ui.line4,
-                                sizeof(tmp_ctx.signing_context.ui.line4)),
+    ux_invoke_5_step, bnnn_paging,
+    display_if_buffer_not_empty((const char *)tmp_ctx.signing_context.ui.line1,
+                                sizeof(tmp_ctx.signing_context.ui.line1)),
     {
-        .title = "Attachment",
-        .text = (const char *)tmp_ctx.signing_context.ui.line4,
+        .title = "Payment 1 asset",
+        .text = (const char *)tmp_ctx.signing_context.ui.line1,
+    });
+UX_STEP_NOCB_INIT(
+    ux_invoke_6_step, bnnn_paging,
+    display_if_buffer_not_empty((const char *)tmp_ctx.signing_context.ui.line6,
+                                sizeof(tmp_ctx.signing_context.ui.line6)),
+    {
+        .title = "Payment 2 amount",
+        .text = (const char *)tmp_ctx.signing_context.ui.line6,
     });
 UX_STEP_NOCB_INIT(
     ux_invoke_7_step, bnnn_paging,
-    display_if_buffer_not_empty((const char *)tmp_ctx.signing_context.ui.line4,
-                                sizeof(tmp_ctx.signing_context.ui.line4)),
+    display_if_buffer_not_empty((const char *)tmp_ctx.signing_context.ui.line5,
+                                sizeof(tmp_ctx.signing_context.ui.line5)),
     {
-        .title = "Attachment",
-        .text = (const char *)tmp_ctx.signing_context.ui.line4,
+        .title = "Payment 2 asset",
+        .text = (const char *)tmp_ctx.signing_context.ui.line5,
     });
 UX_STEP_NOCB(ux_invoke_8_step, bnnn_paging,
+             {
+                 .title = "Fee",
+                 .text = (const char *)tmp_ctx.signing_context.ui.fee_amount,
+             });
+UX_STEP_NOCB(ux_invoke_9_step, bnnn_paging,
+             {
+                 .title = "Fee asset",
+                 .text = (const char *)tmp_ctx.signing_context.ui.fee_asset,
+             });
+UX_STEP_NOCB(ux_invoke_10_step, bnnn_paging,
              {
                  .title = "From",
                  .text = (const char *)tmp_ctx.signing_context.ui.from,
              });
-UX_STEP_NOCB(ux_invoke_9_step, bnnn_paging,
+UX_STEP_NOCB(ux_invoke_11_step, bnnn_paging,
              {
                  .title = "Transaction Id",
                  .text = (const char *)tmp_ctx.signing_context.ui.txid,
              });
-UX_STEP_VALID(ux_invoke_10_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
+UX_STEP_VALID(ux_invoke_12_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
               {
                   &C_icon_validate_14,
                   "Accept",
                   "and send",
               });
-UX_STEP_VALID(ux_invoke_11_step, pb, io_seproxyhal_cancel(NULL),
+UX_STEP_VALID(ux_invoke_13_step, pb, io_seproxyhal_cancel(NULL),
               {
                   &C_icon_crossmark,
                   "Reject",
@@ -897,8 +907,8 @@ UX_STEP_VALID(ux_invoke_11_step, pb, io_seproxyhal_cancel(NULL),
 UX_FLOW(ux_invoke_flow, &ux_invoke_1_step, &ux_invoke_2_step,
         &ux_invoke_3_step, &ux_invoke_4_step, &ux_invoke_5_step,
         &ux_invoke_6_step, &ux_invoke_7_step, &ux_invoke_8_step,
-        &ux_invoke_9_step, &ux_invoke_10_step, &ux_invoke_11_step);
-*/
+        &ux_invoke_9_step, &ux_invoke_10_step, &ux_invoke_11_step,
+        &ux_invoke_12_step, &ux_invoke_13_step);
 //////////////////////////////////////////////////////////////////////
 
 UX_STEP_NOCB(ux_verify_transaction_1_step, bnnn_paging,

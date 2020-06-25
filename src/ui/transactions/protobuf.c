@@ -103,12 +103,60 @@ bool text_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   return true;
 }
 
-/*bool function_call_callback(pb_istream_t *stream, const pb_field_t *field,
+bool function_call_callback(pb_istream_t *stream, const pb_field_t *field,
 void **arg) {
-  //unsigned char buff[258];
-
+  unsigned char buff[45];
+  uint32_t name_len;
+  int len = stream->bytes_left;
+  if (!pb_read(stream, buff, 7)) { // read setting 3 bytes and 4 byte of function name size
+    return false;
+  }
+  len -= 7;
+  name_len = deserialize_uint32_t(&buff[3]);
+  if(name_len > 41) { //if function name len  is 
+    if (!pb_read(stream, buff, 41)) { // read 41 byte of the name
+      return false;
+    }
+    len -= 41;
+    os_memmove((char *)&buff[41], &"...\0", 4);
+    os_memmove((char *)*arg, buff, 45);
+    if (!pb_read(stream, NULL, len)) { // read last str to null
+      return false;
+    }
+  } else {
+    if (!pb_read(stream, buff, name_len)) { // read all name str
+      return false;
+    }
+    len -= name_len;
+    os_memmove((char *)*arg, buff, 45);
+    if (!pb_read(stream, NULL, len)) { // read setting 3 bytes and 4 byte of function name size
+      return false;
+    }
+  }
   return true;
-}*/
+}
+
+bool copy_amount(uint64_t amount, int decimals,  unsigned char * out) {
+  return print_amount(amount, decimals, out, 20);
+}
+
+bool amount_callback(pb_istream_t *stream, const pb_field_t *field,
+void **arg) {
+  uint64_t value;
+  if (!pb_decode_varint(stream, &value))
+      return false;
+  return copy_amount(value, tmp_ctx.signing_context.amount_decimals, (unsigned char *)*arg);  
+}
+
+bool amount2_callback(pb_istream_t *stream, const pb_field_t *field,
+void **arg) {
+  uint64_t value;
+  if (!pb_decode_varint(stream, &value))
+      return false;
+  return copy_amount(value, tmp_ctx.signing_context.amount2_decimals, (unsigned char *)*arg);  
+}
+
+
 
 bool transaction_data_callback(pb_istream_t *stream, const pb_field_t *field,
                                void **arg) {
@@ -162,10 +210,18 @@ bool transaction_data_callback(pb_istream_t *stream, const pb_field_t *field,
     tx->name.arg = &tmp_ctx.signing_context.ui.line2;
     tx->description.funcs.decode = text_callback;
     tx->description.arg = &tmp_ctx.signing_context.ui.line3;
-  } /*else if (field->tag == waves_Transaction_invoke_script_tag) {
+  } else if (field->tag == waves_Transaction_invoke_script_tag) {
     waves_InvokeScriptTransactionData *tx = field->pData;
     tx->function_call.funcs.decode = function_call_callback;
-  }*/
+    tx->function_call.arg = &tmp_ctx.signing_context.ui.line2;
+    tx->payments[0].asset_id.funcs.decode = asset_callback;
+    tx->payments[0].asset_id.arg = &tmp_ctx.signing_context.ui.line1;
+    tx->payments[1].asset_id.funcs.decode = asset_callback;
+    tx->payments[1].asset_id.arg = &tmp_ctx.signing_context.ui.line5;
+  } else if (field->tag == waves_Transaction_exchange_tag) {
+    waves_ExchangeTransactionData *tx = field->pData;
+    
+  }
   return true;
 }
 
@@ -220,16 +276,14 @@ void make_sponsorship_ui(waves_Transaction *tx) {
                (unsigned char *)tmp_ctx.signing_context.ui.line1, 20);
 }
 
-/*void make_invoke_ui(waves_Transaction *tx) {
-  //if(tx->data.invoke_script.payments_count > 0) {
-    //print_amount(tx->data.invoke_script.payments[0].amount,
-tmp_ctx.signing_context.amount_decimals, (unsigned char
-*)tmp_ctx.signing_context.ui.line3, 20);
-  //}
-  PRINTF("1: %s\n", tmp_ctx.signing_context.ui.line1);
-  PRINTF("2: %s\n", tmp_ctx.signing_context.ui.line2);
-  PRINTF("3: %s\n", tmp_ctx.signing_context.ui.line3);
-}*/
+void make_invoke_ui(waves_Transaction *tx) {
+  if(tx->data.invoke_script.payments_count >= 1) {
+      print_amount(tx->data.invoke_script.payments[0].amount, tmp_ctx.signing_context.amount_decimals, (unsigned char *)&tmp_ctx.signing_context.ui.line4, 20);
+  }
+  if(tx->data.invoke_script.payments_count == 2) {
+      print_amount(tx->data.invoke_script.payments[1].amount, tmp_ctx.signing_context.amount_decimals, (unsigned char *)&tmp_ctx.signing_context.ui.line6, 20);
+  }
+}
 
 void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
                        uint8_t init_buffer_size, uint16_t total_buffer_size) {
@@ -248,6 +302,7 @@ void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
     PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
     THROW(0x6D00);
   }
+  
   print_amount(tx.fee.amount, tmp_ctx.signing_context.fee_decimals,
                (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 20);
   unsigned char tx_type = tmp_ctx.signing_context.data_type;
@@ -264,7 +319,7 @@ void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
   } else if (tx_type == 14) {
     make_sponsorship_ui(&tx);
   } else if (tx_type == 16) {
-    // make_invoke_ui(&tx);
+    make_invoke_ui(&tx);
   }
   tmp_ctx.signing_context.step = 7;
   tmp_ctx.signing_context.ui.finished = true;

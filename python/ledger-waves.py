@@ -23,11 +23,9 @@ import sys
 import pywaves.crypto as pwcrypto
 import pywaves as pw
 import time
-import binascii
 import base64
 from amount_pb2 import Amount
 import transaction_pb2 as tpb
-#from transaction_pb2 import Transaction, TransferTransactionData, DataTransactionData, IssueTransactionData, ReissueTransactionData, BurnTransactionData, LeaseTransactionData Attachment
 from recipient_pb2 import Recipient
 
 global dongle
@@ -355,12 +353,13 @@ def build_sponsorship_protobuf(publicKey, asset, amount, feeAsset='', txFee=1000
     trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, sponsor_fee=sponsorship)
     return trx.SerializeToString()  
 
-def build_invoke_protobuf(publicKey, dapp, function, asset, amount, feeAsset='', txFee=100000, timestamp=0, version = 3):
+def build_invoke_protobuf(publicKey, dapp, function, asset, amount, asset2, amount2, feeAsset='', txFee=100000, timestamp=0, version = 3):
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
     amounts = []
     amountTx= Amount(asset_id=base58.b58decode(asset.assetId), amount=amount)
     amounts.append(amountTx)
+    amountTx= Amount(asset_id=base58.b58decode(asset2.assetId), amount=amount2)
     amounts.append(amountTx)
     to = Recipient(public_key_hash=base58.b58decode(dapp))
     invoke = tpb.InvokeScriptTransactionData(d_app = to, function_call = function, payments = amounts)
@@ -410,6 +409,8 @@ while (True):
 
         # tx amount asset decimals
         binary_data += chr(8)
+        # tx amount asset decimals 2
+        binary_data += chr(0)
         # fee amount asset decimals
         binary_data += chr(8)
         # Tx info
@@ -492,7 +493,7 @@ while (True):
             print(colors.fg.white + "\t 4. Transfer" + colors.reset)
             print(colors.fg.white + "\t 5. Reissue" + colors.reset)
             print(colors.fg.white + "\t 6. Burn" + colors.reset)
-            print(colors.fg.white + "\t 7. Exchange" + colors.reset)
+            #print(colors.fg.white + "\t 7. Exchange" + colors.reset)
             print(colors.fg.white + "\t 8. Lease" + colors.reset)
             print(colors.fg.white + "\t 9. Lease Cancel" + colors.reset)
             print(colors.fg.white + "\t 10. Create Alias" + colors.reset)
@@ -506,6 +507,7 @@ while (True):
             print(colors.fg.white + "\t 0. Exit" + colors.reset)
             select = raw_input(colors.fg.cyan + "Please select transaction type> " + colors.reset)
             decimals = 8 # tx amount asset decimals
+            decimals2 = 0
             feeDecimals = 8 #fee amount asset decimals
             if (select == "3"):
                 decimals = 3
@@ -590,7 +592,7 @@ while (True):
             elif (select == "11"):
                 some_transfer_bytes = build_masstransfer_protobuf(
                     '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
-                    "23edvPK94JRdmDj7rKwzLbu22Sem", #3P8mkuJyiFvVRLjVNfDvdqVqH92bZZkQtAL,
+                    "23edvPK94JRdmDj7rKwzLbu22Sem", #3P8mkuJyiFvVRLjVNfDvdqVqH92bZZkQtAL
                     pw.Asset('B3mFpuCTpShBkSNiKaVbKeipktYWufEMAEGvBAdNP6tu'),
                     10000000,
                     'privet0000privet0000privet0000privet0000privet0000privet0000privet0000privet0000privet0000privet0000privet0000',
@@ -639,10 +641,22 @@ while (True):
                     1526477921829, 
                     3
                 )   
-            #elif (select == "16"):
-                #fname = "function_name"
-                #function_call = ""
-                #fcal=chr(1) + chr(9) + chr(1) + fname.encode() + function_call.encode()
+            elif (select == "16"):
+                fname = "function_name"
+                function_call = chr(2) + chr(2) + "argument1".encode()  + chr(2) + "argument2".encode()
+                fcal=chr(1) + chr(9) + chr(1) + struct.pack(">I", len(fname)) + fname.encode() + function_call
+                decimals = 6
+                decimals2 = 8
+                some_transfer_bytes = build_invoke_protobuf(
+                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh', #3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
+                    "23edvPK94JRdmDj7rKwzLbu22Sem", #3P8mkuJyiFvVRLjVNfDvdqVqH92bZZkQtAL
+                    fcal,
+                    pw.Asset('51LxAtwBXapvvTFSbbh4nLyWFxH6x8ocfNvrXxbTChze'),
+                    1000000,
+                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'), 
+                    1000000000, 
+                )
+                some_transfer_bytes = base58.b58decode("FgBL1ir521wY8kGhSGQF3Tdxx6UtF46W15hoTCccswWjTRpnM8JE48R8LJZcerjGVNFNwc8W2vY67Uhb6wfH8BHFb5iMzUKAg72MWSriBZo6FGu2YgQaq4JNd4TbteB4ddNMXu7Gi8XMGvH6vLiy4EJWVXHCZWmjow6iJydGi56h6xHriwhmSbxyB81Tad6dUHwsojK7287yrhHpZbH4QMB5ScCuq5HHd4SjSsuMaGY422V12baZFu48NCi5obPEri5JiLzXz51BEuQTQx3gKtikhc92VbpjgHCfEjfxx7gcP2XT5ydTaWR2hYe2Jv9sQzSSbhvfj3Av62rJS9uj5rS1DeAJkJbBWGWzVehqfpRWev7aDwvqtnhzCygSrAGKQoR6k9dCaaRzVJo8Tk1f4gBsdqgwLUofvNTC4nJpzawR8pujoaKVfZwQLYJjsA69dUwhexQXtmEWQjdtsajLbtbakFbEdrcDWgYckvGDYeyyUAinN1Unb9iGJMNGvWDyKiQiCT7WDmgMzCE623xEfrTgEXx45NuuNpGdALcfBi7Fm6JtzGoPhJ7ftsCFMxXvyhBwDUq59L3wBzaXGw4ikNwBrQsFTzmMVCzU2Dixnm9nyuZKoipuqW4B2CwnQGJgrAqhy8CkMtAyZsW1U4AwrZhVQiKVDX8M8P5uYJ2dnCmjSazJnp4k1YSuwm7mFBbcYfqsxVcB6TUUzfqdb4ADh3ULrQacKWdpMGPA3Xnj2kJMuA3GNbwosh7okvRZWaxTjujDx4jkmh2uZtbqMn4BNxdqWqknnLpMupbhU95oUdbxvSxXiLnRQEgmWjkLoavmw5EJQVS7ck3yfkZTkArkPSJZNJo4E9smVgpks1eaUNfKvZkGQuDU2kYqPSgmQ8uLtN1VugeEydaCUFUQWeTbDR2iiWKpCzyTVFmkWi7G5Hg8shUF88DioFZsCGeJooRG5DNa2qvYJ53o2z4owVuxw1K6L3mU8RxY5kcvagoK3PvudxYPvNExKU7iEedLT9dgTgtJ431foD1kLuTDV93wWGm3oiFVW7gvHM9zZdeyqBRF39aQwi1MX3a4nasFdf3RnX1WSAhD6tYA44jNWZ95Cw675UT1SWJb688TpPppiH6eiL8e6uEEevCGKw3zPJ5Vmb325PcotS3BZetZ2fEwfRrW4xcZvRUYkD3uS1yGExpcU8uJNvYybb7padUuU6udtrdoZerxLwjzcfp3gZGUUGwo8C7X9ZRWkCP22jc4d9osKqfvJQQzgnbjJpRvdhM3RZ3gd5CQ9gaVrDkT1ffi9qUeKvUrw18k2Y22NmjfQYKx9b9DfZBye4sYEte4TfFyJmPTEd5RZkwDh9vhzSjx4S3WkfYAzbeETvzap1HsfJC1zKLC5cKnkJPBRei4QAZCMsQo3oqCVFAwFkrKbxhJQAbkaxtEnQs4pG3NqWFMKskYNQjjkuBf1EL9q1X4iM6Jr8ocSjxpXC9NLSyiP4DjCZxhNyWERZvFXmmTgjycpkYzyzGbVtwuLvSBpnPHZysKmHnaPvMiHz9rfrVG9187kdk8RURjH1PsPckJLKPE2ApFz6Qi3Gq5bTWwiij6Hi9eEVUwUWERAZon1PBniWk2cLHAoZpTpViKQWhcR8fWaTLKUVFiMDM6ofserGp9wgabXZAY3vw7daYVEwYzHmsZovgXAnVZCAzUeZaJ7PD8EscWy58ym3dh2NkE33aT5AfZsPFwk9wDU8QA4uut6cDFWd5Ua");
                 
             elif (select == "17"):
                 some_transfer_bytes = build_update_asset_protobuf(
@@ -666,6 +680,8 @@ while (True):
 
             # tx amount asset decimals
             binary_data += chr(decimals)
+            # tx amount2 asset decimals
+            binary_data += chr(decimals2)
             # fee amount asset decimals
             binary_data += chr(feeDecimals)
 

@@ -84,9 +84,13 @@ typedef struct uiProtobuf_t {
 // for displaying to the user when requesting approval
 // 44 for address/id and +1 for \0
 typedef struct uiContext_t {
-  unsigned char tmp[10];
+  union {
+    uiByte_t byte;
+    uiProtobuf_t proto;
+  };
+  unsigned char tmp[20];
   unsigned char txid[45];
-  unsigned char from[35];
+  unsigned char from[45];
   unsigned char fee_amount[20];
   unsigned char fee_asset[45];
   unsigned char line1[45];
@@ -94,19 +98,21 @@ typedef struct uiContext_t {
   unsigned char line3[45];
   unsigned char line4[45];
   unsigned char line5[45];
+  unsigned char line6[20];
   bool pkhash;
-  cx_blake2b_t hash_ctx;
-  union {
-    uiByte_t byte;
-    uiProtobuf_t proto;
-  };
   bool finished;
+  cx_blake2b_t hash_ctx;
 } uiContext_t;
 
 // A place to store data during the signing
 typedef struct signingContext_t {
+  union {
+    uiContext_t ui;
+    streamEddsaContext_t eddsa_context;
+  };
   unsigned char sign_bit;
   unsigned char amount_decimals;
+  unsigned char amount2_decimals;
   unsigned char fee_decimals;
   unsigned char data_type;
   unsigned char data_version;
@@ -120,11 +126,6 @@ typedef struct signingContext_t {
   uint32_t data_size;
   uint32_t chunk_used;
   uint32_t chunk;
-  union {
-    uiContext_t ui;
-    streamEddsaContext_t eddsa_context;
-  };
-
 } signingContext_t;
 
 // A place to store data during the confirming the address
@@ -148,5 +149,6 @@ void init_sign();
 void make_allowed_sign_steps();
 uint32_t set_result_get_address();
 uint32_t set_result_sign();
+uint32_t deserialize_uint32_t(unsigned char *buffer);
 
 #endif

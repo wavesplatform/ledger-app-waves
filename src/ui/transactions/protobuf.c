@@ -218,10 +218,7 @@ bool transaction_data_callback(pb_istream_t *stream, const pb_field_t *field,
     tx->payments[0].asset_id.arg = &tmp_ctx.signing_context.ui.line1;
     tx->payments[1].asset_id.funcs.decode = asset_callback;
     tx->payments[1].asset_id.arg = &tmp_ctx.signing_context.ui.line5;
-  } else if (field->tag == waves_Transaction_exchange_tag) {
-    waves_ExchangeTransactionData *tx = field->pData;
-    
-  }
+  } 
   return true;
 }
 

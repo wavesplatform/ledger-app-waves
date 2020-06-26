@@ -303,7 +303,7 @@ void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
   //decoding tx message
   status = pb_decode(&stream, waves_Transaction_fields, &tx);
   if (!status) {
-    PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
+    //PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
     THROW(0x6D00);
   }
   

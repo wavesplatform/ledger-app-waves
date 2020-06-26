@@ -83,7 +83,7 @@ void build_transfer_ui_step(bool is_last) {
     uint64_t amount = 0;
     uint64_t fee = 0;
 
-    PRINTF("build_ui_step step %d\n", tmp_ctx.signing_context.ui.byte.step);
+    //PRINTF("build_ui_step step %d\n", tmp_ctx.signing_context.ui.byte.step);
 
     switch (tmp_ctx.signing_context.ui.byte.step) {
     case 0:

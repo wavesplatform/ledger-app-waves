@@ -4486,52 +4486,6 @@ const bagl_element_t ui_address_blue[] = {
      NULL},
 };
 
-const bagl_element_t ui_processing_blue[] = {
-    {{BAGL_RECTANGLE, 0x00, 0, 68, 320, 413, 0, 0, BAGL_FILL, COLOR_BG_1,
-      0x000000, 0, 0},
-     NULL,
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
-     NULL},
-
-    // erase screen (only under the status bar)
-    {{BAGL_RECTANGLE, 0x00, 0, 20, 320, 48, 0, 0, BAGL_FILL, COLOR_APP,
-      COLOR_APP, 0, 0},
-     NULL,
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
-     NULL},
-
-    /// TOP STATUS BAR
-    {{BAGL_LABELINE, 0x60, 0, 45, 320, 30, 0, 0, BAGL_FILL, 0xFFFFFF, COLOR_APP,
-      BAGL_FONT_OPEN_SANS_SEMIBOLD_10_13PX | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "PROCESSING",
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
-     NULL},
-
-    {{BAGL_LABELINE, 0x00, 0, 270, 320, 30, 0, 0, BAGL_FILL, 0x000000,
-      COLOR_BG_1,
-      BAGL_FONT_OPEN_SANS_LIGHT_16_22PX | BAGL_FONT_ALIGNMENT_CENTER, 0},
-     "Processing...",
-     0,
-     0,
-     0,
-     NULL,
-     NULL,
-     NULL},
-
-};
-
 unsigned int ui_idle_blue_button(unsigned int button_mask,
                                  unsigned int button_mask_counter) {
   return 0;
@@ -4623,10 +4577,6 @@ ui_verify_update_asset_blue_button(unsigned int button_mask,
 
 unsigned int ui_approval_blue_button(unsigned int button_mask,
                                      unsigned int button_mask_counter) {
-  return 0;
-}
-unsigned int ui_processing_blue_button(unsigned int button_mask,
-                                       unsigned int button_mask_counter) {
   return 0;
 }
 

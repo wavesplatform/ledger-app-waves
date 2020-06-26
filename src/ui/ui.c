@@ -329,7 +329,8 @@ void show_sign_protobuf_ui() {
 
 void show_processing() {
 #if defined(TARGET_BLUE)
-  UX_DISPLAY(ui_processing_blue, NULL);
+// this freeze device after pb update
+//  UX_DISPLAY(ui_processing_blue, NULL);
 #else
   ux_flow_init(0, ux_processing_flow, NULL);
 #endif

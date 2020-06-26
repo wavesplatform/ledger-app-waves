@@ -46,6 +46,16 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
 extern void _ebss;
 
+// Return true if there is less than MIN_BSS_STACK_GAP bytes available in the
+// stack
+void check_stack_overflow(int step) {
+  uint32_t stack_top = 0;
+  // PRINTF("Stack remaining on step %d: CUR STACK ADDR: %p, EBSS: %p, diff:
+  // %d\n", step, &stack_top, &_ebss, ((uintptr_t)&stack_top) -
+  // ((uintptr_t)&_ebss));
+  PRINTF("+++++++diff: %d\n", ((uintptr_t)&stack_top) - ((uintptr_t)&_ebss));
+}
+
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
   switch (channel & ~(IO_FLAGS)) {
   case CHANNEL_KEYBOARD:
@@ -183,7 +193,7 @@ uint32_t set_result_sign() {
   os_memmove((char *)G_io_apdu_buffer, tmp_ctx.signing_context.signature,
              sizeof(tmp_ctx.signing_context.signature));
 
-  //PRINTF("Signature:\n%.*H\n", 64, tmp_ctx.signing_context.signature);
+  PRINTF("Signature:\n%.*H\n", 64, tmp_ctx.signing_context.signature);
 
   init_context();
 
@@ -236,7 +246,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
           if (tmp_ctx.signing_context.step > 0) {
             tmp_ctx.signing_context.chunk += 1;
           } else {
-            //PRINTF("make_sign_steps start\n");
+            PRINTF("make_sign_steps start\n");
             show_processing();
             tmp_ctx.signing_context.step = 1;
             tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
@@ -247,7 +257,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
             stream_eddsa_sign_step5(&tmp_ctx.signing_context.eddsa_context,
                                     tmp_ctx.signing_context.signature);
             tmp_ctx.signing_context.step = 6;
-            //PRINTF("make_sign_steps end\n");
+            PRINTF("make_sign_steps end\n");
             os_memset(&tmp_ctx.signing_context.ui, 0,
                       sizeof(tmp_ctx.signing_context.ui));
             cx_blake2b_init(&tmp_ctx.signing_context.ui.hash_ctx, 256);
@@ -371,7 +381,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
       }
       G_io_apdu_buffer[*tx] = sw >> 8;
       G_io_apdu_buffer[*tx + 1] = sw;
-      //PRINTF("SW:\n%.*H\n", 2, G_io_apdu_buffer + *tx);
+      PRINTF("SW:\n%.*H\n", 2, G_io_apdu_buffer + *tx);
       *tx += 2;
     }
     FINALLY {}

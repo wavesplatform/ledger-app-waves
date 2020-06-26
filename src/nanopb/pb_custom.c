@@ -101,7 +101,7 @@ bool checkreturn apdu_read(pb_istream_t *stream, pb_byte_t *buf, size_t count) {
       }
       // fetch next bytes
       fetch_new_apdu(state);
-      //creating hash to check view and sign data are the same
+      // creating hash to check view and sign data are the same
       cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_NONE,
               G_io_apdu_buffer + 5, G_io_apdu_buffer[4], NULL, 0);
       os_memmove(state->data + state->bytes_stored, G_io_apdu_buffer + 5,

@@ -44,18 +44,6 @@ unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 #error This application only supports the Ledger Nano S, Nano X and the Ledger Blue
 #endif
 
-extern void _ebss;
-
-// Return true if there is less than MIN_BSS_STACK_GAP bytes available in the
-// stack
-void check_stack_overflow(int step) {
-  uint32_t stack_top = 0;
-  // PRINTF("Stack remaining on step %d: CUR STACK ADDR: %p, EBSS: %p, diff:
-  // %d\n", step, &stack_top, &_ebss, ((uintptr_t)&stack_top) -
-  // ((uintptr_t)&_ebss));
-  PRINTF("+++++++diff: %d\n", ((uintptr_t)&stack_top) - ((uintptr_t)&_ebss));
-}
-
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
   switch (channel & ~(IO_FLAGS)) {
   case CHANNEL_KEYBOARD:
@@ -274,8 +262,9 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
         } else {
           make_allowed_ui_steps(false);
         }
-        
-        if (tmp_ctx.signing_context.step == 7) { // all data parsed and prepeared to view
+
+        if (tmp_ctx.signing_context.step ==
+            7) { // all data parsed and prepeared to view
           unsigned char third_data_hash[64];
           cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
                   third_data_hash, 32);
@@ -294,7 +283,8 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
                                       tmp_ctx.signing_context.network_byte,
                                       tmp_ctx.signing_context.ui.from);
 
-          // if transaction has from field and it is pubkey hash will convert to address
+          // if transaction has from field and it is pubkey hash will convert to
+          // address
           if (tmp_ctx.signing_context.ui.pkhash) {
             waves_public_key_hash_to_address(
                 tmp_ctx.signing_context.ui.line3,
@@ -302,6 +292,12 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
                 tmp_ctx.signing_context.ui.line3);
           }
           if (tmp_ctx.signing_context.data_version > 2) {
+            if (tmp_ctx.signing_context.data_type == 252) {
+              // convert matcher public key to address
+              waves_public_key_to_address(tmp_ctx.signing_context.ui.line2,
+                                          tmp_ctx.signing_context.network_byte,
+                                          tmp_ctx.signing_context.ui.line2);
+            }
             show_sign_protobuf_ui();
           } else {
             show_sign_ui();

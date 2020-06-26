@@ -26,6 +26,7 @@
 #include "../../nanopb/pb.h"
 #include "../../nanopb/pb_decode.h"
 #include "../../nanopb/pb_custom.h"
+#include "../../nanopb_stubs/order.pb.h"
 #include "../../nanopb_stubs/transaction.pb.h"
 
 void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,

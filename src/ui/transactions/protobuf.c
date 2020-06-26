@@ -107,16 +107,17 @@ bool text_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
 }
 
 bool function_call_callback(pb_istream_t *stream, const pb_field_t *field,
-void **arg) {
+                            void **arg) {
   unsigned char buff[45];
   uint32_t name_len;
   int len = stream->bytes_left;
-  if (!pb_read(stream, buff, 7)) { // read setting 3 bytes and 4 byte of function name size
+  if (!pb_read(stream, buff,
+               7)) { // read setting 3 bytes and 4 byte of function name size
     return false;
   }
   len -= 7;
   name_len = deserialize_uint32_t(&buff[3]);
-  if(name_len > 41) { //if function name len  is 
+  if (name_len > 41) {                // if function name len  is
     if (!pb_read(stream, buff, 41)) { // read 41 byte of the name
       return false;
     }
@@ -132,34 +133,36 @@ void **arg) {
     }
     len -= name_len;
     os_memmove((char *)*arg, buff, 45);
-    if (!pb_read(stream, NULL, len)) { // read setting 3 bytes and 4 byte of function name size
+    if (!pb_read(
+            stream, NULL,
+            len)) { // read setting 3 bytes and 4 byte of function name size
       return false;
     }
   }
   return true;
 }
 
-bool copy_amount(uint64_t amount, int decimals,  unsigned char * out) {
+bool copy_amount(uint64_t amount, int decimals, unsigned char *out) {
   return print_amount(amount, decimals, out, 20);
 }
 
 bool amount_callback(pb_istream_t *stream, const pb_field_t *field,
-void **arg) {
+                     void **arg) {
   uint64_t value;
   if (!pb_decode_varint(stream, &value))
-      return false;
-  return copy_amount(value, tmp_ctx.signing_context.amount_decimals, (unsigned char *)*arg);  
+    return false;
+  return copy_amount(value, tmp_ctx.signing_context.amount_decimals,
+                     (unsigned char *)*arg);
 }
 
 bool amount2_callback(pb_istream_t *stream, const pb_field_t *field,
-void **arg) {
+                      void **arg) {
   uint64_t value;
   if (!pb_decode_varint(stream, &value))
-      return false;
-  return copy_amount(value, tmp_ctx.signing_context.amount2_decimals, (unsigned char *)*arg);  
+    return false;
+  return copy_amount(value, tmp_ctx.signing_context.amount2_decimals,
+                     (unsigned char *)*arg);
 }
-
-
 
 bool transaction_data_callback(pb_istream_t *stream, const pb_field_t *field,
                                void **arg) {
@@ -221,7 +224,7 @@ bool transaction_data_callback(pb_istream_t *stream, const pb_field_t *field,
     tx->payments[0].asset_id.arg = &tmp_ctx.signing_context.ui.line1;
     tx->payments[1].asset_id.funcs.decode = asset_callback;
     tx->payments[1].asset_id.arg = &tmp_ctx.signing_context.ui.line5;
-  } 
+  }
   return true;
 }
 
@@ -277,22 +280,25 @@ void make_sponsorship_ui(waves_Transaction *tx) {
 }
 
 void make_invoke_ui(waves_Transaction *tx) {
-  if(tx->data.invoke_script.payments_count >= 1) {
-      print_amount(tx->data.invoke_script.payments[0].amount, tmp_ctx.signing_context.amount_decimals, (unsigned char *)&tmp_ctx.signing_context.ui.line4, 20);
+  if (tx->data.invoke_script.payments_count >= 1) {
+    print_amount(tx->data.invoke_script.payments[0].amount,
+                 tmp_ctx.signing_context.amount_decimals,
+                 (unsigned char *)&tmp_ctx.signing_context.ui.line4, 20);
   }
-  if(tx->data.invoke_script.payments_count == 2) {
-      print_amount(tx->data.invoke_script.payments[1].amount, tmp_ctx.signing_context.amount_decimals, (unsigned char *)&tmp_ctx.signing_context.ui.line6, 20);
+  if (tx->data.invoke_script.payments_count == 2) {
+    print_amount(tx->data.invoke_script.payments[1].amount,
+                 tmp_ctx.signing_context.amount_decimals,
+                 (unsigned char *)&tmp_ctx.signing_context.ui.line6, 20);
   }
 }
 
-void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
-                       uint8_t init_buffer_size, uint16_t total_buffer_size) {
+void build_tx(uiProtobuf_t *ctx, uint8_t *init_buffer, uint8_t init_buffer_size,
+              uint16_t total_buffer_size) {
   uint8_t status;
   // init variable for parsing
   waves_Transaction tx = waves_Transaction_init_default;
-  // set callback for parsing tx data
+  // set callback for parsing tx data field(transactions)
   tx.cb_data.funcs.decode = transaction_data_callback;
-
   tx.sender_public_key.funcs.decode = from_callback;
   tx.sender_public_key.arg = &tmp_ctx.signing_context.ui.from;
   tx.fee.asset_id.funcs.decode = asset_callback;
@@ -300,17 +306,17 @@ void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
   // create stream for parsing
   pb_istream_t stream = pb_istream_from_apdu(ctx, init_buffer, init_buffer_size,
                                              total_buffer_size);
-  //decoding tx message
+  // decoding tx message
   status = pb_decode(&stream, waves_Transaction_fields, &tx);
   if (!status) {
     PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
     THROW(0x6D00);
   }
-  
+
   print_amount(tx.fee.amount, tmp_ctx.signing_context.fee_decimals,
                (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 20);
   unsigned char tx_type = tmp_ctx.signing_context.data_type;
-  //prepeare non callback data for viewing depend on tx type
+  // prepeare non callback data for viewing depend on tx type
   if (tx_type == 3) {
     make_issue_ui(&tx);
   } else if (tx_type == 4) {
@@ -326,7 +332,56 @@ void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
   } else if (tx_type == 16) {
     make_invoke_ui(&tx);
   }
-  //finish parsing and view data
+  // finish parsing and view data
   tmp_ctx.signing_context.step = 7;
   tmp_ctx.signing_context.ui.finished = true;
+}
+
+void build_order(uiProtobuf_t *ctx, uint8_t *init_buffer,
+                 uint8_t init_buffer_size, uint16_t total_buffer_size) {
+  uint8_t status;
+  // init variable for parsing
+  waves_Order order = waves_Order_init_default;
+  order.sender_public_key.funcs.decode = from_callback;
+  order.sender_public_key.arg = &tmp_ctx.signing_context.ui.from;
+  order.matcher_public_key.funcs.decode = from_callback;
+  order.matcher_public_key.arg = &tmp_ctx.signing_context.ui.line2;
+  order.matcher_fee.asset_id.funcs.decode = asset_callback;
+  order.matcher_fee.asset_id.arg = &tmp_ctx.signing_context.ui.fee_asset;
+  order.asset_pair.amount_asset_id.funcs.decode = asset_callback;
+  order.asset_pair.amount_asset_id.arg = &tmp_ctx.signing_context.ui.line3;
+  // create stream for parsing
+  pb_istream_t stream = pb_istream_from_apdu(ctx, init_buffer, init_buffer_size,
+                                             total_buffer_size);
+  // decoding tx message
+  status = pb_decode(&stream, waves_Order_fields, &order);
+  if (!status) {
+    PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
+    THROW(0x6D00);
+  }
+
+  print_amount(order.amount, tmp_ctx.signing_context.amount_decimals,
+               (unsigned char *)tmp_ctx.signing_context.ui.line4, 20);
+  print_amount(order.matcher_fee.amount, tmp_ctx.signing_context.fee_decimals,
+               (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 20);
+  if (order.order_side == waves_Order_Side_BUY) {
+    os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line1,
+               &"Buy order\0", 10);
+  } else {
+    os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line1,
+               &"Sell order\0", 11);
+  }
+
+  // finish parsing and view data
+  tmp_ctx.signing_context.step = 7;
+  tmp_ctx.signing_context.ui.finished = true;
+}
+
+void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
+                       uint8_t init_buffer_size, uint16_t total_buffer_size) {
+  if (tmp_ctx.signing_context.data_type == 252) {
+    build_order(ctx, init_buffer, init_buffer_size, total_buffer_size);
+  } else {
+    build_tx(ctx, init_buffer, init_buffer_size, total_buffer_size);
+  }
 }

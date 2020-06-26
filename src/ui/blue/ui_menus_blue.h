@@ -4012,7 +4012,7 @@ const bagl_element_t ui_verify_invoke_blue[] = {
      NULL,
      NULL},
 
-     {{BAGL_LABEL, 0x71, 30, 218, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
+    {{BAGL_LABEL, 0x71, 30, 218, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
       BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX, 0},
      "Payment 1 asset",
      0,
@@ -4043,7 +4043,7 @@ const bagl_element_t ui_verify_invoke_blue[] = {
      NULL,
      NULL},
 
-     {{BAGL_LABEL, 0x71, 30, 218, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
+    {{BAGL_LABEL, 0x71, 30, 218, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
       BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX, 0},
      "Payment 2 amount",
      0,
@@ -4074,7 +4074,7 @@ const bagl_element_t ui_verify_invoke_blue[] = {
      NULL,
      NULL},
 
-     {{BAGL_LABEL, 0x71, 30, 218, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
+    {{BAGL_LABEL, 0x71, 30, 218, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
       BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX, 0},
      "Payment 2 asset",
      0,
@@ -4256,6 +4256,8 @@ const bagl_element_t ui_verify_invoke_blue[] = {
 
 };
 
+//////////////////////////////////////////////////////////////////////////////
+
 const bagl_element_t ui_approval_blue[] = {
     {{BAGL_RECTANGLE, 0x00, 0, 68, 320, 413, 0, 0, BAGL_FILL, COLOR_BG_1,
       0x000000, 0, 0},
@@ -4407,6 +4409,326 @@ const bagl_element_t ui_approval_blue[] = {
 
 };
 
+//////////////////////////////////////////////////////////////////////////////
+
+const bagl_element_t ui_verify_order_blue[] = {
+    {{BAGL_RECTANGLE, 0x00, 0, 68, 320, 413, 0, 0, BAGL_FILL, COLOR_BG_1,
+      0x000000, 0, 0},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    // erase screen (only under the status bar)
+    {{BAGL_RECTANGLE, 0x00, 0, 20, 320, 48, 0, 0, BAGL_FILL, COLOR_APP,
+      COLOR_APP, 0, 0},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    /// TOP STATUS BAR
+    {{BAGL_LABELINE, 0x60, 0, 45, 320, 30, 0, 0, BAGL_FILL, 0xFFFFFF, COLOR_APP,
+      BAGL_FONT_OPEN_SANS_SEMIBOLD_10_13PX | BAGL_FONT_ALIGNMENT_CENTER, 0},
+     "CONFIRM SIGNATURE",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    // BADGE_TRANSACTION.GIF
+    {{BAGL_ICON, 0x40, 30, 98, 50, 50, 0, 0, BAGL_FILL, 0, COLOR_BG_1, 0, 0},
+     &C_badge_transaction,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABELINE, 0x50, 100, 117, 320, 30, 0, 0, BAGL_FILL, 0x000000,
+      COLOR_BG_1, BAGL_FONT_OPEN_SANS_REGULAR_10_13PX, 0},
+     "Confirm",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    {{BAGL_LABELINE, 0x50, 154, 117, 320, 30, 0, 0, BAGL_FILL, 0x000000,
+      COLOR_BG_1, BAGL_FONT_OPEN_SANS_REGULAR_10_13PX, 0},
+     (const char *)tmp_ctx.signing_context.ui.line1,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABELINE, 0x00, 100, 115, 320, 30, 0, 0, BAGL_FILL, 0x999999,
+      COLOR_BG_1, BAGL_FONT_OPEN_SANS_REGULAR_8_11PX, 0},
+     "Check and confirm data",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABEL, 0x71, 30, 218, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX, 0},
+     "Amount",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    // x-18 when ...
+    {{BAGL_LABEL, 0x11, 130, 218, 160, 30, 0, 0, BAGL_FILL, 0x000000,
+      COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_RIGHT, 0},
+     (const char *)tmp_ctx.signing_context.ui.line4,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_RECTANGLE, 0x31, 30, 231, 260, 1, 1, 0, 0, 0xEEEEEE, COLOR_BG_1, 0,
+      0},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABEL, 0x71, 30, 218, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX, 0},
+     "Amount asset",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    // x-18 when ...
+    {{BAGL_LABEL, 0x11, 130, 218, 160, 30, 0, 0, BAGL_FILL, 0x000000,
+      COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_RIGHT, 0},
+     (const char *)tmp_ctx.signing_context.ui.line3,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_RECTANGLE, 0x31, 30, 231, 260, 1, 1, 0, 0, 0xEEEEEE, COLOR_BG_1, 0,
+      0},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABEL, 0x71, 30, 218, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX, 0},
+     "From",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    // x-18 when ...
+    {{BAGL_LABEL, 0x11, 130, 218, 160, 30, 0, 0, BAGL_FILL, 0x000000,
+      COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_RIGHT, 0},
+     (const char *)tmp_ctx.signing_context.ui.from,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_RECTANGLE, 0x31, 30, 231, 260, 1, 1, 0, 0, 0xEEEEEE, COLOR_BG_1, 0,
+      0},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABEL, 0x71, 30, 218, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX, 0},
+     "Matcher",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    // x-18 when ...
+    {{BAGL_LABEL, 0x11, 130, 218, 160, 30, 0, 0, BAGL_FILL, 0x000000,
+      COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_RIGHT, 0},
+     (const char *)tmp_ctx.signing_context.ui.line2,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_RECTANGLE, 0x31, 30, 231, 260, 1, 1, 0, 0, 0xEEEEEE, COLOR_BG_1, 0,
+      0},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABEL, 0x71, 30, 218, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX, 0},
+     "Matcher Fee",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    // x-18 when ...
+    {{BAGL_LABEL, 0x11, 130, 218, 160, 30, 0, 0, BAGL_FILL, 0x000000,
+      COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_RIGHT, 0},
+     (const char *)tmp_ctx.signing_context.ui.fee_amount,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_RECTANGLE, 0x31, 30, 231, 260, 1, 1, 0, 0, 0xEEEEEE, COLOR_BG_1, 0,
+      0},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABEL, 0x71, 30, 244, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX, 0},
+     "Fee asset",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    // x-18 when ...
+    {{BAGL_LABEL, 0x11, 130, 244, 160, 30, 0, 0, BAGL_FILL, 0x000000,
+      COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_RIGHT, 0},
+     (const char *)tmp_ctx.signing_context.ui.fee_asset,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_RECTANGLE, 0x31, 30, 257, 260, 1, 1, 0, 0, 0xEEEEEE, COLOR_BG_1, 0,
+      0},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_LABEL, 0x71, 30, 322, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX, 0},
+     "Hash",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    // x-18 when ...
+    {{BAGL_LABEL, 0x11, 130, 322, 160, 30, 0, 0, BAGL_FILL, 0x000000,
+      COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_RIGHT, 0},
+     (const char *)tmp_ctx.signing_context.ui.txid,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_RECTANGLE, 0x31, 30, 335, 260, 1, 1, 0, 0, 0xEEEEEE, COLOR_BG_1, 0,
+      0},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, 0x00, 40, 414, 115, 36, 0, 18,
+      BAGL_FILL, 0xCCCCCC, COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_REGULAR_11_14PX | BAGL_FONT_ALIGNMENT_CENTER |
+          BAGL_FONT_ALIGNMENT_MIDDLE,
+      0},
+     "REJECT",
+     0,
+     0xB7B7B7,
+     COLOR_BG_1,
+     io_seproxyhal_cancel,
+     NULL,
+     NULL},
+    {{BAGL_RECTANGLE | BAGL_FLAG_TOUCHABLE, 0x00, 165, 414, 115, 36, 0, 18,
+      BAGL_FILL, 0x41ccb4, COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_REGULAR_11_14PX | BAGL_FONT_ALIGNMENT_CENTER |
+          BAGL_FONT_ALIGNMENT_MIDDLE,
+      0},
+     "CONFIRM",
+     0,
+     0x3ab7a2,
+     COLOR_BG_1,
+     io_seproxyhal_touch_sign_approve,
+     NULL,
+     NULL},
+
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
 const bagl_element_t ui_address_blue[] = {
     {{BAGL_RECTANGLE, 0x00, 0, 68, 320, 413, 0, 0, BAGL_FILL, COLOR_BG_1,
       0x000000, 0, 0},
@@ -4497,10 +4819,9 @@ unsigned int ui_address_blue_button(unsigned int button_mask,
 }
 
 unsigned int ui_verify_transfer_blue_button(unsigned int button_mask,
-                                    unsigned int button_mask_counter) {
+                                            unsigned int button_mask_counter) {
   return 0;
 }
-
 
 unsigned int ui_verify_data_blue_button(unsigned int button_mask,
                                         unsigned int button_mask_counter) {
@@ -4563,15 +4884,19 @@ ui_verify_set_as_script_blue_button(unsigned int button_mask,
   return 0;
 }
 
-unsigned int
-ui_verify_invoke_blue_button(unsigned int button_mask,
-                                    unsigned int button_mask_counter) {
+unsigned int ui_verify_invoke_blue_button(unsigned int button_mask,
+                                          unsigned int button_mask_counter) {
   return 0;
 }
 
 unsigned int
 ui_verify_update_asset_blue_button(unsigned int button_mask,
                                    unsigned int button_mask_counter) {
+  return 0;
+}
+
+unsigned int ui_verify_order_blue_button(unsigned int button_mask,
+                                         unsigned int button_mask_counter) {
   return 0;
 }
 

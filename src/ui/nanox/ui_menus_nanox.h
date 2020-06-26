@@ -904,11 +904,72 @@ UX_STEP_VALID(ux_invoke_13_step, pb, io_seproxyhal_cancel(NULL),
                   "Reject",
               });
 
-UX_FLOW(ux_invoke_flow, &ux_invoke_1_step, &ux_invoke_2_step,
-        &ux_invoke_3_step, &ux_invoke_4_step, &ux_invoke_5_step,
-        &ux_invoke_6_step, &ux_invoke_7_step, &ux_invoke_8_step,
-        &ux_invoke_9_step, &ux_invoke_10_step, &ux_invoke_11_step,
-        &ux_invoke_12_step, &ux_invoke_13_step);
+UX_FLOW(ux_invoke_flow, &ux_invoke_1_step, &ux_invoke_2_step, &ux_invoke_3_step,
+        &ux_invoke_4_step, &ux_invoke_5_step, &ux_invoke_6_step,
+        &ux_invoke_7_step, &ux_invoke_8_step, &ux_invoke_9_step,
+        &ux_invoke_10_step, &ux_invoke_11_step, &ux_invoke_12_step,
+        &ux_invoke_13_step);
+
+//////////////////////////////////////////////////////////////////////
+
+UX_STEP_NOCB(ux_order_1_step, pnn,
+             {
+                 &C_icon_eye,
+                 "Confirm",
+                 (const char *)tmp_ctx.signing_context.ui.line1,
+             });
+UX_STEP_NOCB(ux_order_2_step, bnnn_paging,
+             {
+                 .title = "Amount",
+                 .text = (const char *)tmp_ctx.signing_context.ui.line4,
+             });
+UX_STEP_NOCB(ux_order_3_step, bnnn_paging,
+             {
+                 .title = "Amount asset",
+                 .text = (const char *)tmp_ctx.signing_context.ui.line3,
+             });
+UX_STEP_NOCB(ux_order_4_step, bnnn_paging,
+             {
+                 .title = "From",
+                 .text = (const char *)tmp_ctx.signing_context.ui.from,
+             });
+UX_STEP_NOCB(ux_order_5_step, bnnn_paging,
+             {
+                 .title = "Matcher",
+                 .text = (const char *)tmp_ctx.signing_context.ui.line2,
+             });
+UX_STEP_NOCB(ux_order_6_step, bnnn_paging,
+             {
+                 .title = "Matcher Fee",
+                 .text = (const char *)tmp_ctx.signing_context.ui.fee_amount,
+             });
+UX_STEP_NOCB(ux_order_7_step, bnnn_paging,
+             {
+                 .title = "Fee asset",
+                 .text = (const char *)tmp_ctx.signing_context.ui.fee_asset,
+             });
+
+UX_STEP_NOCB(ux_order_8_step, bnnn_paging,
+             {
+                 .title = "Hash",
+                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+             });
+UX_STEP_VALID(ux_order_9_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
+              {
+                  &C_icon_validate_14,
+                  "Accept",
+                  "and send",
+              });
+UX_STEP_VALID(ux_order_10_step, pb, io_seproxyhal_cancel(NULL),
+              {
+                  &C_icon_crossmark,
+                  "Reject",
+              });
+
+UX_FLOW(ux_order_flow, &ux_order_1_step, &ux_order_2_step, &ux_order_3_step,
+        &ux_order_4_step, &ux_order_5_step, &ux_order_6_step, &ux_order_7_step,
+        &ux_order_8_step, &ux_order_9_step, &ux_order_10_step);
+
 //////////////////////////////////////////////////////////////////////
 
 UX_STEP_NOCB(ux_verify_transaction_1_step, bnnn_paging,

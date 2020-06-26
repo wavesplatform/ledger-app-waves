@@ -157,7 +157,7 @@ void build_other_data_ui() {
 
 void make_allowed_ui_steps(bool is_last) {
   uint32_t start_index;
-  PRINTF("make_allowed_ui_steps start\n");
+  //PRINTF("make_allowed_ui_steps start\n");
   if (tmp_ctx.signing_context.data_version > 2) { // if protobuf
     if (tmp_ctx.signing_context.ui.finished != true) {
       build_protobuf_ui(
@@ -193,7 +193,7 @@ void make_allowed_ui_steps(bool is_last) {
             G_io_apdu_buffer[4] - start_index, NULL, 0);
     tmp_ctx.signing_context.ui.byte.chunk_used = 0;
   }
-  PRINTF("make_allowed_ui_steps end\n");
+  //PRINTF("make_allowed_ui_steps end\n");
 }
 
 // Show the transaction details for the user to approve

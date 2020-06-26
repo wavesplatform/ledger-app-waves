@@ -16,7 +16,7 @@
 #define ERR_WRONG_MESSAGE_SIZE 0x6006
 #define ERR_WRONG_PARAMETER 0x6007
 
-#define PRINTF_PB(...) // PRINTF(__VA_ARGS__)
+//#define PRINTF_PB(...) // PRINTF(__VA_ARGS__)
 
 #if !defined(__GNUC__) || (__GNUC__ < 3) ||                                    \
     (__GNUC__ == 3 && __GNUC_MINOR__ < 4)
@@ -46,7 +46,7 @@ void fetch_new_apdu(uiProtobuf_t *state) {
   if (G_io_apdu_buffer[2] != P1_MORE && G_io_apdu_buffer[2] != P1_LAST) {
     THROW(SW_INCORRECT_P1_P2);
   } else if (state->bytes_stored + G_io_apdu_buffer[4] > sizeof(state->data)) {
-    PRINTF("ERR_BUFF_TOO_SMALL: %d %d\n", state->bytes_stored,
+    //PRINTF("ERR_BUFF_TOO_SMALL: %d %d\n", state->bytes_stored,
            G_io_apdu_buffer[4]);
     THROW(ERR_BUFFER_TOO_SMALL);
   }
@@ -72,7 +72,7 @@ bool checkreturn apdu_read(pb_istream_t *stream, pb_byte_t *buf, size_t count) {
 
   bytes_not_read_yet = state->bytes_stored - state->read_offset;
 
-  PRINTF_PB("r: %d re: %d s %d\n", count, bytes_not_read_yet,
+  //PRINTF_PB("r: %d re: %d s %d\n", count, bytes_not_read_yet,
             state->bytes_stored);
 
   /* not enough data has been received and deciphered, we fetch a new apdu or
@@ -84,7 +84,7 @@ bool checkreturn apdu_read(pb_istream_t *stream, pb_byte_t *buf, size_t count) {
     state->bytes_stored = bytes_not_read_yet;
     state->read_offset = 0;
 
-    PRINTF_PB("SHIFT LEFT: available: %d\n", bytes_not_read_yet);
+    //PRINTF_PB("SHIFT LEFT: available: %d\n", bytes_not_read_yet);
 
     // loop over apdu fetching while there's not enough bytes stored to feed the
     // amount requested

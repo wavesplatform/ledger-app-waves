@@ -77,7 +77,7 @@ typedef struct uiProtobuf_t {
   uint16_t total_size;     // total size of the nanopb structure being received
   uint16_t total_received; // number of bytes received since decoding began
   uint16_t total_read;     // number of bytes readed since decoding began
-  uint8_t data[150];       // size of the biggest nanopb element serialized
+  uint8_t data[160];       // size of the biggest nanopb element serialized
 } uiProtobuf_t;
 
 // A place to store information about the transaction
@@ -88,18 +88,17 @@ typedef struct uiContext_t {
     uiByte_t byte;
     uiProtobuf_t proto;
   };
-  unsigned char tmp[20];
-  unsigned char txid[45];
-  unsigned char from[45];
-  unsigned char fee_amount[20];
+  unsigned char from[36];
   unsigned char fee_asset[45];
   unsigned char line1[45];
   unsigned char line2[45];
   unsigned char
-      line3[45]; // reserved for recipient if transaction has resipient message
+      line3[36]; // reserved for recipient if transaction has recipient message
   unsigned char line4[45];
   unsigned char line5[45];
   unsigned char line6[20];
+  unsigned char fee_amount[20];
+  unsigned char tmp[20];
   bool pkhash;
   bool finished;
   cx_blake2b_t hash_ctx;
@@ -119,7 +118,7 @@ typedef struct signingContext_t {
   unsigned char data_version;
   unsigned char network_byte;
   unsigned char signature[64];
-  unsigned char first_data_hash[32];
+  unsigned char first_data_hash[45];
   uint8_t step;
   uint8_t sign_from;
   uint32_t bip32[5];

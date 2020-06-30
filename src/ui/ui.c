@@ -160,11 +160,20 @@ void make_allowed_ui_steps(bool is_last) {
   PRINTF("make_allowed_ui_steps start\n");
   if (tmp_ctx.signing_context.data_version > 2) { // if protobuf
     if (tmp_ctx.signing_context.ui.finished != true) {
-      build_protobuf_ui(
+      if (tmp_ctx.signing_context.data_type == 252) {
+        build_protobuf_order(
           &tmp_ctx.signing_context.ui.proto,
           G_io_apdu_buffer + 5 + tmp_ctx.signing_context.chunk_used,
           G_io_apdu_buffer[4] - tmp_ctx.signing_context.chunk_used,
           tmp_ctx.signing_context.data_size);
+      } else {
+        build_protobuf_tx(
+          &tmp_ctx.signing_context.ui.proto,
+          G_io_apdu_buffer + 5 + tmp_ctx.signing_context.chunk_used,
+          G_io_apdu_buffer[4] - tmp_ctx.signing_context.chunk_used,
+          tmp_ctx.signing_context.data_size);
+      }
+      
     } else {
       THROW(SW_INS_NOT_SUPPORTED);
     }

@@ -29,139 +29,124 @@
 bool waves_Recipient_callback(pb_istream_t *istream, pb_ostream_t *ostream,
                               const pb_field_t *field) {
   if (istream) {
+    PRINTF("Start Recipient callback\n");
     int len = istream->bytes_left;
-    unsigned char buff[len];
-    if (!pb_read(istream, buff, (size_t)istream->bytes_left)) {
+    os_memset(&G_io_apdu_buffer, 0, len);
+    if (!pb_read(istream, G_io_apdu_buffer, (size_t)istream->bytes_left)) {
       return false;
     }
     if (field->tag == waves_Recipient_public_key_hash_tag) {
-      os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3, buff, len);
+      os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3, G_io_apdu_buffer, len);
       tmp_ctx.signing_context.ui.pkhash = true;
     } else if (field->tag == waves_Recipient_alias_tag) {
-      os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3, buff, len);
+      os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3, G_io_apdu_buffer, len);
     }
+    PRINTF("End Recipient callback\n");
   }
   return true;
 }
 
 bool asset_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
+  PRINTF("Start asset callback\n");
   size_t length = 45;
   int len = stream->bytes_left;
-  unsigned char buff[len];
-  if (!pb_read(stream, buff, (size_t)stream->bytes_left)) {
+  os_memset(&G_io_apdu_buffer, 0, len);
+  if (!pb_read(stream, G_io_apdu_buffer, (size_t)stream->bytes_left)) {
     return false;
   }
   if (len == 32) {
-    if (!b58enc((char *)*arg, &length, (const void *)buff, 32)) {
+    if (!b58enc((char *)*arg, &length, (const void *)G_io_apdu_buffer, 32)) {
       return false;
     }
   } else {
     os_memmove((char *)*arg, WAVES_CONST, 5);
   }
+  PRINTF("End asset callback\n");
   return true;
 }
 
 bool from_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  unsigned char buff[32];
-
-  if (!pb_read(stream, buff, (size_t)stream->bytes_left)) {
+  os_memset(&G_io_apdu_buffer, 0, 32);
+  PRINTF("Start from callback\n");
+  if (!pb_read(stream, G_io_apdu_buffer, (size_t)stream->bytes_left)) {
     return false;
   }
-  os_memmove((char *)*arg, buff, 32);
+  os_memmove((char *)*arg, G_io_apdu_buffer, 32);
+  PRINTF("End from callback\n");
   return true;
 }
 
 bool string_callback(pb_istream_t *stream, const pb_field_t *field,
                      void **arg) {
-  int strlen = stream->bytes_left;
-  unsigned char buff[strlen];
-  if (!pb_read(stream, buff, (size_t)stream->bytes_left)) {
+  PRINTF("Start string callback\n");
+  int len = stream->bytes_left;
+  os_memset(&G_io_apdu_buffer, 0, len);
+  if (!pb_read(stream, G_io_apdu_buffer, (size_t)stream->bytes_left)) {
     return false;
   }
-  os_memmove((char *)*arg, buff, strlen);
+  os_memmove((char *)*arg, G_io_apdu_buffer, len);
+  PRINTF("End string callback\n");
   return true;
 }
 
 bool text_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  int strlen = stream->bytes_left;
-  if (strlen > 41) {
+  int len = stream->bytes_left;
+  PRINTF("Start text callback\n");
+  if (len > 41) {
     size_t length = 41;
-    unsigned char buff[45];
+    os_memset(&G_io_apdu_buffer, 0, 45);
     size_t left = stream->bytes_left - length;
-    if (!pb_read(stream, buff, length)) {
+    if (!pb_read(stream, G_io_apdu_buffer, length)) {
       return false;
     }
     if (!pb_read(stream, NULL, left)) {
       return false;
     }
-    os_memmove((char *)&buff[41], &"...\0", 4);
-    os_memmove((char *)*arg, buff, 45);
+    os_memmove((char *)&G_io_apdu_buffer[41], &"...\0", 4);
+    os_memmove((char *)*arg, G_io_apdu_buffer, 45);
   } else {
-    unsigned char buff[strlen];
-    if (!pb_read(stream, buff, (size_t)stream->bytes_left)) {
+    os_memset(&G_io_apdu_buffer, 0, len);
+    if (!pb_read(stream, G_io_apdu_buffer, (size_t)stream->bytes_left)) {
       return false;
     }
-    os_memmove((char *)*arg, buff, strlen);
+    os_memmove((char *)*arg, G_io_apdu_buffer, len);
   }
+  PRINTF("End text callback\n");
   return true;
 }
 
 bool function_call_callback(pb_istream_t *stream, const pb_field_t *field,
                             void **arg) {
-  unsigned char buff[45];
   uint32_t name_len;
+  os_memset(&G_io_apdu_buffer, 0, 45);
   int len = stream->bytes_left;
-  if (!pb_read(stream, buff,
+  if (!pb_read(stream, G_io_apdu_buffer,
                7)) { // read setting 3 bytes and 4 byte of function name size
     return false;
   }
   len -= 7;
-  name_len = deserialize_uint32_t(&buff[3]);
+  name_len = deserialize_uint32_t(&G_io_apdu_buffer[3]);
   if (name_len > 41) {                // if function name len  is
-    if (!pb_read(stream, buff, 41)) { // read 41 byte of the name
+    if (!pb_read(stream, G_io_apdu_buffer, 41)) { // read 41 byte of the name
       return false;
     }
     len -= 41;
-    os_memmove((char *)&buff[41], &"...\0", 4);
-    os_memmove((char *)*arg, buff, 45);
+    os_memmove((char *)&G_io_apdu_buffer[41], &"...\0", 4);
+    os_memmove((char *)*arg, G_io_apdu_buffer, 45);
     if (!pb_read(stream, NULL, len)) { // read last str to null
       return false;
     }
   } else {
-    if (!pb_read(stream, buff, name_len)) { // read all name str
+    if (!pb_read(stream, G_io_apdu_buffer, name_len)) { // read all name str
       return false;
     }
     len -= name_len;
-    os_memmove((char *)*arg, buff, 45);
-    if (!pb_read(
-            stream, NULL,
-            len)) { // read setting 3 bytes and 4 byte of function name size
+    os_memmove((char *)*arg, G_io_apdu_buffer, 45);
+    if (!pb_read(stream, NULL, len)) { //read other data
       return false;
     }
   }
   return true;
-}
-
-bool copy_amount(uint64_t amount, int decimals, unsigned char *out) {
-  return print_amount(amount, decimals, out, 20);
-}
-
-bool amount_callback(pb_istream_t *stream, const pb_field_t *field,
-                     void **arg) {
-  uint64_t value;
-  if (!pb_decode_varint(stream, &value))
-    return false;
-  return copy_amount(value, tmp_ctx.signing_context.amount_decimals,
-                     (unsigned char *)*arg);
-}
-
-bool amount2_callback(pb_istream_t *stream, const pb_field_t *field,
-                      void **arg) {
-  uint64_t value;
-  if (!pb_decode_varint(stream, &value))
-    return false;
-  return copy_amount(value, tmp_ctx.signing_context.amount2_decimals,
-                     (unsigned char *)*arg);
 }
 
 bool transaction_data_callback(pb_istream_t *stream, const pb_field_t *field,
@@ -174,7 +159,7 @@ bool transaction_data_callback(pb_istream_t *stream, const pb_field_t *field,
     tx->attachment.arg = &tmp_ctx.signing_context.ui.line4;
   } else if (field->tag == waves_Transaction_issue_tag) {
     waves_IssueTransactionData *tx = field->pData;
-    tx->name.funcs.decode = string_callback;
+    tx->name.funcs.decode = text_callback;
     tx->name.arg = &tmp_ctx.signing_context.ui.line1;
     tx->description.funcs.decode = text_callback;
     tx->description.arg = &tmp_ctx.signing_context.ui.line2;
@@ -215,7 +200,7 @@ bool transaction_data_callback(pb_istream_t *stream, const pb_field_t *field,
     tx->name.funcs.decode = string_callback;
     tx->name.arg = &tmp_ctx.signing_context.ui.line2;
     tx->description.funcs.decode = text_callback;
-    tx->description.arg = &tmp_ctx.signing_context.ui.line3;
+    tx->description.arg = &tmp_ctx.signing_context.ui.line4;
   } else if (field->tag == waves_Transaction_invoke_script_tag) {
     waves_InvokeScriptTransactionData *tx = field->pData;
     tx->function_call.funcs.decode = function_call_callback;
@@ -292,7 +277,7 @@ void make_invoke_ui(waves_Transaction *tx) {
   }
 }
 
-void build_tx(uiProtobuf_t *ctx, uint8_t *init_buffer, uint8_t init_buffer_size,
+void build_protobuf_tx(uiProtobuf_t *ctx, uint8_t *init_buffer, uint8_t init_buffer_size,
               uint16_t total_buffer_size) {
   uint8_t status;
   // init variable for parsing
@@ -307,11 +292,13 @@ void build_tx(uiProtobuf_t *ctx, uint8_t *init_buffer, uint8_t init_buffer_size,
   pb_istream_t stream = pb_istream_from_apdu(ctx, init_buffer, init_buffer_size,
                                              total_buffer_size);
   // decoding tx message
+  PRINTF("Start decoding\n");
   status = pb_decode(&stream, waves_Transaction_fields, &tx);
   if (!status) {
     PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
     THROW(0x6D00);
   }
+  PRINTF("End decoding\n");
 
   print_amount(tx.fee.amount, tmp_ctx.signing_context.fee_decimals,
                (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 20);
@@ -337,7 +324,7 @@ void build_tx(uiProtobuf_t *ctx, uint8_t *init_buffer, uint8_t init_buffer_size,
   tmp_ctx.signing_context.ui.finished = true;
 }
 
-void build_order(uiProtobuf_t *ctx, uint8_t *init_buffer,
+void build_protobuf_order(uiProtobuf_t *ctx, uint8_t *init_buffer,
                  uint8_t init_buffer_size, uint16_t total_buffer_size) {
   uint8_t status;
   // init variable for parsing
@@ -349,39 +336,31 @@ void build_order(uiProtobuf_t *ctx, uint8_t *init_buffer,
   order.matcher_fee.asset_id.funcs.decode = asset_callback;
   order.matcher_fee.asset_id.arg = &tmp_ctx.signing_context.ui.fee_asset;
   order.asset_pair.amount_asset_id.funcs.decode = asset_callback;
-  order.asset_pair.amount_asset_id.arg = &tmp_ctx.signing_context.ui.line3;
+  order.asset_pair.amount_asset_id.arg = &tmp_ctx.signing_context.ui.line1;
   // create stream for parsing
   pb_istream_t stream = pb_istream_from_apdu(ctx, init_buffer, init_buffer_size,
                                              total_buffer_size);
   // decoding tx message
+  PRINTF("Start decoding\n");
   status = pb_decode(&stream, waves_Order_fields, &order);
   if (!status) {
     PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
     THROW(0x6D00);
   }
-
+  PRINTF("End decoding\n");
   print_amount(order.amount, tmp_ctx.signing_context.amount_decimals,
                (unsigned char *)tmp_ctx.signing_context.ui.line4, 20);
   print_amount(order.matcher_fee.amount, tmp_ctx.signing_context.fee_decimals,
                (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 20);
   if (order.order_side == waves_Order_Side_BUY) {
-    os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line1,
+    os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3,
                &"Buy order\0", 10);
   } else {
-    os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line1,
+    os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3,
                &"Sell order\0", 11);
   }
 
   // finish parsing and view data
   tmp_ctx.signing_context.step = 7;
   tmp_ctx.signing_context.ui.finished = true;
-}
-
-void build_protobuf_ui(uiProtobuf_t *ctx, uint8_t *init_buffer,
-                       uint8_t init_buffer_size, uint16_t total_buffer_size) {
-  if (tmp_ctx.signing_context.data_type == 252) {
-    build_order(ctx, init_buffer, init_buffer_size, total_buffer_size);
-  } else {
-    build_tx(ctx, init_buffer, init_buffer_size, total_buffer_size);
-  }
 }

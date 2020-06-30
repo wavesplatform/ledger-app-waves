@@ -134,7 +134,7 @@ UX_STEP_NOCB(ux_transfer_8_step, bnnn_paging,
 UX_STEP_NOCB(ux_transfer_9_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_transfer_10_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
               {
@@ -180,7 +180,7 @@ UX_STEP_NOCB(ux_data_4_step, bnnn_paging,
 UX_STEP_NOCB(ux_data_5_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_data_6_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
               {
@@ -249,7 +249,7 @@ UX_STEP_NOCB(ux_issue_9_step, bnnn_paging,
 UX_STEP_NOCB(ux_issue_10_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_issue_11_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
               {
@@ -310,7 +310,7 @@ UX_STEP_NOCB(ux_reissue_7_step, bnnn_paging,
 UX_STEP_NOCB(ux_reissue_8_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_reissue_9_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
               {
@@ -366,7 +366,7 @@ UX_STEP_NOCB(ux_burn_6_step, bnnn_paging,
 UX_STEP_NOCB(ux_burn_7_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_burn_8_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
               {
@@ -421,7 +421,7 @@ UX_STEP_NOCB(ux_lease_6_step, bnnn_paging,
 UX_STEP_NOCB(ux_lease_7_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_lease_8_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
               {
@@ -471,7 +471,7 @@ UX_STEP_NOCB(ux_cancel_lease_5_step, bnnn_paging,
 UX_STEP_NOCB(ux_cancel_lease_6_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_cancel_lease_7_step, pbb,
               io_seproxyhal_touch_sign_approve(NULL),
@@ -523,7 +523,7 @@ UX_STEP_NOCB(ux_create_alias_5_step, bnnn_paging,
 UX_STEP_NOCB(ux_create_alias_6_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_create_alias_7_step, pbb,
               io_seproxyhal_touch_sign_approve(NULL),
@@ -582,7 +582,7 @@ UX_STEP_NOCB(ux_masstransfer_6_step, bnnn_paging,
 UX_STEP_NOCB(ux_masstransfer_7_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_masstransfer_8_step, pbb,
               io_seproxyhal_touch_sign_approve(NULL),
@@ -630,7 +630,7 @@ UX_STEP_NOCB(ux_set_ac_script_4_step, bnnn_paging,
 UX_STEP_NOCB(ux_set_ac_script_5_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_set_ac_script_6_step, pbb,
               io_seproxyhal_touch_sign_approve(NULL),
@@ -682,7 +682,7 @@ UX_STEP_NOCB(ux_set_as_script_5_step, bnnn_paging,
 UX_STEP_NOCB(ux_set_as_script_6_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_set_as_script_7_step, pbb,
               io_seproxyhal_touch_sign_approve(NULL),
@@ -740,7 +740,7 @@ UX_STEP_NOCB(ux_sponsorship_6_step, bnnn_paging,
 UX_STEP_NOCB(ux_sponsorship_7_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_sponsorship_8_step, pbb,
               io_seproxyhal_touch_sign_approve(NULL),
@@ -781,7 +781,7 @@ UX_STEP_NOCB(ux_update_asset_3_step, bnnn_paging,
 UX_STEP_NOCB(ux_update_asset_4_step, bnnn_paging,
              {
                  .title = "Description",
-                 .text = (const char *)tmp_ctx.signing_context.ui.line3,
+                 .text = (const char *)tmp_ctx.signing_context.ui.line4,
              });
 UX_STEP_NOCB(ux_update_asset_5_step, bnnn_paging,
              {
@@ -802,7 +802,7 @@ UX_STEP_NOCB(ux_update_asset_7_step, bnnn_paging,
 UX_STEP_NOCB(ux_update_asset_8_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_update_asset_9_step, pbb,
               io_seproxyhal_touch_sign_approve(NULL),
@@ -890,7 +890,7 @@ UX_STEP_NOCB(ux_invoke_10_step, bnnn_paging,
 UX_STEP_NOCB(ux_invoke_11_step, bnnn_paging,
              {
                  .title = "Transaction Id",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_invoke_12_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
               {
@@ -916,7 +916,7 @@ UX_STEP_NOCB(ux_order_1_step, pnn,
              {
                  &C_icon_eye,
                  "Confirm",
-                 (const char *)tmp_ctx.signing_context.ui.line1,
+                 (const char *)tmp_ctx.signing_context.ui.line3,
              });
 UX_STEP_NOCB(ux_order_2_step, bnnn_paging,
              {
@@ -926,7 +926,7 @@ UX_STEP_NOCB(ux_order_2_step, bnnn_paging,
 UX_STEP_NOCB(ux_order_3_step, bnnn_paging,
              {
                  .title = "Amount asset",
-                 .text = (const char *)tmp_ctx.signing_context.ui.line3,
+                 .text = (const char *)tmp_ctx.signing_context.ui.line1,
              });
 UX_STEP_NOCB(ux_order_4_step, bnnn_paging,
              {
@@ -952,7 +952,7 @@ UX_STEP_NOCB(ux_order_7_step, bnnn_paging,
 UX_STEP_NOCB(ux_order_8_step, bnnn_paging,
              {
                  .title = "Hash",
-                 .text = (const char *)tmp_ctx.signing_context.ui.txid,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_VALID(ux_order_9_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
               {

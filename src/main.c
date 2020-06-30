@@ -273,7 +273,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
             THROW(SW_SIGN_DATA_NOT_MATCH);
           }
           size_t length = 45;
-          if (!b58enc((char *)tmp_ctx.signing_context.ui.txid, &length,
+          if (!b58enc((char *)tmp_ctx.signing_context.first_data_hash, &length,
                       (const void *)&tmp_ctx.signing_context.first_data_hash,
                       32)) {
             THROW(SW_CONDITIONS_NOT_SATISFIED);

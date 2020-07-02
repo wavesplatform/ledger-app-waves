@@ -1,0 +1,16 @@
+#Transaction filed sizes
+waves.IssueTransactionData.script                   type: FT_IGNORE
+
+waves.SetAssetScriptTransactionData.script          type: FT_IGNORE
+
+waves.SetScriptTransactionData.script               type: FT_IGNORE
+
+waves.MassTransferTransactionData.transfers         type: FT_IGNORE
+
+waves.InvokeScriptTransactionData.payments          max_count: 2
+
+waves.DataTransactionData.data                      type: FT_IGNORE
+waves.DataTransactionData.DataEntry                 type: FT_IGNORE
+waves.DataTransactionData.DataEntry.key             type: FT_IGNORE
+waves.DataTransactionData.DataEntry.binary_value    type: FT_IGNORE
+waves.DataTransactionData.DataEntry.string_value    type: FT_IGNORE

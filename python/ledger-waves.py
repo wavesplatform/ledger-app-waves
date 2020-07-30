@@ -37,7 +37,6 @@ pw.setOffline()
 # 'T' for testnet, 'W' for mainnet
 chain_id = 'W'
 
-
 class colors:
     '''Colors class:
     reset all colors with colors.reset
@@ -245,17 +244,16 @@ def build_transfer_protobuf(publicKey, recipient, asset, amount, attachment='', 
         timestamp = int(time.time() * 1000)
     to = Recipient(public_key_hash=base58.b58decode(recipient))
     amountTx = Amount(asset_id=(base58.b58decode(
-        asset.assetId) if asset else b'\0'), amount=amount)
+        asset.assetId) if asset else None), amount=amount)
     transfer = tpb.TransferTransactionData(
         recipient=to, amount=amountTx, attachment=attachment)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
-        publicKey), fee=fee, timestamp=timestamp, version=version, transfer=transfer)
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(publicKey), fee=fee, timestamp=timestamp, version=version, transfer=transfer)
     return trx.SerializeToString()
 
 
-def build_masstransfer_protobuf(publicKey, recipient, asset, amount, attachment='', feeAsset='', txFee=100000, timestamp=0, version=3):
+def build_masstransfer_protobuf(publicKey, recipient, asset, amount, attachment='', feeAsset='', txFee=100000, timestamp=0, version=2):
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
     to = Recipient(public_key_hash=base58.b58decode(recipient))
@@ -267,10 +265,10 @@ def build_masstransfer_protobuf(publicKey, recipient, asset, amount, attachment=
     transfers.append(tpb.MassTransferTransactionData.Transfer(
         recipient=to, amount=amount))
     mass_transfer = tpb.MassTransferTransactionData(asset_id=(base58.b58decode(
-        asset.assetId) if asset else b'\0'), transfers=transfers, attachment=attachment)
+        asset.assetId) if asset else None), transfers=transfers, attachment=attachment)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, mass_transfer=mass_transfer)
     return trx.SerializeToString()
 
@@ -281,31 +279,31 @@ def build_issue_protobuf(publicKey, name, descr, amount, decimals, reissue, feeA
     issue = tpb.IssueTransactionData(
         name=name, description=descr, amount=amount, decimals=decimals, reissuable=reissue)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, issue=issue)
     return trx.SerializeToString()
 
 
-def build_set_ac_script_protobuf(publicKey, script, feeAsset='', txFee=100000, timestamp=0, version=3):
+def build_set_ac_script_protobuf(publicKey, script, feeAsset='', txFee=100000, timestamp=0, version=2):
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
     scr = tpb.SetScriptTransactionData(script=script)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, set_script=scr)
     return trx.SerializeToString()
 
 
-def build_set_as_script_protobuf(publicKey, asset, script, feeAsset='', txFee=100000, timestamp=0, version=3):
+def build_set_as_script_protobuf(publicKey, asset, script, feeAsset='', txFee=100000, timestamp=0, version=2):
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
     scr = tpb.SetAssetScriptTransactionData(
         asset_id=base58.b58decode(asset.assetId), script=script)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, set_asset_script=scr)
     return trx.SerializeToString()
 
@@ -316,8 +314,8 @@ def build_reissue_protobuf(publicKey, asset, amount, re, feeAsset='', txFee=1000
     amountTx = Amount(asset_id=base58.b58decode(asset.assetId), amount=amount)
     reissue = tpb.ReissueTransactionData(asset_amount=amountTx,  reissuable=re)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, reissue=reissue)
     return trx.SerializeToString()
 
@@ -328,8 +326,8 @@ def build_burn_protobuf(publicKey, asset, amount, feeAsset='', txFee=100000, tim
     amountTx = Amount(asset_id=base58.b58decode(asset.assetId), amount=amount)
     burn = tpb.BurnTransactionData(asset_amount=amountTx)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, burn=burn)
     return trx.SerializeToString()
 
@@ -340,8 +338,8 @@ def build_lease_protobuf(publicKey, to, amount, feeAsset='', txFee=100000, times
     recipient = Recipient(public_key_hash=base58.b58decode(to))
     lease = tpb.LeaseTransactionData(recipient=recipient, amount=amount)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, lease=lease)
     return trx.SerializeToString()
 
@@ -352,8 +350,8 @@ def build_cancel_lease_protobuf(publicKey, leaseId, feeAsset='', txFee=100000, t
     lease_cancel = tpb.LeaseCancelTransactionData(
         lease_id=base58.b58decode(leaseId))
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, lease_cancel=lease_cancel)
     return trx.SerializeToString()
 
@@ -363,25 +361,25 @@ def build_creating_alias_protobuf(publicKey, alias, feeAsset='', txFee=100000, t
         timestamp = int(time.time() * 1000)
     alias = tpb.CreateAliasTransactionData(alias=alias)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, create_alias=alias)
     return trx.SerializeToString()
 
 
-def build_update_asset_protobuf(publicKey, asset, name, description, feeAsset='', txFee=100000, timestamp=0, version=3):
+def build_update_asset_protobuf(publicKey, asset, name, description, feeAsset='', txFee=100000, timestamp=0, version=1):
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
     update_asset = tpb.UpdateAssetInfoTransactionData(
         asset_id=base58.b58decode(asset.assetId),  name=name, description=description)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, update_asset_info=update_asset)
     return trx.SerializeToString()
 
 
-def build_data_protobuf(publicKey, feeAsset='', txFee=100000, timestamp=0, version=3):
+def build_data_protobuf(publicKey, feeAsset='', txFee=100000, timestamp=0, version=2):
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
     list = []
@@ -393,25 +391,25 @@ def build_data_protobuf(publicKey, feeAsset='', txFee=100000, timestamp=0, versi
     data = tpb.DataTransactionData(data=list)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
                            if feeAsset else b''), amount=txFee)
-    trx = tpb.Transaction(chain_id=84, sender_public_key=base58.b58decode(
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, data_transaction=data)
     return trx.SerializeToString()
 
 
-def build_sponsorship_protobuf(publicKey, asset, amount, feeAsset='', txFee=100000, timestamp=0, version=3):
+def build_sponsorship_protobuf(publicKey, asset, amount, feeAsset='', txFee=100000, timestamp=0, version=2):
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
     amountTx = Amount(asset_id=(base58.b58decode(asset.assetId)
-                                if feeAsset else b'\0'), amount=amount)
+                                if feeAsset else None), amount=amount)
     sponsorship = tpb.SponsorFeeTransactionData(min_fee=amountTx)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, sponsor_fee=sponsorship)
     return trx.SerializeToString()
 
 
-def build_invoke_protobuf(publicKey, dapp, function, asset, amount, asset2, amount2, feeAsset='', txFee=100000, timestamp=0, version=3):
+def build_invoke_protobuf(publicKey, dapp, function, asset, amount, asset2, amount2, feeAsset='', txFee=100000, timestamp=0, version=2):
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
     amounts = []
@@ -424,8 +422,8 @@ def build_invoke_protobuf(publicKey, dapp, function, asset, amount, asset2, amou
     invoke = tpb.InvokeScriptTransactionData(
         d_app=to, function_call=function, payments=amounts)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
-    trx = tpb.Transaction(chain_id=87, sender_public_key=base58.b58decode(
+                           if feeAsset else None), amount=txFee)
+    trx = tpb.Transaction(chain_id=ord(chain_id), sender_public_key=base58.b58decode(
         publicKey), fee=fee, timestamp=timestamp, version=version, invoke_script=invoke)
     return trx.SerializeToString()
 
@@ -434,14 +432,14 @@ def build_order_protobuf(publicKey, matcherPK, amountAsset, priceAsset, type, am
     if timestamp == 0:
         timestamp = int(time.time() * 1000)
     fee = Amount(asset_id=(base58.b58decode(feeAsset.assetId)
-                           if feeAsset else b'\0'), amount=txFee)
+                           if feeAsset else None), amount=txFee)
     assetPair = opb.AssetPair(
         amount_asset_id=(base58.b58decode(amountAsset.assetId)
-                         if amountAsset else b'\0'),
+                         if amountAsset else None),
         price_asset_id=(base58.b58decode(priceAsset.assetId)
-                        if priceAsset else b'\0'),
+                        if priceAsset else None),
     )
-    order = opb.Order(chain_id=87, sender_public_key=base58.b58decode(publicKey), matcher_public_key=base58.b58decode(
+    order = opb.Order(chain_id=ord(chain_id), sender_public_key=base58.b58decode(publicKey), matcher_public_key=base58.b58decode(
         matcherPK), asset_pair=assetPair, order_side=1, amount=amount, price=price, timestamp=timestamp, expiration=expiration, matcher_fee=fee, version=3)
     return order.SerializeToString()
 
@@ -456,7 +454,10 @@ while (True):
                 sys.exit(0)
             sys.exc_clear()
 
-    print("")
+    tx = tpb.Transaction()
+    #tx.ParseFromString(base58.b58decode("
+    # 8YifyLj9HucsDjXaLjPjUdb2kVVox3AyMaBjYAwzjkodkVQ5dEnXdYkPES6LVn9K3C2RGDCRAd69QYYRqL21T8xCKHGLhnvx5he1Mue22AQayB1qs7Q9vScYc4Dkqgo46BLmYU7KWBH5eDofqeD52e2o8hFbrnhYQ6Lzyg5Bt"))
+    #print(base58.b58encode(tx.transfer.amount.asset_id))
     print(colors.fg.lightcyan + colors.bold +
           "Ledger Nano S - Waves test app" + colors.reset)
     print(colors.fg.white +
@@ -587,7 +588,6 @@ while (True):
             print(colors.fg.white + "\t 4. Transfer" + colors.reset)
             print(colors.fg.white + "\t 5. Reissue" + colors.reset)
             print(colors.fg.white + "\t 6. Burn" + colors.reset)
-            #print(colors.fg.white + "\t 7. Exchange" + colors.reset)
             print(colors.fg.white + "\t 8. Lease" + colors.reset)
             print(colors.fg.white + "\t 9. Lease Cancel" + colors.reset)
             print(colors.fg.white + "\t 10. Create Alias" + colors.reset)
@@ -605,6 +605,7 @@ while (True):
             decimals = 8  # tx amount asset decimals
             decimals2 = 0
             feeDecimals = 8  # fee amount asset decimals
+            version = 3
             if (select == "3"):
                 decimals = 3
                 some_transfer_bytes = build_issue_protobuf(
@@ -618,21 +619,24 @@ while (True):
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     100000,
                     1526477921829,
-                    3
+                    version
                 )
             elif (select == "4"):
-                decimals = 8
+                decimals = 4
+                feeDecimals = 4
+                version = 3
+                chain_id = 'R'
                 some_transfer_bytes = build_transfer_protobuf(
-                    # 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
-                    '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
-                    "23edvPK94JRdmDj7rKwzLbu22Sem",  # 3P8mkuJyiFvVRLjVNfDvdqVqH92bZZkQtAL
-                    pw.Asset('B3mFpuCTpShBkSNiKaVbKeipktYWufEMAEGvBAdNP6tu'),
-                    100000000,
-                    'privet',
-                    pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
-                    100000,
-                    1526477921829,
-                    3
+                    # 3M4qwDomRabJKLZxuXhwfqLApQkU592nWxF
+                    'AXbaBkJNocyrVpwqTzD4TpUY8fQ6eeRto9k1m2bNCzXV',
+                    "Yx1KwZyaRFWaWZALgQ8D1Ft4sdd",  # 3P8mkuJyiFvVRLjVNfDvdqVqH92bZZkQtAL
+                    pw.Asset('9Z9DqJz4GbrJiMDHRFdGPz4GdVy6sWzzRQKZARkvsgMp'),
+                    9223372036854775807,
+                    '',
+                    None,
+                    100001,
+                    1600000000000,
+                    version
                 )
             elif (select == "5"):
                 decimals = 8
@@ -645,7 +649,7 @@ while (True):
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     100000,
                     1526477921829,
-                    3
+                    version
                 )
             elif (select == "6"):
                 decimals = 8
@@ -657,7 +661,7 @@ while (True):
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     100000,
                     1526477921829,
-                    3
+                    version
                 )
 
             elif (select == "8"):
@@ -669,7 +673,7 @@ while (True):
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     100000,
                     1526477921829,
-                    3
+                    version
                 )
             elif (select == "9"):
                 some_transfer_bytes = build_cancel_lease_protobuf(
@@ -679,7 +683,7 @@ while (True):
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     100000,
                     1526477921829,
-                    3
+                    version
                 )
             elif (select == "10"):
                 some_transfer_bytes = build_creating_alias_protobuf(
@@ -689,9 +693,10 @@ while (True):
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     100000,
                     1526477921829,
-                    3
+                    version
                 )
             elif (select == "11"):
+                version = 2
                 some_transfer_bytes = build_masstransfer_protobuf(
                     # 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
                     '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
@@ -702,18 +707,20 @@ while (True):
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     100000,
                     1526477921829,
-                    3
+                    version
                 )
             elif (select == "12"):
+                version = 2
                 some_transfer_bytes = build_data_protobuf(
                     # 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
                     '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     100000,
                     1526477921829,
-                    3
+                    version
                 )
             elif (select == "13"):
+                version = 2
                 script = base64.b64decode("AAIDAAAAAAAAAAYIARIAEgAAAAAEAAAAAAVscEtleQIAAAALbGFzdFBheW1lbnQAAAAABWxpS2V5AgAAAApiZXN0Rm9tb2VyAAAAAAVsaEtleQIAAAAGaGVpZ2h0AAAAAANkYXkAAAAAAAAABaAAAAACAAAAAWkBAAAAC2ZlYXJtaXNzaW5nAAAAAAQAAAAHcGF5bWVudAQAAAAHJG1hdGNoMAgFAAAAAWkAAAAHcGF5bWVudAMJAAABAAAAAgUAAAAHJG1hdGNoMAIAAAAPQXR0YWNoZWRQYXltZW50BAAAAAFwBQAAAAckbWF0Y2gwBAAAAAckbWF0Y2gxCAUAAAABcAAAAAdhc3NldElkAwkAAAEAAAACBQAAAAckbWF0Y2gxAgAAAApCeXRlVmVjdG9yBAAAAAdhc3NldElkBQAAAAckbWF0Y2gxCQAAAgAAAAECAAAAD2ZvbW8gd2F2ZXMgb25seQgFAAAAAXAAAAAGYW1vdW50CQAAAgAAAAECAAAAGHBheW1lbnQgbXVzdCBiZSBhdHRhY2hlZAQAAAALbGFzdFBheW1lbnQEAAAAByRtYXRjaDAJAAQaAAAAAgUAAAAEdGhpcwIAAAALbGFzdFBheW1lbnQDCQAAAQAAAAIFAAAAByRtYXRjaDACAAAAA0ludAQAAAABcAUAAAAHJG1hdGNoMAUAAAABcAAAAAAAAAAAAAMJAABnAAAAAgUAAAALbGFzdFBheW1lbnQFAAAAB3BheW1lbnQJAAACAAAAAQkAASwAAAACAgAAAA9taW4gcGF5bWVudCBpcyAJAAGkAAAAAQUAAAAHcGF5bWVudAkBAAAACFdyaXRlU2V0AAAAAQkABEwAAAACCQEAAAAJRGF0YUVudHJ5AAAAAgUAAAAFbHBLZXkFAAAAB3BheW1lbnQJAARMAAAAAgkBAAAACURhdGFFbnRyeQAAAAIFAAAABWxpS2V5CAgFAAAAAWkAAAAGY2FsbGVyAAAABWJ5dGVzCQAETAAAAAIJAQAAAAlEYXRhRW50cnkAAAACBQAAAAVsaEtleQUAAAAGaGVpZ2h0BQAAAANuaWwAAAABaQEAAAAId2l0aGRyYXcAAAAABAAAAA1jYWxsZXJDb3JyZWN0CQAAAAAAAAIICAUAAAABaQAAAAZjYWxsZXIAAAAFYnl0ZXMJAQAAAAdleHRyYWN0AAAAAQkABBwAAAACBQAAAAR0aGlzBQAAAAVsaUtleQQAAAANaGVpZ2h0Q29ycmVjdAkAAGcAAAACCQAAZQAAAAIJAQAAAAdleHRyYWN0AAAAAQkABBoAAAACBQAAAAR0aGlzBQAAAAVsaEtleQUAAAAGaGVpZ2h0BQAAAANkYXkEAAAAC2NhbldpdGhkcmF3AwUAAAANaGVpZ2h0Q29ycmVjdAUAAAANY2FsbGVyQ29ycmVjdAcDBQAAAAtjYW5XaXRoZHJhdwkBAAAAC1RyYW5zZmVyU2V0AAAAAQkABEwAAAACCQEAAAAOU2NyaXB0VHJhbnNmZXIAAAADCAUAAAABaQAAAAZjYWxsZXIJAQAAAAx3YXZlc0JhbGFuY2UAAAABBQAAAAR0aGlzBQAAAAR1bml0BQAAAANuaWwJAAACAAAAAQIAAAAGYmVob2xkAAAAACSiqig=")
                 some_transfer_bytes = build_set_ac_script_protobuf(
                     # 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
@@ -722,10 +729,11 @@ while (True):
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     100000,
                     1526477921829,
-                    3
+                    version
                 )
             elif (select == "14"):
                 decimals = 6
+                version = 2
                 some_transfer_bytes = build_sponsorship_protobuf(
                     # 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
                     '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
@@ -734,9 +742,10 @@ while (True):
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     100000,
                     1526477921829,
-                    3
+                    version
                 )
             elif (select == "15"):
+                version = 2
                 script = base64.b64decode("AAIDAAAAAAAAAAYIARIAEgAAAAAEAAAAAAVscEtleQIAAAALbGFzdFBheW1lbnQAAAAABWxpS2V5AgAAAApiZXN0Rm9tb2VyAAAAAAVsaEtleQIAAAAGaGVpZ2h0AAAAAANkYXkAAAAAAAAABaAAAAACAAAAAWkBAAAAC2ZlYXJtaXNzaW5nAAAAAAQAAAAHcGF5bWVudAQAAAAHJG1hdGNoMAgFAAAAAWkAAAAHcGF5bWVudAMJAAABAAAAAgUAAAAHJG1hdGNoMAIAAAAPQXR0YWNoZWRQYXltZW50BAAAAAFwBQAAAAckbWF0Y2gwBAAAAAckbWF0Y2gxCAUAAAABcAAAAAdhc3NldElkAwkAAAEAAAACBQAAAAckbWF0Y2gxAgAAAApCeXRlVmVjdG9yBAAAAAdhc3NldElkBQAAAAckbWF0Y2gxCQAAAgAAAAECAAAAD2ZvbW8gd2F2ZXMgb25seQgFAAAAAXAAAAAGYW1vdW50CQAAAgAAAAECAAAAGHBheW1lbnQgbXVzdCBiZSBhdHRhY2hlZAQAAAALbGFzdFBheW1lbnQEAAAAByRtYXRjaDAJAAQaAAAAAgUAAAAEdGhpcwIAAAALbGFzdFBheW1lbnQDCQAAAQAAAAIFAAAAByRtYXRjaDACAAAAA0ludAQAAAABcAUAAAAHJG1hdGNoMAUAAAABcAAAAAAAAAAAAAMJAABnAAAAAgUAAAALbGFzdFBheW1lbnQFAAAAB3BheW1lbnQJAAACAAAAAQkAASwAAAACAgAAAA9taW4gcGF5bWVudCBpcyAJAAGkAAAAAQUAAAAHcGF5bWVudAkBAAAACFdyaXRlU2V0AAAAAQkABEwAAAACCQEAAAAJRGF0YUVudHJ5AAAAAgUAAAAFbHBLZXkFAAAAB3BheW1lbnQJAARMAAAAAgkBAAAACURhdGFFbnRyeQAAAAIFAAAABWxpS2V5CAgFAAAAAWkAAAAGY2FsbGVyAAAABWJ5dGVzCQAETAAAAAIJAQAAAAlEYXRhRW50cnkAAAACBQAAAAVsaEtleQUAAAAGaGVpZ2h0BQAAAANuaWwAAAABaQEAAAAId2l0aGRyYXcAAAAABAAAAA1jYWxsZXJDb3JyZWN0CQAAAAAAAAIICAUAAAABaQAAAAZjYWxsZXIAAAAFYnl0ZXMJAQAAAAdleHRyYWN0AAAAAQkABBwAAAACBQAAAAR0aGlzBQAAAAVsaUtleQQAAAANaGVpZ2h0Q29ycmVjdAkAAGcAAAACCQAAZQAAAAIJAQAAAAdleHRyYWN0AAAAAQkABBoAAAACBQAAAAR0aGlzBQAAAAVsaEtleQUAAAAGaGVpZ2h0BQAAAANkYXkEAAAAC2NhbldpdGhkcmF3AwUAAAANaGVpZ2h0Q29ycmVjdAUAAAANY2FsbGVyQ29ycmVjdAcDBQAAAAtjYW5XaXRoZHJhdwkBAAAAC1RyYW5zZmVyU2V0AAAAAQkABEwAAAACCQEAAAAOU2NyaXB0VHJhbnNmZXIAAAADCAUAAAABaQAAAAZjYWxsZXIJAQAAAAx3YXZlc0JhbGFuY2UAAAABBQAAAAR0aGlzBQAAAAR1bml0BQAAAANuaWwJAAACAAAAAQIAAAAGYmVob2xkAAAAACSiqig=")
                 some_transfer_bytes = build_set_as_script_protobuf(
                     # 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
@@ -746,9 +755,10 @@ while (True):
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     100000,
                     1526477921829,
-                    3
+                    version
                 )
             elif (select == "16"):
+                version = 2
                 fname = "function_name"
                 function_call = chr(
                     2) + chr(2) + "argument1".encode() + chr(2) + "argument2".encode()
@@ -765,9 +775,14 @@ while (True):
                     1000000,
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     1000000000,
+                    pw.Asset('51LxAtwBXapvvTFSbbh4nLyWFxH6x8ocfNvrXxbTChze'),
+                    1000000,
+                    1526477921829,
+                    version
                 )
 
             elif (select == "17"):
+                version = 1
                 some_transfer_bytes = build_update_asset_protobuf(
                     # 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
                     '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
@@ -777,9 +792,10 @@ while (True):
                     pw.Asset('9gqcTyupiDWuogWhKv8G3EMwjMaobkw9Lpys4EY2F62t'),
                     100000,
                     1526477921829,
-                    3
+                    version
                 )
             elif(select == "252"):
+                version = 4
                 some_transfer_bytes = build_order_protobuf(
                     # 3PDCeakWckRvK5vVeJnCy1R2rE1utBcJMwt
                     '4ovEU8YpbHTurwzw8CDZaCD7m6LpyMTC4nrJcgDHb4Jh',
@@ -794,7 +810,7 @@ while (True):
                     1526477921829,
                     '',  # waves
                     100000,
-                    3
+                    version
                 )
             else:
                 break
@@ -806,7 +822,6 @@ while (True):
             binary_data = path_to_bytes(expand_path(path))
             print(colors.fg.lightgrey + "path bytes: " +
                   base58.b58encode(str(path_to_bytes(expand_path(path)))))
-
             # tx amount asset decimals
             binary_data += chr(decimals)
             # tx amount2 asset decimals
@@ -820,7 +835,7 @@ while (True):
                 str(some_transfer_bytes)) + "\")> " + colors.reset)
             if len(input) == 0:
                 # 2 first bytes aren't the tx data, but info type for the ledger
-                binary_data += chr(int(select)) + chr(3)
+                binary_data += chr(int(select)) + chr(version)
                 binary_data += struct.pack(">I", len(some_transfer_bytes))
                 binary_data += some_transfer_bytes
                 binary_data += some_transfer_bytes

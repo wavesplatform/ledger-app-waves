@@ -978,7 +978,7 @@ UX_STEP_NOCB(ux_verify_transaction_1_step, bnnn_paging,
 UX_STEP_NOCB(ux_verify_transaction_2_step, bnnn_paging,
              {
                  .title = (const char *)tmp_ctx.signing_context.ui.line2,
-                 .text = (const char *)tmp_ctx.signing_context.ui.line3,
+                 .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
 UX_STEP_NOCB(ux_verify_transaction_3_step, bnnn_paging,
              {

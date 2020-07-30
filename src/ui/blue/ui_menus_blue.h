@@ -4343,7 +4343,7 @@ const bagl_element_t ui_approval_blue[] = {
     {{BAGL_LABELINE, 0x10, 130, 200, 160, 30, 0, 0, BAGL_FILL, 0x000000,
       COLOR_BG_1, BAGL_FONT_OPEN_SANS_LIGHT_16_22PX | BAGL_FONT_ALIGNMENT_RIGHT,
       0},
-     (const char *)tmp_ctx.signing_context.ui.line3,
+     (const char *)tmp_ctx.signing_context.first_data_hash,
      0,
      0,
      0,

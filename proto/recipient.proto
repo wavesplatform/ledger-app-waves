@@ -3,12 +3,10 @@ package waves;
 option java_package = "com.wavesplatform.protobuf.transaction";
 option csharp_namespace = "Waves";
 
-import "nanopb.proto";
-
 message Recipient {
     oneof recipient {
         // First 20 bytes of the result of the Keccak256(Blake2b256(publicKey)) hashing function.
-        bytes public_key_hash = 1 [(nanopb).callback_datatype = "const char*"];
-        string alias = 2 [(nanopb).callback_datatype = "const char*"];
+        bytes public_key_hash = 1;
+        string alias = 2;
     };
 };

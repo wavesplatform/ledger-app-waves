@@ -8,47 +8,59 @@
 
 PB_BIND(waves_SignedTransaction, waves_SignedTransaction, AUTO)
 
+
 PB_BIND(waves_Transaction, waves_Transaction, 2)
+
 
 PB_BIND(waves_GenesisTransactionData, waves_GenesisTransactionData, AUTO)
 
+
 PB_BIND(waves_PaymentTransactionData, waves_PaymentTransactionData, AUTO)
+
 
 PB_BIND(waves_TransferTransactionData, waves_TransferTransactionData, AUTO)
 
-PB_BIND(waves_CreateAliasTransactionData, waves_CreateAliasTransactionData,
-        AUTO)
+
+PB_BIND(waves_CreateAliasTransactionData, waves_CreateAliasTransactionData, AUTO)
+
 
 PB_BIND(waves_DataTransactionData, waves_DataTransactionData, AUTO)
 
-PB_BIND(waves_DataTransactionData_DataEntry,
-        waves_DataTransactionData_DataEntry, AUTO)
 
-PB_BIND(waves_MassTransferTransactionData, waves_MassTransferTransactionData,
-        AUTO)
+PB_BIND(waves_MassTransferTransactionData, waves_MassTransferTransactionData, AUTO)
+
 
 PB_BIND(waves_LeaseTransactionData, waves_LeaseTransactionData, AUTO)
 
-PB_BIND(waves_LeaseCancelTransactionData, waves_LeaseCancelTransactionData,
-        AUTO)
+
+PB_BIND(waves_LeaseCancelTransactionData, waves_LeaseCancelTransactionData, AUTO)
+
 
 PB_BIND(waves_BurnTransactionData, waves_BurnTransactionData, AUTO)
 
+
 PB_BIND(waves_IssueTransactionData, waves_IssueTransactionData, AUTO)
+
 
 PB_BIND(waves_ReissueTransactionData, waves_ReissueTransactionData, AUTO)
 
-PB_BIND(waves_SetAssetScriptTransactionData,
-        waves_SetAssetScriptTransactionData, AUTO)
+
+PB_BIND(waves_SetAssetScriptTransactionData, waves_SetAssetScriptTransactionData, AUTO)
+
 
 PB_BIND(waves_SetScriptTransactionData, waves_SetScriptTransactionData, AUTO)
 
+
 PB_BIND(waves_ExchangeTransactionData, waves_ExchangeTransactionData, AUTO)
+
 
 PB_BIND(waves_SponsorFeeTransactionData, waves_SponsorFeeTransactionData, AUTO)
 
-PB_BIND(waves_InvokeScriptTransactionData, waves_InvokeScriptTransactionData,
-        AUTO)
 
-PB_BIND(waves_UpdateAssetInfoTransactionData,
-        waves_UpdateAssetInfoTransactionData, AUTO)
+PB_BIND(waves_InvokeScriptTransactionData, waves_InvokeScriptTransactionData, AUTO)
+
+
+PB_BIND(waves_UpdateAssetInfoTransactionData, waves_UpdateAssetInfoTransactionData, AUTO)
+
+
+

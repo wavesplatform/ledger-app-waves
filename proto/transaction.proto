@@ -65,6 +65,7 @@ message CreateAliasTransactionData {
 
 message DataTransactionData {
     message DataEntry {
+        option (nanopb_msgopt).skip_message = true;
         string key = 1;
         oneof value {
             int64 int_value = 10;

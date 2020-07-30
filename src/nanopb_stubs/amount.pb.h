@@ -15,24 +15,23 @@ extern "C" {
 
 /* Struct definitions */
 typedef struct _waves_Amount {
-  pb_callback_t asset_id;
-  int64_t amount;
+    pb_callback_t asset_id;
+    int64_t amount;
 } waves_Amount;
 
+
 /* Initializer values for message structs */
-#define waves_Amount_init_default                                              \
-  { {{NULL}, NULL}, 0 }
-#define waves_Amount_init_zero                                                 \
-  { {{NULL}, NULL}, 0 }
+#define waves_Amount_init_default                {{{NULL}, NULL}, 0}
+#define waves_Amount_init_zero                   {{{NULL}, NULL}, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define waves_Amount_asset_id_tag 1
-#define waves_Amount_amount_tag 2
+#define waves_Amount_asset_id_tag                1
+#define waves_Amount_amount_tag                  2
 
 /* Struct field encoding specification for nanopb */
-#define waves_Amount_FIELDLIST(X, a)                                           \
-  X(a, CALLBACK, SINGULAR, BYTES, asset_id, 1)                                 \
-  X(a, STATIC, SINGULAR, INT64, amount, 2)
+#define waves_Amount_FIELDLIST(X, a) \
+X(a, CALLBACK, SINGULAR, BYTES,    asset_id,          1) \
+X(a, STATIC,   SINGULAR, INT64,    amount,            2)
 #define waves_Amount_CALLBACK pb_default_field_callback
 #define waves_Amount_DEFAULT NULL
 

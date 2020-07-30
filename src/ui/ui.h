@@ -49,6 +49,7 @@ void show_sign_ui();
 void show_sign_protobuf_ui();
 void menu_address_init();
 void show_processing();
+int getMessageType();
 
 void try_to_fill_buffer(uint8_t chunk_data_start_index,
                         uint8_t chunk_data_size);

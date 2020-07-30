@@ -1,4 +1,14 @@
 #Transaction filed sizes
+waves.*.chain_id                                    type: FT_IGNORE
+waves.*.timestamp                                   type: FT_IGNORE
+waves.*.version                                     type: FT_IGNORE
+
+waves.GenesisTransactionData                        type: FT_IGNORE
+
+waves.PaymentTransactionData                        type: FT_IGNORE
+
+waves.ExchangeTransactionData                        type: FT_IGNORE
+
 waves.IssueTransactionData.script                   type: FT_IGNORE
 
 waves.SetAssetScriptTransactionData.script          type: FT_IGNORE
@@ -10,7 +20,3 @@ waves.MassTransferTransactionData.transfers         type: FT_IGNORE
 waves.InvokeScriptTransactionData.payments          max_count: 2
 
 waves.DataTransactionData.data                      type: FT_IGNORE
-waves.DataTransactionData.DataEntry                 type: FT_IGNORE
-waves.DataTransactionData.DataEntry.key             type: FT_IGNORE
-waves.DataTransactionData.DataEntry.binary_value    type: FT_IGNORE
-waves.DataTransactionData.DataEntry.string_value    type: FT_IGNORE

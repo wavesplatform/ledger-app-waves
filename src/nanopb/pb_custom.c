@@ -34,9 +34,13 @@ void inline fetch_new_apdu(uiProtobuf_t *state)
 void fetch_new_apdu(uiProtobuf_t *state) {
 
   unsigned int rx;
-  G_io_apdu_buffer[0] = 0x90;
-  G_io_apdu_buffer[1] = 0x00;
-  rx = io_exchange(CHANNEL_APDU, 2);
+  unsigned int tx = 0;
+  unsigned int flags = 0;
+  unsigned short sw = 0x9000;
+  G_io_apdu_buffer[tx] = sw >> 8;
+  G_io_apdu_buffer[tx + 1] = sw;
+  PRINTF("GET NEW APDU");
+  rx = io_exchange(CHANNEL_APDU | flags , 2);
   if (G_io_apdu_buffer[4] != rx - 5) {
     // the length of the APDU should match what's in the 5-byte header.
     // If not fail.  Don't want to buffer overrun or anything.
@@ -54,7 +58,7 @@ void fetch_new_apdu(uiProtobuf_t *state) {
   if (tmp_ctx.signing_context.step == 7) {
     THROW(SW_INCORRECT_P1_P2);
   }
-
+  PRINTF("New APDU received:\n%.*H\n", rx, G_io_apdu_buffer);
   state->total_received += G_io_apdu_buffer[4];
 }
 

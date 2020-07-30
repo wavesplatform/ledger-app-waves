@@ -155,31 +155,152 @@ void build_other_data_ui() {
   tmp_ctx.signing_context.ui.finished = true;
 }
 
+// getting message type based on tx type and varsion
+int getMessageType() {
+  unsigned char tx_type = tmp_ctx.signing_context.data_type;
+  unsigned char tx_ver = tmp_ctx.signing_context.data_version; 
+  // just one step here
+  if (tx_type == 3) {
+    if(tx_ver <= 2) {
+      return BYTE_DATA;
+    } else if(tx_ver >= 3) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 4) {
+    if(tx_ver <= 2) {
+      return BYTE_DATA;
+    } else if(tx_ver >= 3) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 5) {
+    if(tx_ver <= 2) {
+      return BYTE_DATA;
+    } else if(tx_ver >= 3) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 6) {
+    if(tx_ver <= 2) {
+      return BYTE_DATA;
+    } else if(tx_ver >= 3) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 8) {
+    if(tx_ver <= 2) {
+      return BYTE_DATA;
+    } else if(tx_ver >= 3) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 9) {
+    if(tx_ver <= 2) {
+      return BYTE_DATA;
+    } else if(tx_ver >= 3) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 10) {
+    if(tx_ver <= 2) {
+      return BYTE_DATA;
+    } else if(tx_ver >= 3) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 11) {
+    if(tx_ver == 1) {
+      return BYTE_DATA;
+    } else if(tx_ver >= 2) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 12) {
+    if(tx_ver == 1) {
+      return BYTE_DATA;
+    } else if(tx_ver == 2) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 13) {
+    if(tx_ver == 1) {
+      return BYTE_DATA;
+    } else if(tx_ver == 2) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 14) {
+    if(tx_ver == 1) {
+      return BYTE_DATA;
+    } else if(tx_ver == 2) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 15) {
+    if(tx_ver == 1) {
+      return BYTE_DATA;
+    } else if(tx_ver == 2) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 16) {
+    if(tx_ver == 1) {
+      return BYTE_DATA;
+    } else if(tx_ver == 2) {
+      return PROTOBUF_DATA;
+    }
+  } else if (tx_type == 17) {
+    return PROTOBUF_DATA;
+  } else if (tx_type > 200) {
+    if (tx_type == 252) {
+      if(tx_ver <= 3) {
+        return BYTE_DATA;
+      } else if(tx_ver == 4) {
+        return PROTOBUF_DATA;
+      }
+    } else if (tx_type == 253) {
+      return BYTE_DATA;
+    } else if (tx_type == 254) {
+      return BYTE_DATA;
+    } else if (tx_type == 255) {
+      return BYTE_DATA;
+    } else {
+      return BYTE_DATA;
+    }
+  }
+  THROW(SW_INCORRECT_TRANSACTION_TYPE_VERSION);
+}
+
 void make_allowed_ui_steps(bool is_last) {
-  uint32_t start_index;
+  uint8_t start_index;
+  uint8_t chunk_size;
   PRINTF("make_allowed_ui_steps start\n");
-  if (tmp_ctx.signing_context.data_version > 2) { // if protobuf
+  if (tmp_ctx.signing_context.message_type == PROTOBUF_DATA) { // if protobuf
+    if(is_last && G_io_apdu_buffer[4] == tmp_ctx.signing_context.chunk_used) {
+      THROW(SW_DEPRECATED_SIGN_PROTOCOL);
+    }
     if (tmp_ctx.signing_context.ui.finished != true) {
+      start_index = 5 + tmp_ctx.signing_context.chunk_used;
+      chunk_size = G_io_apdu_buffer[4] - tmp_ctx.signing_context.chunk_used;
+      if(tmp_ctx.signing_context.chunk == 0) {
+        start_index += 29;
+        chunk_size -= 29;
+      }
       if (tmp_ctx.signing_context.data_type == 252) {
         build_protobuf_order(
           &tmp_ctx.signing_context.ui.proto,
-          G_io_apdu_buffer + 5 + tmp_ctx.signing_context.chunk_used,
-          G_io_apdu_buffer[4] - tmp_ctx.signing_context.chunk_used,
+          G_io_apdu_buffer + start_index,
+          chunk_size,
           tmp_ctx.signing_context.data_size);
       } else {
         build_protobuf_tx(
           &tmp_ctx.signing_context.ui.proto,
-          G_io_apdu_buffer + 5 + tmp_ctx.signing_context.chunk_used,
-          G_io_apdu_buffer[4] - tmp_ctx.signing_context.chunk_used,
+          G_io_apdu_buffer + start_index,
+          chunk_size,
           tmp_ctx.signing_context.data_size);
-      }
-      
+      } 
     } else {
       THROW(SW_INS_NOT_SUPPORTED);
     }
   } else {
     if (tmp_ctx.signing_context.ui.byte.step == 0) {
+      if(is_last && G_io_apdu_buffer[4] == tmp_ctx.signing_context.chunk_used) {
+        THROW(SW_DEPRECATED_SIGN_PROTOCOL);
+      }
       start_index = tmp_ctx.signing_context.chunk_used;
+      //if all data in one apdu move start index on 29 bytes to skip options data
+      if (tmp_ctx.signing_context.chunk == 0) {
+        start_index += 29;
+      }
     } else {
       start_index = tmp_ctx.signing_context.ui.byte.chunk_used;
     }

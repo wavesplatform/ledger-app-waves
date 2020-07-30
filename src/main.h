@@ -38,8 +38,11 @@
 #define SW_OK 0x9000
 #define SW_USER_CANCELLED 0x9100
 #define SW_DEPRECATED_SIGN_PROTOCOL 0x9102
-#define SW_DEVICE_IS_LOCKED 0x6986
+#define SW_INCORRECT_PRECISION_VALUE 0x9103
+#define SW_INCORRECT_TRANSACTION_TYPE_VERSION 0x9104
+#define SW_PROTOBUF_DECODING_FAILED 0x9105
 #define SW_CONDITIONS_NOT_SATISFIED 0x6985
+#define SW_DEVICE_IS_LOCKED 0x6986
 #define SW_BUFFER_OVERFLOW 0x6990
 #define SW_INCORRECT_P1_P2 0x6A86
 #define SW_INS_NOT_SUPPORTED 0x6D00
@@ -49,6 +52,9 @@
 #define COLOR_BG_1 0xF9F9F9
 #define COLOR_APP 0x0055FF
 #define COLOR_APP_LIGHT 0x87dee6
+
+#define BYTE_DATA 1
+#define PROTOBUF_DATA 2
 
 typedef struct internal_storage_t {
   uint8_t fido_transport;
@@ -96,9 +102,9 @@ typedef struct uiContext_t {
       line3[36]; // reserved for recipient if transaction has recipient message
   unsigned char line4[45];
   unsigned char line5[45];
-  unsigned char line6[20];
-  unsigned char fee_amount[20];
-  unsigned char tmp[20];
+  unsigned char line6[22];
+  unsigned char fee_amount[22];
+  unsigned char tmp[22];
   bool pkhash;
   bool finished;
   cx_blake2b_t hash_ctx;
@@ -116,6 +122,7 @@ typedef struct signingContext_t {
   unsigned char fee_decimals;
   unsigned char data_type;
   unsigned char data_version;
+  int message_type;
   unsigned char network_byte;
   unsigned char signature[64];
   unsigned char first_data_hash[45];

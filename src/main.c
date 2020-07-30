@@ -37,6 +37,16 @@ tmpContext_t tmp_ctx;
 // Non-volatile storage for the wallet app's stuff
 internal_storage_t const N_storage_real;
 
+extern void _ebss;
+
+ // Return true if there is less than MIN_BSS_STACK_GAP bytes available in the
+ // stack
+ void check_stack_overflow(int step) {
+    uint32_t stack_top = 0;
+    PRINTF("Stack remaining on step %d: CUR STACK ADDR: %p, EBSS: %p, diff: %d\n", step, &stack_top, &_ebss, ((uintptr_t)&stack_top) - ((uintptr_t)&_ebss));
+   //PRINTF("+++++++diff: %d\n", ((uintptr_t)&stack_top) - ((uintptr_t)&_ebss));
+ }
+
 // SPI Buffer for io_event
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
@@ -164,7 +174,15 @@ void make_allowed_sign_steps() {
     tmp_ctx.signing_context.data_type = G_io_apdu_buffer[28];
     tmp_ctx.signing_context.data_version = G_io_apdu_buffer[29];
     tmp_ctx.signing_context.data_size =
-        deserialize_uint32_t(&G_io_apdu_buffer[30]);
+        deserialize_uint32_t(&G_io_apdu_buffer[30]); 
+    // getting message type based on tx type and varsion
+    tmp_ctx.signing_context.message_type = getMessageType();
+    if(tmp_ctx.signing_context.amount_decimals < 0 || tmp_ctx.signing_context.amount_decimals > 8 ) {
+      THROW(SW_INCORRECT_PRECISION_VALUE);
+    }
+    if(tmp_ctx.signing_context.amount2_decimals < 0 || tmp_ctx.signing_context.amount2_decimals > 8) {
+      THROW(SW_INCORRECT_PRECISION_VALUE);
+    }
   }
 
   while (tmp_ctx.signing_context.chunk_used < chunk_data_size &&
@@ -262,14 +280,15 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
         } else {
           make_allowed_ui_steps(false);
         }
-
-        if (tmp_ctx.signing_context.step ==
-            7) { // all data parsed and prepeared to view
-          unsigned char third_data_hash[64];
+        // all data parsed and prepeared to view
+        if (tmp_ctx.signing_context.step == 7) { 
+          os_memset(&G_io_apdu_buffer, 0, 64);
+          
           cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
-                  third_data_hash, 32);
+                  G_io_apdu_buffer, 32);
+          // check view data eq to signed data
           if (os_memcmp(&tmp_ctx.signing_context.first_data_hash,
-                        &third_data_hash, 32) != 0) {
+                        &G_io_apdu_buffer, 32) != 0) {
             THROW(SW_SIGN_DATA_NOT_MATCH);
           }
           size_t length = 45;
@@ -286,12 +305,9 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
           // if transaction has from field and it is pubkey hash will convert to
           // address
           if (tmp_ctx.signing_context.ui.pkhash) {
-            waves_public_key_hash_to_address(
-                tmp_ctx.signing_context.ui.line3,
-                tmp_ctx.signing_context.network_byte,
-                tmp_ctx.signing_context.ui.line3);
+            
           }
-          if (tmp_ctx.signing_context.data_version > 2) {
+          if (tmp_ctx.signing_context.message_type == PROTOBUF_DATA) {
             if (tmp_ctx.signing_context.data_type == 252) {
               // convert matcher public key to address
               waves_public_key_to_address(tmp_ctx.signing_context.ui.line2,
@@ -418,7 +434,7 @@ static void waves_main(void) {
           THROW(SW_SECURITY_STATUS_NOT_SATISFIED);
         }
 
-        // PRINTF("New APDU received:\n%.*H\n", rx, G_io_apdu_buffer);
+        PRINTF("New APDU received:\n%.*H\n", rx, G_io_apdu_buffer);
 
         // Call the Apdu handler,
         handle_apdu(&flags, &tx, rx);

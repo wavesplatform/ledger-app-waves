@@ -15,40 +15,27 @@ extern "C" {
 
 /* Struct definitions */
 typedef struct _waves_Recipient {
-  pb_size_t which_recipient;
-  union {
-    const char *public_key_hash;
-    const char *alias;
-  } recipient;
+    pb_size_t which_recipient;
+    union {
+        pb_byte_t public_key_hash[20];
+        char alias[30];
+    } recipient;
 } waves_Recipient;
 
+
 /* Initializer values for message structs */
-#define waves_Recipient_init_default                                           \
-  {                                                                            \
-    0, {                                                                       \
-      { {NULL}, NULL }                                                         \
-    }                                                                          \
-  }
-#define waves_Recipient_init_zero                                              \
-  {                                                                            \
-    0, {                                                                       \
-      { {NULL}, NULL }                                                         \
-    }                                                                          \
-  }
+#define waves_Recipient_init_default             {0, {{0}}}
+#define waves_Recipient_init_zero                {0, {{0}}}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define waves_Recipient_public_key_hash_tag 1
-#define waves_Recipient_alias_tag 2
+#define waves_Recipient_public_key_hash_tag      1
+#define waves_Recipient_alias_tag                2
 
 /* Struct field encoding specification for nanopb */
-#define waves_Recipient_FIELDLIST(X, a)                                        \
-  X(a, CALLBACK, ONEOF, BYTES,                                                 \
-    (recipient, public_key_hash, recipient.public_key_hash), 1)                \
-  X(a, CALLBACK, ONEOF, STRING, (recipient, alias, recipient.alias), 2)
-extern bool waves_Recipient_callback(pb_istream_t *istream,
-                                     pb_ostream_t *ostream,
-                                     const pb_field_t *field);
-#define waves_Recipient_CALLBACK waves_Recipient_callback
+#define waves_Recipient_FIELDLIST(X, a) \
+X(a, STATIC,   ONEOF,    FIXED_LENGTH_BYTES, (recipient,public_key_hash,recipient.public_key_hash),   1) \
+X(a, STATIC,   ONEOF,    STRING,   (recipient,alias,recipient.alias),   2)
+#define waves_Recipient_CALLBACK NULL
 #define waves_Recipient_DEFAULT NULL
 
 extern const pb_msgdesc_t waves_Recipient_msg;
@@ -57,7 +44,7 @@ extern const pb_msgdesc_t waves_Recipient_msg;
 #define waves_Recipient_fields &waves_Recipient_msg
 
 /* Maximum encoded size of messages (where known) */
-/* waves_Recipient_size depends on runtime parameters */
+#define waves_Recipient_size                     31
 
 #ifdef __cplusplus
 } /* extern "C" */

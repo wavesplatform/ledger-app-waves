@@ -23,29 +23,6 @@
 #include "../print_amount.h"
 #include "../../crypto/waves.h"
 
-// function to parse recipient in all transactions
-// using autocallback in protofiles
-// saving to 3 field
-bool waves_Recipient_callback(pb_istream_t *istream, pb_ostream_t *ostream,
-                              const pb_field_t *field) {
-  if (istream) {
-    PRINTF("Start Recipient callback\n");
-    int len = istream->bytes_left;
-    os_memset(&G_io_apdu_buffer, 0, len);
-    if (!pb_read(istream, G_io_apdu_buffer, (size_t)istream->bytes_left)) {
-      return false;
-    }
-    if (field->tag == waves_Recipient_public_key_hash_tag) {
-      os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3, G_io_apdu_buffer, len);
-      tmp_ctx.signing_context.ui.pkhash = true;
-    } else if (field->tag == waves_Recipient_alias_tag) {
-      os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3, G_io_apdu_buffer, len);
-    }
-    PRINTF("End Recipient callback\n");
-  }
-  return true;
-}
-
 bool asset_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   PRINTF("Start asset callback\n");
   size_t length = 45;
@@ -99,11 +76,11 @@ bool text_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
     if (!pb_read(stream, G_io_apdu_buffer, length)) {
       return false;
     }
+    os_memmove((char *)&G_io_apdu_buffer[41], &"...\0", 4);
+    os_memmove((char *)*arg, G_io_apdu_buffer, 45);
     if (!pb_read(stream, NULL, left)) {
       return false;
     }
-    os_memmove((char *)&G_io_apdu_buffer[41], &"...\0", 4);
-    os_memmove((char *)*arg, G_io_apdu_buffer, 45);
   } else {
     os_memset(&G_io_apdu_buffer, 0, len);
     if (!pb_read(stream, G_io_apdu_buffer, (size_t)stream->bytes_left)) {
@@ -151,18 +128,18 @@ bool function_call_callback(pb_istream_t *stream, const pb_field_t *field,
 
 bool transaction_data_callback(pb_istream_t *stream, const pb_field_t *field,
                                void **arg) {
-  if (field->tag == waves_Transaction_transfer_tag) {
-    waves_TransferTransactionData *tx = field->pData;
-    tx->amount.asset_id.funcs.decode = asset_callback;
-    tx->amount.asset_id.arg = &tmp_ctx.signing_context.ui.line2;
-    tx->attachment.funcs.decode = text_callback;
-    tx->attachment.arg = &tmp_ctx.signing_context.ui.line4;
-  } else if (field->tag == waves_Transaction_issue_tag) {
+   if (field->tag == waves_Transaction_issue_tag) {
     waves_IssueTransactionData *tx = field->pData;
     tx->name.funcs.decode = text_callback;
     tx->name.arg = &tmp_ctx.signing_context.ui.line1;
     tx->description.funcs.decode = text_callback;
     tx->description.arg = &tmp_ctx.signing_context.ui.line2;
+  } else if (field->tag == waves_Transaction_transfer_tag) {
+    waves_TransferTransactionData *tx = field->pData;
+    tx->amount.asset_id.funcs.decode = asset_callback;
+    tx->amount.asset_id.arg = &tmp_ctx.signing_context.ui.line2;
+    tx->attachment.funcs.decode = text_callback;
+    tx->attachment.arg = &tmp_ctx.signing_context.ui.line4;
   } else if (field->tag == waves_Transaction_reissue_tag) {
     waves_ReissueTransactionData *tx = field->pData;
     tx->asset_amount.asset_id.funcs.decode = asset_callback;
@@ -216,13 +193,19 @@ bool transaction_data_callback(pb_istream_t *stream, const pb_field_t *field,
 void make_transfer_ui(waves_Transaction *tx) {
   print_amount(tx->data.transfer.amount.amount,
                tmp_ctx.signing_context.amount_decimals,
-               (unsigned char *)tmp_ctx.signing_context.ui.line1, 20);
+               (unsigned char *)tmp_ctx.signing_context.ui.line1, 22);
+  if(tx->data.transfer.recipient.which_recipient == waves_Recipient_public_key_hash_tag) {
+    waves_public_key_hash_to_address(
+                tx->data.transfer.recipient.recipient.public_key_hash,
+                tmp_ctx.signing_context.network_byte,
+                tmp_ctx.signing_context.ui.line3);
+  }
 }
 
 void make_reissue_ui(waves_Transaction *tx) {
   print_amount(tx->data.reissue.asset_amount.amount,
                tmp_ctx.signing_context.amount_decimals,
-               (unsigned char *)tmp_ctx.signing_context.ui.line1, 20);
+               (unsigned char *)tmp_ctx.signing_context.ui.line1, 22);
   if (tx->data.reissue.reissuable == true) {
     os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3, &"True\0",
                5);
@@ -237,7 +220,7 @@ void make_issue_ui(waves_Transaction *tx) {
            sizeof(tmp_ctx.signing_context.ui.line4), "%d",
            tx->data.issue.decimals);
   print_amount(tx->data.issue.amount, (unsigned char)tx->data.issue.decimals,
-               (unsigned char *)tmp_ctx.signing_context.ui.line3, 20);
+               (unsigned char *)tmp_ctx.signing_context.ui.line3, 22);
   if (tx->data.issue.reissuable == true) {
     os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line5, &"True\0",
                5);
@@ -250,30 +233,42 @@ void make_issue_ui(waves_Transaction *tx) {
 void make_burn_ui(waves_Transaction *tx) {
   print_amount(tx->data.burn.asset_amount.amount,
                tmp_ctx.signing_context.amount_decimals,
-               (unsigned char *)tmp_ctx.signing_context.ui.line1, 20);
+               (unsigned char *)tmp_ctx.signing_context.ui.line1, 22);
 }
 
 void make_start_leasing_ui(waves_Transaction *tx) {
   print_amount(tx->data.lease.amount, tmp_ctx.signing_context.amount_decimals,
-               (unsigned char *)tmp_ctx.signing_context.ui.line1, 20);
+               (unsigned char *)tmp_ctx.signing_context.ui.line1, 22);
+  if(tx->data.lease.recipient.which_recipient == waves_Recipient_public_key_hash_tag) {
+    waves_public_key_hash_to_address(
+                tx->data.lease.recipient.recipient.public_key_hash,
+                tmp_ctx.signing_context.network_byte,
+                tmp_ctx.signing_context.ui.line3);
+  }
 }
 
 void make_sponsorship_ui(waves_Transaction *tx) {
   print_amount(tx->data.sponsor_fee.min_fee.amount,
                tmp_ctx.signing_context.amount_decimals,
-               (unsigned char *)tmp_ctx.signing_context.ui.line1, 20);
+               (unsigned char *)tmp_ctx.signing_context.ui.line1, 22);
 }
 
 void make_invoke_ui(waves_Transaction *tx) {
   if (tx->data.invoke_script.payments_count >= 1) {
     print_amount(tx->data.invoke_script.payments[0].amount,
                  tmp_ctx.signing_context.amount_decimals,
-                 (unsigned char *)&tmp_ctx.signing_context.ui.line4, 20);
+                 (unsigned char *)&tmp_ctx.signing_context.ui.line4, 22);
   }
   if (tx->data.invoke_script.payments_count == 2) {
     print_amount(tx->data.invoke_script.payments[1].amount,
                  tmp_ctx.signing_context.amount_decimals,
-                 (unsigned char *)&tmp_ctx.signing_context.ui.line6, 20);
+                 (unsigned char *)&tmp_ctx.signing_context.ui.line6, 22);
+  }
+  if(tx->data.invoke_script.d_app.which_recipient == waves_Recipient_public_key_hash_tag) {
+    waves_public_key_hash_to_address(
+                tx->data.invoke_script.d_app.recipient.public_key_hash,
+                tmp_ctx.signing_context.network_byte,
+                tmp_ctx.signing_context.ui.line3);
   }
 }
 
@@ -293,15 +288,18 @@ void build_protobuf_tx(uiProtobuf_t *ctx, uint8_t *init_buffer, uint8_t init_buf
                                              total_buffer_size);
   // decoding tx message
   PRINTF("Start decoding\n");
-  status = pb_decode(&stream, waves_Transaction_fields, &tx);
+  status = pb_decode_ex(&stream, waves_Transaction_fields, &tx, 0);
   if (!status) {
     PRINTF("Decoding failed: %s\n", PB_GET_ERROR(&stream));
-    THROW(0x6D00);
+    THROW(SW_PROTOBUF_DECODING_FAILED);
   }
   PRINTF("End decoding\n");
 
+  if(strlen((const char *)tmp_ctx.signing_context.ui.fee_asset) == 0) {
+    os_memmove(tmp_ctx.signing_context.ui.fee_asset, WAVES_CONST, 5);
+  }
   print_amount(tx.fee.amount, tmp_ctx.signing_context.fee_decimals,
-               (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 20);
+               (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 22);
   unsigned char tx_type = tmp_ctx.signing_context.data_type;
   // prepeare non callback data for viewing depend on tx type
   if (tx_type == 3) {
@@ -340,7 +338,7 @@ void build_protobuf_order(uiProtobuf_t *ctx, uint8_t *init_buffer,
   // create stream for parsing
   pb_istream_t stream = pb_istream_from_apdu(ctx, init_buffer, init_buffer_size,
                                              total_buffer_size);
-  // decoding tx message
+  // decoding order message
   PRINTF("Start decoding\n");
   status = pb_decode(&stream, waves_Order_fields, &order);
   if (!status) {
@@ -349,9 +347,9 @@ void build_protobuf_order(uiProtobuf_t *ctx, uint8_t *init_buffer,
   }
   PRINTF("End decoding\n");
   print_amount(order.amount, tmp_ctx.signing_context.amount_decimals,
-               (unsigned char *)tmp_ctx.signing_context.ui.line4, 20);
+               (unsigned char *)tmp_ctx.signing_context.ui.line4, 22);
   print_amount(order.matcher_fee.amount, tmp_ctx.signing_context.fee_decimals,
-               (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 20);
+               (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 22);
   if (order.order_side == waves_Order_Side_BUY) {
     os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3,
                &"Buy order\0", 10);

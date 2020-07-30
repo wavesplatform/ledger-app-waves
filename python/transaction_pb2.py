@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='waves',
   syntax='proto3',
   serialized_options=b'\n&com.wavesplatform.protobuf.transaction\252\002\005Waves',
-  serialized_pb=b'\n\x11transaction.proto\x12\x05waves\x1a\x0cnanopb.proto\x1a\x0c\x61mount.proto\x1a\x0frecipient.proto\x1a\x0border.proto\"L\n\x11SignedTransaction\x12\'\n\x0btransaction\x18\x01 \x01(\x0b\x32\x12.waves.Transaction\x12\x0e\n\x06proofs\x18\x02 \x03(\x0c\"\xae\x08\n\x0bTransaction\x12\x10\n\x08\x63hain_id\x18\x01 \x01(\x05\x12\x19\n\x11sender_public_key\x18\x02 \x01(\x0c\x12\x1a\n\x03\x66\x65\x65\x18\x03 \x01(\x0b\x32\r.waves.Amount\x12\x11\n\ttimestamp\x18\x04 \x01(\x03\x12\x0f\n\x07version\x18\x05 \x01(\x05\x12\x30\n\x07genesis\x18\x65 \x01(\x0b\x32\x1d.waves.GenesisTransactionDataH\x00\x12\x30\n\x07payment\x18\x66 \x01(\x0b\x32\x1d.waves.PaymentTransactionDataH\x00\x12,\n\x05issue\x18g \x01(\x0b\x32\x1b.waves.IssueTransactionDataH\x00\x12\x32\n\x08transfer\x18h \x01(\x0b\x32\x1e.waves.TransferTransactionDataH\x00\x12\x30\n\x07reissue\x18i \x01(\x0b\x32\x1d.waves.ReissueTransactionDataH\x00\x12*\n\x04\x62urn\x18j \x01(\x0b\x32\x1a.waves.BurnTransactionDataH\x00\x12\x32\n\x08\x65xchange\x18k \x01(\x0b\x32\x1e.waves.ExchangeTransactionDataH\x00\x12,\n\x05lease\x18l \x01(\x0b\x32\x1b.waves.LeaseTransactionDataH\x00\x12\x39\n\x0clease_cancel\x18m \x01(\x0b\x32!.waves.LeaseCancelTransactionDataH\x00\x12\x39\n\x0c\x63reate_alias\x18n \x01(\x0b\x32!.waves.CreateAliasTransactionDataH\x00\x12;\n\rmass_transfer\x18o \x01(\x0b\x32\".waves.MassTransferTransactionDataH\x00\x12\x36\n\x10\x64\x61ta_transaction\x18p \x01(\x0b\x32\x1a.waves.DataTransactionDataH\x00\x12\x35\n\nset_script\x18q \x01(\x0b\x32\x1f.waves.SetScriptTransactionDataH\x00\x12\x37\n\x0bsponsor_fee\x18r \x01(\x0b\x32 .waves.SponsorFeeTransactionDataH\x00\x12@\n\x10set_asset_script\x18s \x01(\x0b\x32$.waves.SetAssetScriptTransactionDataH\x00\x12;\n\rinvoke_script\x18t \x01(\x0b\x32\".waves.InvokeScriptTransactionDataH\x00\x12\x42\n\x11update_asset_info\x18u \x01(\x0b\x32%.waves.UpdateAssetInfoTransactionDataH\x00:\x06\x92?\x03\xb0\x01\x01\x42\x06\n\x04\x64\x61ta\"C\n\x16GenesisTransactionData\x12\x19\n\x11recipient_address\x18\x01 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x03\"C\n\x16PaymentTransactionData\x12\x19\n\x11recipient_address\x18\x01 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x03\"q\n\x17TransferTransactionData\x12#\n\trecipient\x18\x01 \x01(\x0b\x32\x10.waves.Recipient\x12\x1d\n\x06\x61mount\x18\x02 \x01(\x0b\x32\r.waves.Amount\x12\x12\n\nattachment\x18\x03 \x01(\x0c\"+\n\x1a\x43reateAliasTransactionData\x12\r\n\x05\x61lias\x18\x01 \x01(\t\"\xc7\x01\n\x13\x44\x61taTransactionData\x12\x32\n\x04\x64\x61ta\x18\x01 \x03(\x0b\x32$.waves.DataTransactionData.DataEntry\x1a|\n\tDataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x13\n\tint_value\x18\n \x01(\x03H\x00\x12\x14\n\nbool_value\x18\x0b \x01(\x08H\x00\x12\x16\n\x0c\x62inary_value\x18\x0c \x01(\x0cH\x00\x12\x16\n\x0cstring_value\x18\r \x01(\tH\x00\x42\x07\n\x05value\"\xcb\x01\n\x1bMassTransferTransactionData\x12\x10\n\x08\x61sset_id\x18\x01 \x01(\x0c\x12>\n\ttransfers\x18\x02 \x03(\x0b\x32+.waves.MassTransferTransactionData.Transfer\x12\x12\n\nattachment\x18\x03 \x01(\x0c\x1a\x46\n\x08Transfer\x12#\n\trecipient\x18\x01 \x01(\x0b\x32\x10.waves.Recipient\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x03:\x05\x92?\x02\x30\x01\"K\n\x14LeaseTransactionData\x12#\n\trecipient\x18\x01 \x01(\x0b\x32\x10.waves.Recipient\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x03\".\n\x1aLeaseCancelTransactionData\x12\x10\n\x08lease_id\x18\x01 \x01(\x0c\":\n\x13\x42urnTransactionData\x12#\n\x0c\x61sset_amount\x18\x01 \x01(\x0b\x32\r.waves.Amount\"\x7f\n\x14IssueTransactionData\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x03\x12\x10\n\x08\x64\x65\x63imals\x18\x04 \x01(\x05\x12\x12\n\nreissuable\x18\x05 \x01(\x08\x12\x0e\n\x06script\x18\x06 \x01(\x0c\"Q\n\x16ReissueTransactionData\x12#\n\x0c\x61sset_amount\x18\x01 \x01(\x0b\x32\r.waves.Amount\x12\x12\n\nreissuable\x18\x02 \x01(\x08\"A\n\x1dSetAssetScriptTransactionData\x12\x10\n\x08\x61sset_id\x18\x01 \x01(\x0c\x12\x0e\n\x06script\x18\x02 \x01(\x0c\"*\n\x18SetScriptTransactionData\x12\x0e\n\x06script\x18\x01 \x01(\x0c\"\x89\x01\n\x17\x45xchangeTransactionData\x12\x0e\n\x06\x61mount\x18\x01 \x01(\x03\x12\r\n\x05price\x18\x02 \x01(\x03\x12\x17\n\x0f\x62uy_matcher_fee\x18\x03 \x01(\x03\x12\x18\n\x10sell_matcher_fee\x18\x04 \x01(\x03\x12\x1c\n\x06orders\x18\x05 \x03(\x0b\x32\x0c.waves.Order\";\n\x19SponsorFeeTransactionData\x12\x1e\n\x07min_fee\x18\x01 \x01(\x0b\x32\r.waves.Amount\"v\n\x1bInvokeScriptTransactionData\x12\x1f\n\x05\x64_app\x18\x01 \x01(\x0b\x32\x10.waves.Recipient\x12\x15\n\rfunction_call\x18\x02 \x01(\x0c\x12\x1f\n\x08payments\x18\x03 \x03(\x0b\x32\r.waves.Amount\"U\n\x1eUpdateAssetInfoTransactionData\x12\x10\n\x08\x61sset_id\x18\x01 \x01(\x0c\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\tB0\n&com.wavesplatform.protobuf.transaction\xaa\x02\x05Wavesb\x06proto3'
+  serialized_pb=b'\n\x11transaction.proto\x12\x05waves\x1a\x0cnanopb.proto\x1a\x0c\x61mount.proto\x1a\x0frecipient.proto\x1a\x0border.proto\"L\n\x11SignedTransaction\x12\'\n\x0btransaction\x18\x01 \x01(\x0b\x32\x12.waves.Transaction\x12\x0e\n\x06proofs\x18\x02 \x03(\x0c\"\xae\x08\n\x0bTransaction\x12\x10\n\x08\x63hain_id\x18\x01 \x01(\x05\x12\x19\n\x11sender_public_key\x18\x02 \x01(\x0c\x12\x1a\n\x03\x66\x65\x65\x18\x03 \x01(\x0b\x32\r.waves.Amount\x12\x11\n\ttimestamp\x18\x04 \x01(\x03\x12\x0f\n\x07version\x18\x05 \x01(\x05\x12\x30\n\x07genesis\x18\x65 \x01(\x0b\x32\x1d.waves.GenesisTransactionDataH\x00\x12\x30\n\x07payment\x18\x66 \x01(\x0b\x32\x1d.waves.PaymentTransactionDataH\x00\x12,\n\x05issue\x18g \x01(\x0b\x32\x1b.waves.IssueTransactionDataH\x00\x12\x32\n\x08transfer\x18h \x01(\x0b\x32\x1e.waves.TransferTransactionDataH\x00\x12\x30\n\x07reissue\x18i \x01(\x0b\x32\x1d.waves.ReissueTransactionDataH\x00\x12*\n\x04\x62urn\x18j \x01(\x0b\x32\x1a.waves.BurnTransactionDataH\x00\x12\x32\n\x08\x65xchange\x18k \x01(\x0b\x32\x1e.waves.ExchangeTransactionDataH\x00\x12,\n\x05lease\x18l \x01(\x0b\x32\x1b.waves.LeaseTransactionDataH\x00\x12\x39\n\x0clease_cancel\x18m \x01(\x0b\x32!.waves.LeaseCancelTransactionDataH\x00\x12\x39\n\x0c\x63reate_alias\x18n \x01(\x0b\x32!.waves.CreateAliasTransactionDataH\x00\x12;\n\rmass_transfer\x18o \x01(\x0b\x32\".waves.MassTransferTransactionDataH\x00\x12\x36\n\x10\x64\x61ta_transaction\x18p \x01(\x0b\x32\x1a.waves.DataTransactionDataH\x00\x12\x35\n\nset_script\x18q \x01(\x0b\x32\x1f.waves.SetScriptTransactionDataH\x00\x12\x37\n\x0bsponsor_fee\x18r \x01(\x0b\x32 .waves.SponsorFeeTransactionDataH\x00\x12@\n\x10set_asset_script\x18s \x01(\x0b\x32$.waves.SetAssetScriptTransactionDataH\x00\x12;\n\rinvoke_script\x18t \x01(\x0b\x32\".waves.InvokeScriptTransactionDataH\x00\x12\x42\n\x11update_asset_info\x18u \x01(\x0b\x32%.waves.UpdateAssetInfoTransactionDataH\x00:\x06\x92?\x03\xb0\x01\x01\x42\x06\n\x04\x64\x61ta\"C\n\x16GenesisTransactionData\x12\x19\n\x11recipient_address\x18\x01 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x03\"C\n\x16PaymentTransactionData\x12\x19\n\x11recipient_address\x18\x01 \x01(\x0c\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x03\"q\n\x17TransferTransactionData\x12#\n\trecipient\x18\x01 \x01(\x0b\x32\x10.waves.Recipient\x12\x1d\n\x06\x61mount\x18\x02 \x01(\x0b\x32\r.waves.Amount\x12\x12\n\nattachment\x18\x03 \x01(\x0c\"+\n\x1a\x43reateAliasTransactionData\x12\r\n\x05\x61lias\x18\x01 \x01(\t\"\xcf\x01\n\x13\x44\x61taTransactionData\x12\x32\n\x04\x64\x61ta\x18\x01 \x03(\x0b\x32$.waves.DataTransactionData.DataEntry\x1a\x83\x01\n\tDataEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x13\n\tint_value\x18\n \x01(\x03H\x00\x12\x14\n\nbool_value\x18\x0b \x01(\x08H\x00\x12\x16\n\x0c\x62inary_value\x18\x0c \x01(\x0cH\x00\x12\x16\n\x0cstring_value\x18\r \x01(\tH\x00:\x05\x92?\x02\x30\x01\x42\x07\n\x05value\"\xcb\x01\n\x1bMassTransferTransactionData\x12\x10\n\x08\x61sset_id\x18\x01 \x01(\x0c\x12>\n\ttransfers\x18\x02 \x03(\x0b\x32+.waves.MassTransferTransactionData.Transfer\x12\x12\n\nattachment\x18\x03 \x01(\x0c\x1a\x46\n\x08Transfer\x12#\n\trecipient\x18\x01 \x01(\x0b\x32\x10.waves.Recipient\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x03:\x05\x92?\x02\x30\x01\"K\n\x14LeaseTransactionData\x12#\n\trecipient\x18\x01 \x01(\x0b\x32\x10.waves.Recipient\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x03\".\n\x1aLeaseCancelTransactionData\x12\x10\n\x08lease_id\x18\x01 \x01(\x0c\":\n\x13\x42urnTransactionData\x12#\n\x0c\x61sset_amount\x18\x01 \x01(\x0b\x32\r.waves.Amount\"\x7f\n\x14IssueTransactionData\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x0e\n\x06\x61mount\x18\x03 \x01(\x03\x12\x10\n\x08\x64\x65\x63imals\x18\x04 \x01(\x05\x12\x12\n\nreissuable\x18\x05 \x01(\x08\x12\x0e\n\x06script\x18\x06 \x01(\x0c\"Q\n\x16ReissueTransactionData\x12#\n\x0c\x61sset_amount\x18\x01 \x01(\x0b\x32\r.waves.Amount\x12\x12\n\nreissuable\x18\x02 \x01(\x08\"A\n\x1dSetAssetScriptTransactionData\x12\x10\n\x08\x61sset_id\x18\x01 \x01(\x0c\x12\x0e\n\x06script\x18\x02 \x01(\x0c\"*\n\x18SetScriptTransactionData\x12\x0e\n\x06script\x18\x01 \x01(\x0c\"\x89\x01\n\x17\x45xchangeTransactionData\x12\x0e\n\x06\x61mount\x18\x01 \x01(\x03\x12\r\n\x05price\x18\x02 \x01(\x03\x12\x17\n\x0f\x62uy_matcher_fee\x18\x03 \x01(\x03\x12\x18\n\x10sell_matcher_fee\x18\x04 \x01(\x03\x12\x1c\n\x06orders\x18\x05 \x03(\x0b\x32\x0c.waves.Order\";\n\x19SponsorFeeTransactionData\x12\x1e\n\x07min_fee\x18\x01 \x01(\x0b\x32\r.waves.Amount\"v\n\x1bInvokeScriptTransactionData\x12\x1f\n\x05\x64_app\x18\x01 \x01(\x0b\x32\x10.waves.Recipient\x12\x15\n\rfunction_call\x18\x02 \x01(\x0c\x12\x1f\n\x08payments\x18\x03 \x03(\x0b\x32\r.waves.Amount\"U\n\x1eUpdateAssetInfoTransactionData\x12\x10\n\x08\x61sset_id\x18\x01 \x01(\x0c\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\tB0\n&com.wavesplatform.protobuf.transaction\xaa\x02\x05Wavesb\x06proto3'
   ,
   dependencies=[nanopb__pb2.DESCRIPTOR,amount__pb2.DESCRIPTOR,recipient__pb2.DESCRIPTOR,order__pb2.DESCRIPTOR,])
 
@@ -448,7 +448,7 @@ _DATATRANSACTIONDATA_DATAENTRY = _descriptor.Descriptor(
   nested_types=[],
   enum_types=[
   ],
-  serialized_options=None,
+  serialized_options=b'\222?\0020\001',
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -457,8 +457,8 @@ _DATATRANSACTIONDATA_DATAENTRY = _descriptor.Descriptor(
       name='value', full_name='waves.DataTransactionData.DataEntry.value',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1611,
-  serialized_end=1735,
+  serialized_start=1612,
+  serialized_end=1743,
 )
 
 _DATATRANSACTIONDATA = _descriptor.Descriptor(
@@ -488,7 +488,7 @@ _DATATRANSACTIONDATA = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1536,
-  serialized_end=1735,
+  serialized_end=1743,
 )
 
 
@@ -525,8 +525,8 @@ _MASSTRANSFERTRANSACTIONDATA_TRANSFER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1871,
-  serialized_end=1941,
+  serialized_start=1879,
+  serialized_end=1949,
 )
 
 _MASSTRANSFERTRANSACTIONDATA = _descriptor.Descriptor(
@@ -569,8 +569,8 @@ _MASSTRANSFERTRANSACTIONDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1738,
-  serialized_end=1941,
+  serialized_start=1746,
+  serialized_end=1949,
 )
 
 
@@ -607,8 +607,8 @@ _LEASETRANSACTIONDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1943,
-  serialized_end=2018,
+  serialized_start=1951,
+  serialized_end=2026,
 )
 
 
@@ -638,8 +638,8 @@ _LEASECANCELTRANSACTIONDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2020,
-  serialized_end=2066,
+  serialized_start=2028,
+  serialized_end=2074,
 )
 
 
@@ -669,8 +669,8 @@ _BURNTRANSACTIONDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2068,
-  serialized_end=2126,
+  serialized_start=2076,
+  serialized_end=2134,
 )
 
 
@@ -735,8 +735,8 @@ _ISSUETRANSACTIONDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2128,
-  serialized_end=2255,
+  serialized_start=2136,
+  serialized_end=2263,
 )
 
 
@@ -773,8 +773,8 @@ _REISSUETRANSACTIONDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2257,
-  serialized_end=2338,
+  serialized_start=2265,
+  serialized_end=2346,
 )
 
 
@@ -811,8 +811,8 @@ _SETASSETSCRIPTTRANSACTIONDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2340,
-  serialized_end=2405,
+  serialized_start=2348,
+  serialized_end=2413,
 )
 
 
@@ -842,8 +842,8 @@ _SETSCRIPTTRANSACTIONDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2407,
-  serialized_end=2449,
+  serialized_start=2415,
+  serialized_end=2457,
 )
 
 
@@ -901,8 +901,8 @@ _EXCHANGETRANSACTIONDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2452,
-  serialized_end=2589,
+  serialized_start=2460,
+  serialized_end=2597,
 )
 
 
@@ -932,8 +932,8 @@ _SPONSORFEETRANSACTIONDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2591,
-  serialized_end=2650,
+  serialized_start=2599,
+  serialized_end=2658,
 )
 
 
@@ -977,8 +977,8 @@ _INVOKESCRIPTTRANSACTIONDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2652,
-  serialized_end=2770,
+  serialized_start=2660,
+  serialized_end=2778,
 )
 
 
@@ -1022,8 +1022,8 @@ _UPDATEASSETINFOTRANSACTIONDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2772,
-  serialized_end=2857,
+  serialized_start=2780,
+  serialized_end=2865,
 )
 
 _SIGNEDTRANSACTION.fields_by_name['transaction'].message_type = _TRANSACTION
@@ -1295,5 +1295,6 @@ _sym_db.RegisterMessage(UpdateAssetInfoTransactionData)
 
 DESCRIPTOR._options = None
 _TRANSACTION._options = None
+_DATATRANSACTIONDATA_DATAENTRY._options = None
 _MASSTRANSFERTRANSACTIONDATA_TRANSFER._options = None
 # @@protoc_insertion_point(module_scope)

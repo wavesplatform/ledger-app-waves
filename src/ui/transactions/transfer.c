@@ -180,7 +180,6 @@ void build_transfer_ui_step(bool is_last) {
                    (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 20);
 
       tmp_ctx.signing_context.ui.byte.step = 9;
-
       update_transfer_wait_in_buffer();
       break;
     case 9:
@@ -192,7 +191,6 @@ void build_transfer_ui_step(bool is_last) {
       } else {
         return THROW(SW_CONDITIONS_NOT_SATISFIED);
       }
-
       update_transfer_wait_in_buffer();
       break;
     case 10:
@@ -201,24 +199,25 @@ void build_transfer_ui_step(bool is_last) {
                   (const void *)tmp_ctx.signing_context.ui.byte.buffer, 26)) {
         return THROW(SW_CONDITIONS_NOT_SATISFIED);
       }
-
       tmp_ctx.signing_context.ui.byte.step = 13;
-
       update_transfer_wait_in_buffer();
       break;
     case 11:
       // alias len
       // also skip address scheme byte (first 2)
-      copy_in_reverse_order(
-          (unsigned char *)&tmp_ctx.signing_context.ui.byte.alias_size,
-          (unsigned char *)&tmp_ctx.signing_context.ui.byte.buffer[2], 2);
-
+      tmp_ctx.signing_context.ui.byte.alias_size =
+          tmp_ctx.signing_context.ui.byte.buffer[1] << 8 |
+          tmp_ctx.signing_context.ui.byte.buffer[2];
       tmp_ctx.signing_context.ui.byte.step = 12;
 
       update_transfer_wait_in_buffer();
       break;
     case 12:
       // alias
+      if (tmp_ctx.signing_context.ui.byte.alias_size > 30 ||
+          tmp_ctx.signing_context.ui.byte.alias_size < 4) {
+        THROW(SW_BYTE_DECODING_FAILED);
+      }
       os_memmove((unsigned char *)tmp_ctx.signing_context.ui.line3,
                  (const unsigned char *)tmp_ctx.signing_context.ui.byte.buffer,
                  tmp_ctx.signing_context.ui.byte.alias_size);
@@ -254,10 +253,8 @@ void build_transfer_ui_step(bool is_last) {
       update_transfer_wait_in_buffer();
       break;
     case 15:
-      if (is_last) {
-        tmp_ctx.signing_context.ui.finished = true;
-        tmp_ctx.signing_context.step = 7;
-      }
+      tmp_ctx.signing_context.ui.finished = true;
+      tmp_ctx.signing_context.step = 7;
       break;
     default:
       THROW(INVALID_COUNTER);

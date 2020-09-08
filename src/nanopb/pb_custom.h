@@ -17,7 +17,8 @@ pb_istream_t apdu_pb_istream(uiProtobuf_t *ctx, uint8_t *init_buffer,
                              uint16_t total_buffer_size);
 pb_istream_t pb_istream_from_apdu(uiProtobuf_t *ctx, uint8_t *init_buffer,
                                   uint8_t init_buffer_size,
-                                  uint16_t total_buffer_size);
+                                  uint16_t total_buffer_size,
+                                  uint8_t start_index);
 bool transaction_callback(pb_istream_t *stream, const pb_field_t *field,
                           void **arg);
 bool asset_callback(pb_istream_t *stream, const pb_field_t *field, void **arg);

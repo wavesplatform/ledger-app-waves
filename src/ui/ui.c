@@ -155,96 +155,96 @@ void build_other_data_ui() {
   tmp_ctx.signing_context.ui.finished = true;
 }
 
-// getting message type based on tx type and varsion
+// getting message type based on tx type and version
 int getMessageType() {
   unsigned char tx_type = tmp_ctx.signing_context.data_type;
-  unsigned char tx_ver = tmp_ctx.signing_context.data_version; 
+  unsigned char tx_ver = tmp_ctx.signing_context.data_version;
   // just one step here
   if (tx_type == 3) {
-    if(tx_ver <= 2) {
+    if (tx_ver <= 2) {
       return BYTE_DATA;
-    } else if(tx_ver >= 3) {
+    } else if (tx_ver >= 3) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 4) {
-    if(tx_ver <= 2) {
+    if (tx_ver <= 2) {
       return BYTE_DATA;
-    } else if(tx_ver >= 3) {
+    } else if (tx_ver >= 3) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 5) {
-    if(tx_ver <= 2) {
+    if (tx_ver <= 2) {
       return BYTE_DATA;
-    } else if(tx_ver >= 3) {
+    } else if (tx_ver >= 3) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 6) {
-    if(tx_ver <= 2) {
+    if (tx_ver <= 2) {
       return BYTE_DATA;
-    } else if(tx_ver >= 3) {
+    } else if (tx_ver >= 3) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 8) {
-    if(tx_ver <= 2) {
+    if (tx_ver <= 2) {
       return BYTE_DATA;
-    } else if(tx_ver >= 3) {
+    } else if (tx_ver >= 3) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 9) {
-    if(tx_ver <= 2) {
+    if (tx_ver <= 2) {
       return BYTE_DATA;
-    } else if(tx_ver >= 3) {
+    } else if (tx_ver >= 3) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 10) {
-    if(tx_ver <= 2) {
+    if (tx_ver <= 2) {
       return BYTE_DATA;
-    } else if(tx_ver >= 3) {
+    } else if (tx_ver >= 3) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 11) {
-    if(tx_ver == 1) {
+    if (tx_ver == 1) {
       return BYTE_DATA;
-    } else if(tx_ver >= 2) {
+    } else if (tx_ver >= 2) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 12) {
-    if(tx_ver == 1) {
+    if (tx_ver == 1) {
       return BYTE_DATA;
-    } else if(tx_ver == 2) {
+    } else if (tx_ver >= 2) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 13) {
-    if(tx_ver == 1) {
+    if (tx_ver == 1) {
       return BYTE_DATA;
-    } else if(tx_ver == 2) {
+    } else if (tx_ver >= 2) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 14) {
-    if(tx_ver == 1) {
+    if (tx_ver == 1) {
       return BYTE_DATA;
-    } else if(tx_ver == 2) {
+    } else if (tx_ver >= 2) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 15) {
-    if(tx_ver == 1) {
+    if (tx_ver == 1) {
       return BYTE_DATA;
-    } else if(tx_ver == 2) {
+    } else if (tx_ver >= 2) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 16) {
-    if(tx_ver == 1) {
+    if (tx_ver == 1) {
       return BYTE_DATA;
-    } else if(tx_ver == 2) {
+    } else if (tx_ver >= 2) {
       return PROTOBUF_DATA;
     }
   } else if (tx_type == 17) {
     return PROTOBUF_DATA;
   } else if (tx_type > 200) {
     if (tx_type == 252) {
-      if(tx_ver <= 3) {
+      if (tx_ver <= 3) {
         return BYTE_DATA;
-      } else if(tx_ver == 4) {
+      } else if (tx_ver >= 4) {
         return PROTOBUF_DATA;
       }
     } else if (tx_type == 253) {
@@ -265,62 +265,134 @@ void make_allowed_ui_steps(bool is_last) {
   uint8_t chunk_size;
   PRINTF("make_allowed_ui_steps start\n");
   if (tmp_ctx.signing_context.message_type == PROTOBUF_DATA) { // if protobuf
-    if(is_last && G_io_apdu_buffer[4] == tmp_ctx.signing_context.chunk_used) {
+    if (is_last && G_io_apdu_buffer[4] == tmp_ctx.signing_context.chunk_used &&
+        tmp_ctx.signing_context.step == 6) {
       THROW(SW_DEPRECATED_SIGN_PROTOCOL);
     }
     if (tmp_ctx.signing_context.ui.finished != true) {
       start_index = 5 + tmp_ctx.signing_context.chunk_used;
       chunk_size = G_io_apdu_buffer[4] - tmp_ctx.signing_context.chunk_used;
-      if(tmp_ctx.signing_context.chunk == 0) {
+      if (tmp_ctx.signing_context.chunk == 0) {
         start_index += 29;
         chunk_size -= 29;
       }
       if (tmp_ctx.signing_context.data_type == 252) {
-        build_protobuf_order(
-          &tmp_ctx.signing_context.ui.proto,
-          G_io_apdu_buffer + start_index,
-          chunk_size,
-          tmp_ctx.signing_context.data_size);
+        if (tmp_ctx.signing_context.step == 6) {
+          build_protobuf_order(&tmp_ctx.signing_context.ui.proto,
+                               G_io_apdu_buffer + start_index, chunk_size,
+                               tmp_ctx.signing_context.data_size, start_index);
+          os_memset(&tmp_ctx.signing_context.ui.proto.data, 0, 64);
+          cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
+                  tmp_ctx.signing_context.ui.proto.data, 32);
+          // check view data eq to signed data
+          if (os_memcmp(&tmp_ctx.signing_context.first_data_hash,
+                        &tmp_ctx.signing_context.ui.proto.data, 32) != 0) {
+            THROW(SW_SIGN_DATA_NOT_MATCH);
+          }
+        }
+        //not parse 4 tx data because no child message in order proto message
+        if (is_last) {
+          tmp_ctx.signing_context.step = 8;
+          tmp_ctx.signing_context.ui.finished = true;
+          return;
+        } else {
+          THROW(SW_OK);
+        }
+        
       } else {
-        build_protobuf_tx(
-          &tmp_ctx.signing_context.ui.proto,
-          G_io_apdu_buffer + start_index,
-          chunk_size,
-          tmp_ctx.signing_context.data_size);
-      } 
+        build_protobuf_root_tx(&tmp_ctx.signing_context.ui.proto,
+                               G_io_apdu_buffer + start_index, chunk_size,
+                               tmp_ctx.signing_context.data_size, start_index);
+        os_memset(&tmp_ctx.signing_context.ui.proto.data, 0, 64);
+        cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
+                tmp_ctx.signing_context.ui.proto.data, 32);
+        // check view data eq to signed data
+        if (os_memcmp(&tmp_ctx.signing_context.first_data_hash,
+                      &tmp_ctx.signing_context.ui.proto.data, 32) != 0) {
+          THROW(SW_SIGN_DATA_NOT_MATCH);
+        }
+        os_memset(&tmp_ctx.signing_context.ui.proto, 0,
+                  sizeof(tmp_ctx.signing_context.ui.proto));
+        os_memset(&tmp_ctx.signing_context.ui.hash_ctx, 0,
+                  sizeof(tmp_ctx.signing_context.ui.hash_ctx));
+        cx_blake2b_init(&tmp_ctx.signing_context.ui.hash_ctx, 256);
+        build_protobuf_child_tx(
+            &tmp_ctx.signing_context.ui.proto,
+            G_io_apdu_buffer + 5 + tmp_ctx.signing_context.sign_from,
+            G_io_apdu_buffer[4] - tmp_ctx.signing_context.sign_from,
+            tmp_ctx.signing_context.data_size);
+      }
+      os_memset(&tmp_ctx.signing_context.ui.proto.data, 0, 64);
+      cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
+              tmp_ctx.signing_context.ui.proto.data, 32);
+      // check view data eq to signed data
+      if (os_memcmp(&tmp_ctx.signing_context.first_data_hash,
+                    &tmp_ctx.signing_context.ui.proto.data, 32) != 0) {
+        THROW(SW_SIGN_DATA_NOT_MATCH);
+      }
     } else {
       THROW(SW_INS_NOT_SUPPORTED);
     }
   } else {
-    if (tmp_ctx.signing_context.ui.byte.step == 0) {
-      if(is_last && G_io_apdu_buffer[4] == tmp_ctx.signing_context.chunk_used) {
+    if (tmp_ctx.signing_context.ui.byte.step == 0 &&
+        tmp_ctx.signing_context.step == 6) {
+      if (is_last &&
+          G_io_apdu_buffer[4] == tmp_ctx.signing_context.chunk_used) {
         THROW(SW_DEPRECATED_SIGN_PROTOCOL);
       }
       start_index = tmp_ctx.signing_context.chunk_used;
-      //if all data in one apdu move start index on 29 bytes to skip options data
+      // if all data in one apdu move start index on 29 bytes to skip options
+      // data
       if (tmp_ctx.signing_context.chunk == 0) {
         start_index += 29;
       }
     } else {
       start_index = tmp_ctx.signing_context.ui.byte.chunk_used;
     }
-
-    if (tmp_ctx.signing_context.data_type == 4) {
-      uint8_t chunk_data_size = G_io_apdu_buffer[4];
-      while (
-          (chunk_data_size - tmp_ctx.signing_context.ui.byte.chunk_used > 0 &&
-           tmp_ctx.signing_context.ui.byte.step < 15) ||
-          (tmp_ctx.signing_context.ui.byte.step == 15 &&
-           !tmp_ctx.signing_context.ui.finished && is_last)) {
-        build_transfer_ui_step(is_last);
+    if (tmp_ctx.signing_context.step == 6) {
+      if (tmp_ctx.signing_context.data_type == 4) {
+        uint8_t chunk_data_size = G_io_apdu_buffer[4];
+        while (
+            (chunk_data_size - tmp_ctx.signing_context.ui.byte.chunk_used > 0 &&
+             tmp_ctx.signing_context.ui.byte.step < 15) ||
+            (tmp_ctx.signing_context.ui.byte.step == 15 &&
+             !tmp_ctx.signing_context.ui.finished)) {
+          build_transfer_ui_step(is_last);
+        }
+      } else {
+        tmp_ctx.signing_context.ui.byte.step++;
       }
-    } else if (is_last) {
-      build_other_data_ui();
-      tmp_ctx.signing_context.step = 7;
+      uint8_t hash_data_size = G_io_apdu_buffer[4] - start_index;
+      bool last_hash = false;
+      if (tmp_ctx.signing_context.ui.byte.total_received + hash_data_size >=
+          tmp_ctx.signing_context.data_size) {
+        hash_data_size = tmp_ctx.signing_context.data_size -
+                         tmp_ctx.signing_context.ui.byte.total_received;
+        last_hash = true;
+        tmp_ctx.signing_context.ui.byte.total_received = 0;
+        if (tmp_ctx.signing_context.data_type != 4) {
+          build_other_data_ui();
+          tmp_ctx.signing_context.step = 7;
+        }
+      }
+      tmp_ctx.signing_context.ui.byte.total_received += hash_data_size;
+      cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_NONE,
+              G_io_apdu_buffer + 5 + start_index, hash_data_size, NULL, 0);
+      if (last_hash) {
+        os_memset(&tmp_ctx.signing_context.ui.byte.buffer, 0, 64);
+        cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
+                tmp_ctx.signing_context.ui.byte.buffer, 32);
+        // check view data eq to signed data
+        if (os_memcmp(&tmp_ctx.signing_context.first_data_hash,
+                      &tmp_ctx.signing_context.ui.byte.buffer, 32) != 0) {
+          THROW(SW_SIGN_DATA_NOT_MATCH);
+        }
+      }
     }
-    cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_NONE,
-            G_io_apdu_buffer + 5 + start_index,
-            G_io_apdu_buffer[4] - start_index, NULL, 0);
+    if (is_last) {
+      tmp_ctx.signing_context.step = 8;
+    }
+
     tmp_ctx.signing_context.ui.byte.chunk_used = 0;
   }
   PRINTF("make_allowed_ui_steps end\n");

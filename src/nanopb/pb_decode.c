@@ -1392,7 +1392,6 @@ static bool checkreturn pb_dec_string(pb_istream_t *stream,
 
   /* Space for null terminator */
   alloc_size = (size_t)(size + 1);
-
   if (alloc_size < size)
     PB_RETURN_ERROR(stream, "size too large");
 

@@ -37,16 +37,6 @@ tmpContext_t tmp_ctx;
 // Non-volatile storage for the wallet app's stuff
 internal_storage_t const N_storage_real;
 
-extern void _ebss;
-
- // Return true if there is less than MIN_BSS_STACK_GAP bytes available in the
- // stack
- void check_stack_overflow(int step) {
-    uint32_t stack_top = 0;
-    PRINTF("Stack remaining on step %d: CUR STACK ADDR: %p, EBSS: %p, diff: %d\n", step, &stack_top, &_ebss, ((uintptr_t)&stack_top) - ((uintptr_t)&_ebss));
-   //PRINTF("+++++++diff: %d\n", ((uintptr_t)&stack_top) - ((uintptr_t)&_ebss));
- }
-
 // SPI Buffer for io_event
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
@@ -274,23 +264,14 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
         }
         if (G_io_apdu_buffer[2] == P1_LAST) {
           make_allowed_ui_steps(true);
-          if (tmp_ctx.signing_context.step != 7) {
+          if (tmp_ctx.signing_context.step != 8) {
             THROW(SW_DEPRECATED_SIGN_PROTOCOL);
           }
         } else {
           make_allowed_ui_steps(false);
         }
         // all data parsed and prepeared to view
-        if (tmp_ctx.signing_context.step == 7) { 
-          os_memset(&G_io_apdu_buffer, 0, 64);
-          
-          cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
-                  G_io_apdu_buffer, 32);
-          // check view data eq to signed data
-          if (os_memcmp(&tmp_ctx.signing_context.first_data_hash,
-                        &G_io_apdu_buffer, 32) != 0) {
-            THROW(SW_SIGN_DATA_NOT_MATCH);
-          }
+        if (tmp_ctx.signing_context.step == 8) { 
           size_t length = 45;
           if (!b58enc((char *)tmp_ctx.signing_context.first_data_hash, &length,
                       (const void *)&tmp_ctx.signing_context.first_data_hash,
@@ -301,19 +282,9 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
           waves_public_key_to_address(tmp_ctx.signing_context.ui.from,
                                       tmp_ctx.signing_context.network_byte,
                                       tmp_ctx.signing_context.ui.from);
-
           // if transaction has from field and it is pubkey hash will convert to
           // address
-          if (tmp_ctx.signing_context.ui.pkhash) {
-            
-          }
           if (tmp_ctx.signing_context.message_type == PROTOBUF_DATA) {
-            if (tmp_ctx.signing_context.data_type == 252) {
-              // convert matcher public key to address
-              waves_public_key_to_address(tmp_ctx.signing_context.ui.line2,
-                                          tmp_ctx.signing_context.network_byte,
-                                          tmp_ctx.signing_context.ui.line2);
-            }
             show_sign_protobuf_ui();
           } else {
             show_sign_ui();

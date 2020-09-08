@@ -454,10 +454,6 @@ while (True):
                 sys.exit(0)
             sys.exc_clear()
 
-    tx = tpb.Transaction()
-    #tx.ParseFromString(base58.b58decode("
-    # 8YifyLj9HucsDjXaLjPjUdb2kVVox3AyMaBjYAwzjkodkVQ5dEnXdYkPES6LVn9K3C2RGDCRAd69QYYRqL21T8xCKHGLhnvx5he1Mue22AQayB1qs7Q9vScYc4Dkqgo46BLmYU7KWBH5eDofqeD52e2o8hFbrnhYQ6Lzyg5Bt"))
-    #print(base58.b58encode(tx.transfer.amount.asset_id))
     print(colors.fg.lightcyan + colors.bold +
           "Ledger Nano S - Waves test app" + colors.reset)
     print(colors.fg.white +
@@ -520,11 +516,13 @@ while (True):
             binary_data += some_transfer_bytes
             binary_data += some_transfer_bytes
             binary_data += some_transfer_bytes
+            binary_data += some_transfer_bytes
             print(colors.fg.lightgrey + "tx bytes:   " +
                   base58.b58encode(str(some_transfer_bytes)))
         else:
             binary_input = base58.b58decode(input)
             binary_data += struct.pack(">I", len(binary_input))
+            binary_data += binary_input
             binary_data += binary_input
             binary_data += binary_input
             binary_data += binary_input
@@ -840,11 +838,13 @@ while (True):
                 binary_data += some_transfer_bytes
                 binary_data += some_transfer_bytes
                 binary_data += some_transfer_bytes
+                binary_data += some_transfer_bytes
                 print(colors.fg.lightgrey + "tx bytes:   " +
                       base58.b58encode(str(some_transfer_bytes)))
             else:
                 binary_input = base58.b58decode(input)
                 binary_data += struct.pack(">I", len(binary_input))
+                binary_data += binary_input
                 binary_data += binary_input
                 binary_data += binary_input
                 binary_data += binary_input

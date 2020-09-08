@@ -29,9 +29,11 @@
 #include "../../nanopb_stubs/order.pb.h"
 #include "../../nanopb_stubs/transaction.pb.h"
 
-void build_protobuf_tx(uiProtobuf_t *ctx, uint8_t *init_buffer,
-                       uint8_t init_buffer_size, uint16_t total_buffer_size);
+void build_protobuf_root_tx(uiProtobuf_t *ctx, uint8_t *init_buffer,
+                       uint8_t init_buffer_size, uint16_t total_buffer_size, uint8_t start_index);
+void build_protobuf_child_tx(uiProtobuf_t *ctx, uint8_t *init_buffer,
+                       uint8_t init_buffer_size, uint16_t total_buffer_size);                       
 void build_protobuf_order(uiProtobuf_t *ctx, uint8_t *init_buffer,
-                       uint8_t init_buffer_size, uint16_t total_buffer_size);
+                       uint8_t init_buffer_size, uint16_t total_buffer_size, uint8_t start_index);
 
 #endif

@@ -18,7 +18,7 @@ typedef struct _waves_Recipient {
     pb_size_t which_recipient;
     union {
         pb_byte_t public_key_hash[20];
-        char alias[30];
+        char alias[31];
     } recipient;
 } waves_Recipient;
 
@@ -44,7 +44,7 @@ extern const pb_msgdesc_t waves_Recipient_msg;
 #define waves_Recipient_fields &waves_Recipient_msg
 
 /* Maximum encoded size of messages (where known) */
-#define waves_Recipient_size                     31
+#define waves_Recipient_size                     32
 
 #ifdef __cplusplus
 } /* extern "C" */

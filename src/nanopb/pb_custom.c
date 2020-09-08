@@ -39,7 +39,6 @@ void fetch_new_apdu(uiProtobuf_t *state) {
   unsigned short sw = 0x9000;
   G_io_apdu_buffer[tx] = sw >> 8;
   G_io_apdu_buffer[tx + 1] = sw;
-  PRINTF("GET NEW APDU");
   rx = io_exchange(CHANNEL_APDU | flags , 2);
   if (G_io_apdu_buffer[4] != rx - 5) {
     // the length of the APDU should match what's in the 5-byte header.
@@ -55,7 +54,7 @@ void fetch_new_apdu(uiProtobuf_t *state) {
     THROW(ERR_BUFFER_TOO_SMALL);
   }
 
-  if (tmp_ctx.signing_context.step == 7) {
+  if (tmp_ctx.signing_context.step == 8) {
     THROW(SW_INCORRECT_P1_P2);
   }
   PRINTF("New APDU received:\n%.*H\n", rx, G_io_apdu_buffer);
@@ -106,8 +105,13 @@ bool checkreturn apdu_read(pb_istream_t *stream, pb_byte_t *buf, size_t count) {
       // fetch next bytes
       fetch_new_apdu(state);
       // creating hash to check view and sign data are the same
+      int size = G_io_apdu_buffer[4];
+      if((state->total_read + size + state->bytes_stored) > state->total_size)  {
+        size = state->total_size - state->total_read - state->bytes_stored;
+      }
+      tmp_ctx.signing_context.sign_from = size;
       cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_NONE,
-              G_io_apdu_buffer + 5, G_io_apdu_buffer[4], NULL, 0);
+              G_io_apdu_buffer + 5, size, NULL, 0);
       os_memmove(state->data + state->bytes_stored, G_io_apdu_buffer + 5,
                  G_io_apdu_buffer[4]);
 
@@ -139,10 +143,12 @@ bool checkreturn apdu_read(pb_istream_t *stream, pb_byte_t *buf, size_t count) {
  init_buffer: initialized the stream with some data (can be set to NULL)
  init_buffer_size: length of init_buffer
  total_buffer_size: total length of the message to receive
+ start_index: index from where starting new message in G_io_apdu_buffer
 */
 pb_istream_t pb_istream_from_apdu(uiProtobuf_t *ctx, uint8_t *init_buffer,
                                   uint8_t init_buffer_size,
-                                  uint16_t total_buffer_size) {
+                                  uint16_t total_buffer_size,
+                                  uint8_t start_index) {
   pb_istream_t stream;
   stream.callback = &apdu_read;
   stream.state = ctx;
@@ -154,16 +160,17 @@ pb_istream_t pb_istream_from_apdu(uiProtobuf_t *ctx, uint8_t *init_buffer,
   ctx->total_received = init_buffer_size;
   ctx->total_size = total_buffer_size;
   os_memmove(ctx->data, init_buffer, init_buffer_size);
+  uint8_t hash_size = init_buffer_size;
+  //if chunk size bigger than message size
+  if(init_buffer_size > total_buffer_size) {
+    hash_size = total_buffer_size;
+    tmp_ctx.signing_context.sign_from = total_buffer_size + start_index - 5;
+  }
   cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_NONE, init_buffer,
-          init_buffer_size, NULL, 0);
+          hash_size, NULL, 0);
   ctx->bytes_stored = init_buffer_size;
   ctx->read_offset = 0;
   ctx->total_read = 0;
-
-#ifdef HAVE_PRINTF
-  // Set call stack monitoring level to 0
-  // G_depth = 0;
-#endif
 
   return stream;
 }

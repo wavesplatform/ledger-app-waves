@@ -434,7 +434,7 @@ extern const pb_msgdesc_t waves_UpdateAssetInfoTransactionData_msg;
 /* waves_CreateAliasTransactionData_size depends on runtime parameters */
 #define waves_DataTransactionData_size           0
 /* waves_MassTransferTransactionData_size depends on runtime parameters */
-#define waves_LeaseTransactionData_size          44
+#define waves_LeaseTransactionData_size          45
 /* waves_LeaseCancelTransactionData_size depends on runtime parameters */
 #define waves_BurnTransactionData_size           (6 + waves_Amount_size)
 /* waves_IssueTransactionData_size depends on runtime parameters */

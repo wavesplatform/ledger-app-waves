@@ -41,6 +41,7 @@
 #define SW_INCORRECT_PRECISION_VALUE 0x9103
 #define SW_INCORRECT_TRANSACTION_TYPE_VERSION 0x9104
 #define SW_PROTOBUF_DECODING_FAILED 0x9105
+#define SW_BYTE_DECODING_FAILED 0x9106
 #define SW_CONDITIONS_NOT_SATISFIED 0x6985
 #define SW_DEVICE_IS_LOCKED 0x6986
 #define SW_BUFFER_OVERFLOW 0x6990
@@ -71,6 +72,7 @@ typedef struct uiByte_t {
   uint8_t wait_in_buffer;
   uint8_t buffer_used;
   uint32_t chunk_used;
+  uint32_t total_received;
   uint16_t alias_size;
   uint16_t attachment_size;
 } uiByte_t;

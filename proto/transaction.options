@@ -1,13 +1,13 @@
 #Transaction filed sizes
-waves.*.chain_id                                    type: FT_IGNORE
-waves.*.timestamp                                   type: FT_IGNORE
-waves.*.version                                     type: FT_IGNORE
+waves.Transaction.chain_id                          type: FT_IGNORE
+waves.Transaction.timestamp                         type: FT_IGNORE
+waves.Transaction.version                           type: FT_IGNORE
 
 waves.GenesisTransactionData                        type: FT_IGNORE
 
 waves.PaymentTransactionData                        type: FT_IGNORE
 
-waves.ExchangeTransactionData                        type: FT_IGNORE
+waves.ExchangeTransactionData                       type: FT_IGNORE
 
 waves.IssueTransactionData.script                   type: FT_IGNORE
 

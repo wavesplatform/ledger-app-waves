@@ -68,7 +68,7 @@ static uint8_t const C_cx_Ed25519_Qplus3div8[] = {
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe};
 #define C_cx_Ed25519_h 8
-cx_curve_twisted_edward_t const C_cx_Ed25519 = {
+cx_curve_twisted_edwards_t const C_cx_Ed25519 = {
     CX_CURVE_Ed25519,
     256,
     32,
@@ -124,8 +124,8 @@ static void cx_eddsa_get_public_key_internal(
     const cx_ecfp_private_key_t *pv_key, cx_md_t hashID,
     cx_ecfp_public_key_t *pu_key, unsigned char *a, unsigned int a_len,
     unsigned char *h, unsigned int h_len, unsigned char *scal /*tmp*/) {
-  cx_curve_twisted_edward_t *domain =
-      (cx_curve_twisted_edward_t *)&C_cx_Ed25519;
+  cx_curve_twisted_edwards_t *domain =
+      (cx_curve_twisted_edwards_t *)&C_cx_Ed25519;
   cx_sha512_t hash_ctx;
   unsigned int size;
 
@@ -179,8 +179,8 @@ static void cx_eddsa_get_public_key_internal(
 void stream_eddsa_sign_step1(streamEddsaContext_t *eddsa_context,
                              const cx_ecfp_private_key_t *pv_key) {
   os_memset((unsigned char *)eddsa_context, 0, sizeof(streamEddsaContext_t));
-  cx_curve_twisted_edward_t *domain =
-      (cx_curve_twisted_edward_t *)&C_cx_Ed25519;
+  cx_curve_twisted_edwards_t *domain =
+      (cx_curve_twisted_edwards_t *)&C_cx_Ed25519;
 
   unsigned int size = domain->length;
 
@@ -223,8 +223,8 @@ void stream_eddsa_sign_step2(streamEddsaContext_t *eddsa_context,
 
 void stream_eddsa_sign_step3(streamEddsaContext_t *eddsa_context) {
   unsigned char scal[64];
-  cx_curve_twisted_edward_t *domain =
-      (cx_curve_twisted_edward_t *)&C_cx_Ed25519;
+  cx_curve_twisted_edwards_t *domain =
+      (cx_curve_twisted_edwards_t *)&C_cx_Ed25519;
   unsigned int size = domain->length;
   unsigned int hsize = 2 * size;
 
@@ -266,8 +266,8 @@ void stream_eddsa_sign_step4(streamEddsaContext_t *eddsa_context,
 int stream_eddsa_sign_step5(streamEddsaContext_t *eddsa_context,
                             unsigned char *sig) {
   unsigned char scal[64];
-  cx_curve_twisted_edward_t *domain =
-      (cx_curve_twisted_edward_t *)&C_cx_Ed25519;
+  cx_curve_twisted_edwards_t *domain =
+      (cx_curve_twisted_edwards_t *)&C_cx_Ed25519;
   unsigned int size = domain->length;
   unsigned int hsize = 2 * size;
 

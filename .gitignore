@@ -56,3 +56,6 @@ debug/
 ledger-nanopb/
 .DS_Store
 *.pyc
+src/glyphs.c
+src/glyphs.h
+bin

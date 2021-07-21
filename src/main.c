@@ -219,7 +219,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
   BEGIN_TRY {
     TRY {
 
-      if (os_global_pin_is_validated() == 0) {
+      if (os_global_pin_is_validated() != BOLOS_UX_OK) {
         THROW(SW_DEVICE_IS_LOCKED);
       }
 

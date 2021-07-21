@@ -23,6 +23,7 @@
 
 #include "os.h"
 #include "cx.h"
+#include "ux.h"
 #include <stdbool.h>
 #include "../main.h"
 #include "../crypto/ledger_crypto.h"

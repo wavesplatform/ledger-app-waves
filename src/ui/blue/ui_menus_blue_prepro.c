@@ -21,6 +21,7 @@
 #include "ui_menus_blue_prepro.h"
 
 #include "../ui.h"
+#include "ux.h"
 
 const bagl_element_t *ui_address_blue_prepro(const bagl_element_t *element) {
   return element;

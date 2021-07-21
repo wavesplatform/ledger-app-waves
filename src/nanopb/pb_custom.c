@@ -82,7 +82,7 @@ bool checkreturn apdu_read(pb_istream_t *stream, pb_byte_t *buf, size_t count) {
   stop the s tream if the last apdu was already received*/
   if (count > bytes_not_read_yet) {
     // shift data to the beginning of the buffer
-    os_memmove(state->data, state->data + state->read_offset,
+    memmove(state->data, state->data + state->read_offset,
                state->bytes_stored - state->read_offset);
     state->bytes_stored = bytes_not_read_yet;
     state->read_offset = 0;
@@ -112,7 +112,7 @@ bool checkreturn apdu_read(pb_istream_t *stream, pb_byte_t *buf, size_t count) {
       tmp_ctx.signing_context.sign_from = size;
       cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_NONE,
               G_io_apdu_buffer + 5, size, NULL, 0);
-      os_memmove(state->data + state->bytes_stored, G_io_apdu_buffer + 5,
+      memmove(state->data + state->bytes_stored, G_io_apdu_buffer + 5,
                  G_io_apdu_buffer[4]);
 
       state->bytes_stored += G_io_apdu_buffer[4];
@@ -156,10 +156,10 @@ pb_istream_t pb_istream_from_apdu(uiProtobuf_t *ctx, uint8_t *init_buffer,
 #ifndef PB_NO_ERRMSG
   stream.errmsg = NULL;
 #endif
-  os_memset(ctx, 0, sizeof(uiProtobuf_t));
+  memset(ctx, 0, sizeof(uiProtobuf_t));
   ctx->total_received = init_buffer_size;
   ctx->total_size = total_buffer_size;
-  os_memmove(ctx->data, init_buffer, init_buffer_size);
+  memmove(ctx->data, init_buffer, init_buffer_size);
   uint8_t hash_size = init_buffer_size;
   //if chunk size bigger than message size
   if(init_buffer_size > total_buffer_size) {

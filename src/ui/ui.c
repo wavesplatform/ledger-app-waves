@@ -80,7 +80,7 @@ void try_to_fill_buffer(uint8_t chunk_data_start_index,
           150) {
     return THROW(EXCEPTION_OVERFLOW);
   }
-  os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.byte
+  memmove((unsigned char *)&tmp_ctx.signing_context.ui.byte
                  .buffer[tmp_ctx.signing_context.ui.byte.buffer_used],
              &G_io_apdu_buffer[chunk_data_start_index +
                                tmp_ctx.signing_context.ui.byte.chunk_used],
@@ -93,54 +93,54 @@ void try_to_fill_buffer(uint8_t chunk_data_start_index,
 void build_other_data_ui() {
   unsigned char tx_type = tmp_ctx.signing_context.data_type;
   // just one step here
-  os_memmove(&tmp_ctx.signing_context.ui.line2, &"Transaction Id\0", 15);
+  memmove(&tmp_ctx.signing_context.ui.line2, &"Transaction Id\0", 15);
   if (tx_type == 3) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"issue\0", 6);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"issue\0", 6);
   } else if (tx_type == 4) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"transfer\0", 9);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"transfer\0", 9);
   } else if (tx_type == 5) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"reissue\0", 8);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"reissue\0", 8);
   } else if (tx_type == 6) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"burn\0", 5);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"burn\0", 5);
   } else if (tx_type == 8) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"start leasing\0", 14);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"start leasing\0", 14);
   } else if (tx_type == 9) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"cancel leasing\0", 15);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"cancel leasing\0", 15);
   } else if (tx_type == 10) {
-    os_memmove(&tmp_ctx.signing_context.ui.line2, &"Transaction Hash\0", 17);
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"creating an alias\0", 18);
+    memmove(&tmp_ctx.signing_context.ui.line2, &"Transaction Hash\0", 17);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"creating an alias\0", 18);
   } else if (tx_type == 11) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"mass transfer\0", 14);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"mass transfer\0", 14);
   } else if (tx_type == 12) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"data\0", 5);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"data\0", 5);
   } else if (tx_type == 13) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"set script\0", 11);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"set script\0", 11);
   } else if (tx_type == 14) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"sponsorship\0", 12);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"sponsorship\0", 12);
   } else if (tx_type == 15) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"asset script\0", 13);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"asset script\0", 13);
   } else if (tx_type == 16) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"script invocation\0", 18);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"script invocation\0", 18);
   } else if (tx_type == 17) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"update asset info\0", 18);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"update asset info\0", 18);
   } else if (tx_type > 200) {
     // type byte >200 are 'reserved', it will not be signed
-    os_memmove(&tmp_ctx.signing_context.ui.line2, &"Hash\0", 5);
+    memmove(&tmp_ctx.signing_context.ui.line2, &"Hash\0", 5);
     if (tx_type == 252) {
-      os_memmove(&tmp_ctx.signing_context.ui.line1, &"order\0", 6);
+      memmove(&tmp_ctx.signing_context.ui.line1, &"order\0", 6);
     } else if (tx_type == 253) {
-      os_memmove(&tmp_ctx.signing_context.ui.line1, &"data\0", 5);
+      memmove(&tmp_ctx.signing_context.ui.line1, &"data\0", 5);
     } else if (tx_type == 254) {
-      os_memmove(&tmp_ctx.signing_context.ui.line1, &"request\0", 8);
+      memmove(&tmp_ctx.signing_context.ui.line1, &"request\0", 8);
     } else if (tx_type == 255) {
-      os_memmove(&tmp_ctx.signing_context.ui.line1, &"message\0", 8);
+      memmove(&tmp_ctx.signing_context.ui.line1, &"message\0", 8);
     } else {
-      os_memmove(&tmp_ctx.signing_context.ui.line1, &"something\0", 10);
+      memmove(&tmp_ctx.signing_context.ui.line1, &"something\0", 10);
     }
   }
 
   if (strlen((const char *)tmp_ctx.signing_context.ui.line1) == 0) {
-    os_memmove(&tmp_ctx.signing_context.ui.line1, &"transaction\0", 12);
+    memmove(&tmp_ctx.signing_context.ui.line1, &"transaction\0", 12);
   }
 
   // Get the public key and return it.
@@ -151,7 +151,7 @@ void build_other_data_ui() {
     THROW(INVALID_PARAMETER);
   }
 
-  os_memmove(&tmp_ctx.signing_context.ui.from, public_key.W, 32);
+  memmove(&tmp_ctx.signing_context.ui.from, public_key.W, 32);
   tmp_ctx.signing_context.ui.finished = true;
 }
 
@@ -281,11 +281,11 @@ void make_allowed_ui_steps(bool is_last) {
           build_protobuf_order(&tmp_ctx.signing_context.ui.proto,
                                G_io_apdu_buffer + start_index, chunk_size,
                                tmp_ctx.signing_context.data_size, start_index);
-          os_memset(&tmp_ctx.signing_context.ui.proto.data, 0, 64);
+          memset(&tmp_ctx.signing_context.ui.proto.data, 0, 64);
           cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
                   tmp_ctx.signing_context.ui.proto.data, 32);
           // check view data eq to signed data
-          if (os_memcmp(&tmp_ctx.signing_context.first_data_hash,
+          if (memcmp(&tmp_ctx.signing_context.first_data_hash,
                         &tmp_ctx.signing_context.ui.proto.data, 32) != 0) {
             THROW(SW_SIGN_DATA_NOT_MATCH);
           }
@@ -303,17 +303,17 @@ void make_allowed_ui_steps(bool is_last) {
         build_protobuf_root_tx(&tmp_ctx.signing_context.ui.proto,
                                G_io_apdu_buffer + start_index, chunk_size,
                                tmp_ctx.signing_context.data_size, start_index);
-        os_memset(&tmp_ctx.signing_context.ui.proto.data, 0, 64);
+        memset(&tmp_ctx.signing_context.ui.proto.data, 0, 64);
         cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
                 tmp_ctx.signing_context.ui.proto.data, 32);
         // check view data eq to signed data
-        if (os_memcmp(&tmp_ctx.signing_context.first_data_hash,
+        if (memcmp(&tmp_ctx.signing_context.first_data_hash,
                       &tmp_ctx.signing_context.ui.proto.data, 32) != 0) {
           THROW(SW_SIGN_DATA_NOT_MATCH);
         }
-        os_memset(&tmp_ctx.signing_context.ui.proto, 0,
+        memset(&tmp_ctx.signing_context.ui.proto, 0,
                   sizeof(tmp_ctx.signing_context.ui.proto));
-        os_memset(&tmp_ctx.signing_context.ui.hash_ctx, 0,
+        memset(&tmp_ctx.signing_context.ui.hash_ctx, 0,
                   sizeof(tmp_ctx.signing_context.ui.hash_ctx));
         cx_blake2b_init(&tmp_ctx.signing_context.ui.hash_ctx, 256);
         build_protobuf_child_tx(
@@ -322,11 +322,11 @@ void make_allowed_ui_steps(bool is_last) {
             G_io_apdu_buffer[4] - tmp_ctx.signing_context.sign_from,
             tmp_ctx.signing_context.data_size);
       }
-      os_memset(&tmp_ctx.signing_context.ui.proto.data, 0, 64);
+      memset(&tmp_ctx.signing_context.ui.proto.data, 0, 64);
       cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
               tmp_ctx.signing_context.ui.proto.data, 32);
       // check view data eq to signed data
-      if (os_memcmp(&tmp_ctx.signing_context.first_data_hash,
+      if (memcmp(&tmp_ctx.signing_context.first_data_hash,
                     &tmp_ctx.signing_context.ui.proto.data, 32) != 0) {
         THROW(SW_SIGN_DATA_NOT_MATCH);
       }
@@ -357,7 +357,7 @@ void make_allowed_ui_steps(bool is_last) {
              tmp_ctx.signing_context.ui.byte.step < 15) ||
             (tmp_ctx.signing_context.ui.byte.step == 15 &&
              !tmp_ctx.signing_context.ui.finished)) {
-          build_transfer_ui_step(is_last);
+          build_transfer_ui_step();
         }
       } else {
         tmp_ctx.signing_context.ui.byte.step++;
@@ -379,11 +379,11 @@ void make_allowed_ui_steps(bool is_last) {
       cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_NONE,
               G_io_apdu_buffer + 5 + start_index, hash_data_size, NULL, 0);
       if (last_hash) {
-        os_memset(&tmp_ctx.signing_context.ui.byte.buffer, 0, 64);
+        memset(&tmp_ctx.signing_context.ui.byte.buffer, 0, 64);
         cx_hash(&tmp_ctx.signing_context.ui.hash_ctx.header, CX_LAST, NULL, 0,
                 tmp_ctx.signing_context.ui.byte.buffer, 32);
         // check view data eq to signed data
-        if (os_memcmp(&tmp_ctx.signing_context.first_data_hash,
+        if (memcmp(&tmp_ctx.signing_context.first_data_hash,
                       &tmp_ctx.signing_context.ui.byte.buffer, 32) != 0) {
           THROW(SW_SIGN_DATA_NOT_MATCH);
         }

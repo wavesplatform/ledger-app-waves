@@ -33,7 +33,7 @@ void update_transfer_wait_in_buffer() {
     tmp_ctx.signing_context.ui.byte.wait_in_buffer = 1;
     break;
   case 11:
-    tmp_ctx.signing_context.ui.byte.wait_in_buffer = 4;
+    tmp_ctx.signing_context.ui.byte.wait_in_buffer = 3;
     break;
   case 13:
     tmp_ctx.signing_context.ui.byte.wait_in_buffer = 2;
@@ -68,7 +68,7 @@ void update_transfer_wait_in_buffer() {
   }
 }
 
-void build_transfer_ui_step(bool is_last) {
+void build_transfer_ui_step() {
   uint8_t chunk_data_size = G_io_apdu_buffer[4];
   uint8_t chunk_data_start_index = 5;
 
@@ -102,7 +102,7 @@ void build_transfer_ui_step(bool is_last) {
       break;
     case 1:
       // sender public key 32 bytes
-      os_memmove(&tmp_ctx.signing_context.ui.from,
+      memmove(&tmp_ctx.signing_context.ui.from,
                  tmp_ctx.signing_context.ui.byte.buffer, 32);
       tmp_ctx.signing_context.ui.byte.step = 2;
 
@@ -113,7 +113,7 @@ void build_transfer_ui_step(bool is_last) {
       if (is_flag_set) {
         tmp_ctx.signing_context.ui.byte.step = 3;
       } else {
-        os_memmove((char *)tmp_ctx.signing_context.ui.line2, WAVES_CONST, 5);
+        memmove((char *)tmp_ctx.signing_context.ui.line2, WAVES_CONST, 5);
         tmp_ctx.signing_context.ui.byte.step = 4;
       }
 
@@ -135,7 +135,7 @@ void build_transfer_ui_step(bool is_last) {
       if (is_flag_set) {
         tmp_ctx.signing_context.ui.byte.step = 5;
       } else {
-        os_memmove((char *)tmp_ctx.signing_context.ui.fee_asset, WAVES_CONST,
+        memmove((char *)tmp_ctx.signing_context.ui.fee_asset, WAVES_CONST,
                    5);
         tmp_ctx.signing_context.ui.byte.step = 6;
       }
@@ -218,7 +218,7 @@ void build_transfer_ui_step(bool is_last) {
           tmp_ctx.signing_context.ui.byte.alias_size < 4) {
         THROW(SW_BYTE_DECODING_FAILED);
       }
-      os_memmove((unsigned char *)tmp_ctx.signing_context.ui.line3,
+      memmove((unsigned char *)tmp_ctx.signing_context.ui.line3,
                  (const unsigned char *)tmp_ctx.signing_context.ui.byte.buffer,
                  tmp_ctx.signing_context.ui.byte.alias_size);
 
@@ -239,12 +239,12 @@ void build_transfer_ui_step(bool is_last) {
     case 14:
       // attachment
       if (tmp_ctx.signing_context.ui.byte.attachment_size > 41) {
-        os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line4[41],
+        memmove((unsigned char *)&tmp_ctx.signing_context.ui.line4[41],
                    &"...\0", 4);
         tmp_ctx.signing_context.ui.byte.attachment_size = 41;
       }
 
-      os_memmove((unsigned char *)tmp_ctx.signing_context.ui.line4,
+      memmove((unsigned char *)tmp_ctx.signing_context.ui.line4,
                  (const unsigned char *)tmp_ctx.signing_context.ui.byte.buffer,
                  tmp_ctx.signing_context.ui.byte.attachment_size);
 

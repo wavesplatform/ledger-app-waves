@@ -79,6 +79,7 @@ typedef struct _waves_IssueTransactionData {
     int64_t amount;
     int32_t decimals;
     bool reissuable;
+    pb_callback_t script;
 } waves_IssueTransactionData;
 
 typedef struct _waves_LeaseTransactionData {
@@ -153,7 +154,7 @@ typedef struct _waves_SignedTransaction {
 #define waves_LeaseTransactionData_init_default  {false, waves_Recipient_init_default, 0}
 #define waves_LeaseCancelTransactionData_init_default {{{NULL}, NULL}}
 #define waves_BurnTransactionData_init_default   {false, waves_Amount_init_default}
-#define waves_IssueTransactionData_init_default  {{{NULL}, NULL}, {{NULL}, NULL}, 0, 0, 0}
+#define waves_IssueTransactionData_init_default  {{{NULL}, NULL}, {{NULL}, NULL}, 0, 0, 0, {{NULL}, NULL}}
 #define waves_ReissueTransactionData_init_default {false, waves_Amount_init_default, 0}
 #define waves_SetAssetScriptTransactionData_init_default {{{NULL}, NULL}}
 #define waves_SetScriptTransactionData_init_default {0}
@@ -172,7 +173,7 @@ typedef struct _waves_SignedTransaction {
 #define waves_LeaseTransactionData_init_zero     {false, waves_Recipient_init_zero, 0}
 #define waves_LeaseCancelTransactionData_init_zero {{{NULL}, NULL}}
 #define waves_BurnTransactionData_init_zero      {false, waves_Amount_init_zero}
-#define waves_IssueTransactionData_init_zero     {{{NULL}, NULL}, {{NULL}, NULL}, 0, 0, 0}
+#define waves_IssueTransactionData_init_zero     {{{NULL}, NULL}, {{NULL}, NULL}, 0, 0, 0, {{NULL}, NULL}}
 #define waves_ReissueTransactionData_init_zero   {false, waves_Amount_init_zero, 0}
 #define waves_SetAssetScriptTransactionData_init_zero {{{NULL}, NULL}}
 #define waves_SetScriptTransactionData_init_zero {0}
@@ -199,6 +200,7 @@ typedef struct _waves_SignedTransaction {
 #define waves_IssueTransactionData_amount_tag    3
 #define waves_IssueTransactionData_decimals_tag  4
 #define waves_IssueTransactionData_reissuable_tag 5
+#define waves_IssueTransactionData_script_tag    6
 #define waves_LeaseTransactionData_recipient_tag 1
 #define waves_LeaseTransactionData_amount_tag    2
 #define waves_ReissueTransactionData_asset_amount_tag 1
@@ -336,7 +338,8 @@ X(a, CALLBACK, SINGULAR, STRING,   name,              1) \
 X(a, CALLBACK, SINGULAR, STRING,   description,       2) \
 X(a, STATIC,   SINGULAR, INT64,    amount,            3) \
 X(a, STATIC,   SINGULAR, INT32,    decimals,          4) \
-X(a, STATIC,   SINGULAR, BOOL,     reissuable,        5)
+X(a, STATIC,   SINGULAR, BOOL,     reissuable,        5) \
+X(a, CALLBACK, SINGULAR, BYTES,    script,            6)
 #define waves_IssueTransactionData_CALLBACK pb_default_field_callback
 #define waves_IssueTransactionData_DEFAULT NULL
 

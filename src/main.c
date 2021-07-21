@@ -23,14 +23,14 @@
 #include "main.h"
 #include "crypto/waves.h"
 #include "crypto/ledger_crypto.h"
-#include "os_io_seproxyhal.h"
 
 // Ledger Stuff
 #include "ui/ui.h"
 #include "os.h"
 #include "cx.h"
-#include "os_io_seproxyhal.h"
+#include "ux.h"
 
+uint8_t G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 // Temporary area to store stuff and reuse the same memory
 tmpContext_t tmp_ctx;
 
@@ -122,8 +122,8 @@ void make_sign_step(uint8_t chunk_data_start_index, uint8_t chunk_data_size) {
                             &private_key);
     public_key_le_to_be(&public_key);
     tmp_ctx.signing_context.sign_bit = public_key.W[31] & 0x80;
-    os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
-    os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
+    memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
+    memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
     tmp_ctx.signing_context.step = 2;
   } else if (tmp_ctx.signing_context.step == 2) {
     if (tmp_ctx.signing_context.data_read < tmp_ctx.signing_context.data_size) {
@@ -186,7 +186,7 @@ void make_allowed_sign_steps() {
 // https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
 uint32_t set_result_sign() {
   tmp_ctx.signing_context.signature[63] |= tmp_ctx.signing_context.sign_bit;
-  os_memmove((char *)G_io_apdu_buffer, tmp_ctx.signing_context.signature,
+  memmove((char *)G_io_apdu_buffer, tmp_ctx.signing_context.signature,
              sizeof(tmp_ctx.signing_context.signature));
 
   PRINTF("Signature:\n%.*H\n", 64, tmp_ctx.signing_context.signature);
@@ -197,9 +197,9 @@ uint32_t set_result_sign() {
 }
 
 uint32_t set_result_get_address() {
-  os_memmove((char *)G_io_apdu_buffer,
+  memmove((char *)G_io_apdu_buffer,
              (char *)tmp_ctx.address_context.public_key, 32);
-  os_memmove((char *)G_io_apdu_buffer + 32,
+  memmove((char *)G_io_apdu_buffer + 32,
              (char *)tmp_ctx.address_context.address, 35);
   init_context();
   return 67;
@@ -254,7 +254,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
                                     tmp_ctx.signing_context.signature);
             tmp_ctx.signing_context.step = 6;
             PRINTF("make_sign_steps end\n");
-            os_memset(&tmp_ctx.signing_context.ui, 0,
+            memset(&tmp_ctx.signing_context.ui, 0,
                       sizeof(tmp_ctx.signing_context.ui));
             cx_blake2b_init(&tmp_ctx.signing_context.ui.hash_ctx, 256);
           } else {
@@ -316,9 +316,9 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
         unsigned char address[35];
         waves_public_key_to_address(public_key.W, G_io_apdu_buffer[3], address);
 
-        os_memmove((char *)tmp_ctx.address_context.public_key, public_key.W,
+        memmove((char *)tmp_ctx.address_context.public_key, public_key.W,
                    32);
-        os_memmove((char *)tmp_ctx.address_context.address, address, 35);
+        memmove((char *)tmp_ctx.address_context.address, address, 35);
         // term byte for string shown
         tmp_ctx.address_context.address[35] = '\0';
 
@@ -372,7 +372,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
   }
 }
 
-void init_context() { os_memset(&tmp_ctx, 0, sizeof(tmp_ctx)); }
+void init_context() { memset(&tmp_ctx, 0, sizeof(tmp_ctx)); }
 
 static void waves_main(void) {
   volatile unsigned int rx = 0;

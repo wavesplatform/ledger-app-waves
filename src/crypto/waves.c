@@ -21,6 +21,7 @@
 #include "waves.h"
 #include "ledger_crypto.h"
 #include "stream_eddsa_sign.h"
+#include "string.h"
 
 void waves_secure_hash(const uint8_t *message, size_t message_len,
                        uint8_t hash[32]) {
@@ -40,11 +41,11 @@ void waves_public_key_to_address(const ed25519_public_key public_key,
 
   address[0] = 0x01;
   address[1] = network_byte;
-  os_memmove(&address[2], public_key_hash, 20);
+  memmove(&address[2], public_key_hash, 20);
 
   waves_secure_hash(address, 22, checksum);
 
-  os_memmove(&address[22], checksum, 4);
+  memmove(&address[22], checksum, 4);
 
   size_t length = 36;
   b58enc((char *)output, &length, address, 26);
@@ -57,9 +58,9 @@ void waves_public_key_hash_to_address(
   uint8_t checksum[32];
   address[0] = 0x01;
   address[1] = network_byte;
-  os_memmove(&address[2], public_key_hash, 20);
+  memmove(&address[2], public_key_hash, 20);
   waves_secure_hash(address, 22, checksum);
-  os_memmove(&address[22], checksum, 4);
+  memmove(&address[22], checksum, 4);
   size_t length = 36;
   b58enc((char *)output, &length, address, 26);
 }

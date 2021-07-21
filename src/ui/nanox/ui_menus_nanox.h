@@ -24,6 +24,7 @@
 #include "os.h"
 
 #include "cx.h"
+#include "ux.h"
 #include "../ui_logic.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -232,32 +233,37 @@ UX_STEP_NOCB(ux_issue_6_step, bnnn_paging,
              });
 UX_STEP_NOCB(ux_issue_7_step, bnnn_paging,
              {
+                 .title = "hasScript",
+                 .text = (const char *)tmp_ctx.signing_context.ui.line6,
+             });
+UX_STEP_NOCB(ux_issue_8_step, bnnn_paging,
+             {
                  .title = "Fee",
                  .text = (const char *)tmp_ctx.signing_context.ui.fee_amount,
              });
-UX_STEP_NOCB(ux_issue_8_step, bnnn_paging,
+UX_STEP_NOCB(ux_issue_9_step, bnnn_paging,
              {
                  .title = "Fee asset",
                  .text = (const char *)tmp_ctx.signing_context.ui.fee_asset,
              });
-UX_STEP_NOCB(ux_issue_9_step, bnnn_paging,
+UX_STEP_NOCB(ux_issue_10_step, bnnn_paging,
              {
                  .title = "From",
                  .text = (const char *)tmp_ctx.signing_context.ui.from,
              });
 
-UX_STEP_NOCB(ux_issue_10_step, bnnn_paging,
+UX_STEP_NOCB(ux_issue_11_step, bnnn_paging,
              {
                  .title = "Transaction Id",
                  .text = (const char *)tmp_ctx.signing_context.first_data_hash,
              });
-UX_STEP_VALID(ux_issue_11_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
+UX_STEP_VALID(ux_issue_12_step, pbb, io_seproxyhal_touch_sign_approve(NULL),
               {
                   &C_icon_validate_14,
                   "Accept",
                   "and send",
               });
-UX_STEP_VALID(ux_issue_12_step, pb, io_seproxyhal_cancel(NULL),
+UX_STEP_VALID(ux_issue_13_step, pb, io_seproxyhal_cancel(NULL),
               {
                   &C_icon_crossmark,
                   "Reject",
@@ -266,7 +272,7 @@ UX_STEP_VALID(ux_issue_12_step, pb, io_seproxyhal_cancel(NULL),
 UX_FLOW(ux_issue_flow, &ux_issue_1_step, &ux_issue_2_step, &ux_issue_3_step,
         &ux_issue_4_step, &ux_issue_5_step, &ux_issue_6_step, &ux_issue_7_step,
         &ux_issue_8_step, &ux_issue_9_step, &ux_issue_10_step,
-        &ux_issue_11_step, &ux_issue_12_step);
+        &ux_issue_11_step, &ux_issue_12_step, &ux_issue_13_step);
 
 //////////////////////////////////////////////////////////////////////
 

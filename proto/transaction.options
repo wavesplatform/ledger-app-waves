@@ -9,8 +9,6 @@ waves.PaymentTransactionData                        type: FT_IGNORE
 
 waves.ExchangeTransactionData                       type: FT_IGNORE
 
-waves.IssueTransactionData.script                   type: FT_IGNORE
-
 waves.SetAssetScriptTransactionData.script          type: FT_IGNORE
 
 waves.SetScriptTransactionData.script               type: FT_IGNORE

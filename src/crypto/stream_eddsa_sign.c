@@ -19,6 +19,7 @@
  ********************************************************************************/
 
 #include "stream_eddsa_sign.h"
+#include "string.h"
 #include "../main.h"
 
 static uint8_t const C_cx_Ed25519_a[] = {
@@ -69,7 +70,7 @@ static uint8_t const C_cx_Ed25519_Qplus3div8[] = {
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xfe};
 #define C_cx_Ed25519_h 8
-cx_curve_twisted_edward_t const C_cx_Ed25519 = {
+cx_curve_twisted_edwards_t const C_cx_Ed25519 = {
     CX_CURVE_Ed25519,
     256,
     32,
@@ -125,8 +126,8 @@ static void cx_eddsa_get_public_key_internal(
     const cx_ecfp_private_key_t *pv_key, cx_md_t hashID,
     cx_ecfp_public_key_t *pu_key, unsigned char *a, unsigned int a_len,
     unsigned char *h, unsigned int h_len, unsigned char *scal /*tmp*/) {
-  cx_curve_twisted_edward_t *domain =
-      (cx_curve_twisted_edward_t *)&C_cx_Ed25519;
+  cx_curve_twisted_edwards_t *domain =
+      (cx_curve_twisted_edwards_t *)&C_cx_Ed25519;
   cx_sha512_t hash_ctx;
   unsigned int size;
 
@@ -155,7 +156,7 @@ static void cx_eddsa_get_public_key_internal(
     scal[31] = (scal[31] & 0x7F) | 0x40;
 
   } else {
-    os_memmove(scal, pv_key->d, pv_key->d_len);
+    memmove(scal, pv_key->d, pv_key->d_len);
   }
 
   /* 3. Interpret the buffer as the little-endian integer, forming a
@@ -164,24 +165,24 @@ static void cx_eddsa_get_public_key_internal(
    */
   cx_decode_int(scal, size);
   if (a) {
-    os_memmove(a, scal, size);
+    memmove(a, scal, size);
   }
   if (h) {
-    os_memmove(h, scal + size, size);
+    memmove(h, scal + size, size);
   }
   pu_key->curve = pv_key->curve;
   pu_key->W_len = 1 + size * 2;
   pu_key->W[0] = 0x04;
-  os_memmove(pu_key->W + 1, domain->Gx, size);
-  os_memmove(pu_key->W + 1 + size, domain->Gy, size);
+  memmove(pu_key->W + 1, domain->Gx, size);
+  memmove(pu_key->W + 1 + size, domain->Gy, size);
   cx_ecfp_scalar_mult(domain->curve, pu_key->W, pu_key->W_len, scal, size);
 }
 
 void stream_eddsa_sign_step1(streamEddsaContext_t *eddsa_context,
                              const cx_ecfp_private_key_t *pv_key) {
-  os_memset((unsigned char *)eddsa_context, 0, sizeof(streamEddsaContext_t));
-  cx_curve_twisted_edward_t *domain =
-      (cx_curve_twisted_edward_t *)&C_cx_Ed25519;
+  memset((unsigned char *)eddsa_context, 0, sizeof(streamEddsaContext_t));
+  cx_curve_twisted_edwards_t *domain =
+      (cx_curve_twisted_edwards_t *)&C_cx_Ed25519;
 
   unsigned int size = domain->length;
 
@@ -197,7 +198,7 @@ void stream_eddsa_sign_step1(streamEddsaContext_t *eddsa_context,
   cx_edward_compress_point(domain->curve,
                            &eddsa_context->u.internal_pu_key.W[0],
                            eddsa_context->u.internal_pu_key.W_len);
-  os_memmove(eddsa_context->Y, &eddsa_context->u.internal_pu_key.W[1], size);
+  memmove(eddsa_context->Y, &eddsa_context->u.internal_pu_key.W[1], size);
 
   // compute r
   // - last size (32/57) bytes of H(sk), h,  as big endian bytes ordered. stored
@@ -224,8 +225,8 @@ void stream_eddsa_sign_step2(streamEddsaContext_t *eddsa_context,
 
 void stream_eddsa_sign_step3(streamEddsaContext_t *eddsa_context) {
   unsigned char scal[64];
-  cx_curve_twisted_edward_t *domain =
-      (cx_curve_twisted_edward_t *)&C_cx_Ed25519;
+  cx_curve_twisted_edwards_t *domain =
+      (cx_curve_twisted_edwards_t *)&C_cx_Ed25519;
   unsigned int size = domain->length;
   unsigned int hsize = 2 * size;
 
@@ -234,16 +235,16 @@ void stream_eddsa_sign_step3(streamEddsaContext_t *eddsa_context) {
   cx_hash(&eddsa_context->hash_ctx.header, CX_LAST, NULL, 0, scal, 64);
   cx_encode_int(scal, hsize);
   cx_math_modm(scal, hsize, domain->n, size);
-  os_memmove(eddsa_context->r, scal + size, size); // r
+  memmove(eddsa_context->r, scal + size, size); // r
 
   // compute R = r.B
   eddsa_context->u.Q[0] = 0x04;
-  os_memmove(eddsa_context->u.Q + 1, domain->Gx, size);
-  os_memmove(eddsa_context->u.Q + 1 + size, domain->Gy, size);
+  memmove(eddsa_context->u.Q + 1, domain->Gx, size);
+  memmove(eddsa_context->u.Q + 1 + size, domain->Gy, size);
   cx_ecfp_scalar_mult(CX_CURVE_Ed25519, eddsa_context->u.Q,
                       1 + 2 * domain->length, eddsa_context->r, size);
   cx_compress(eddsa_context->u.Q + 1, size);
-  os_memmove(eddsa_context->sig, eddsa_context->u.Q + 1 + size,
+  memmove(eddsa_context->sig, eddsa_context->u.Q + 1 + size,
              size); // sig <- R
 
   // compute S = r+H(R,A,M).a
@@ -267,15 +268,15 @@ void stream_eddsa_sign_step4(streamEddsaContext_t *eddsa_context,
 int stream_eddsa_sign_step5(streamEddsaContext_t *eddsa_context,
                             unsigned char *sig) {
   unsigned char scal[64];
-  cx_curve_twisted_edward_t *domain =
-      (cx_curve_twisted_edward_t *)&C_cx_Ed25519;
+  cx_curve_twisted_edwards_t *domain =
+      (cx_curve_twisted_edwards_t *)&C_cx_Ed25519;
   unsigned int size = domain->length;
   unsigned int hsize = 2 * size;
 
   unsigned char second_data_hash[64];
   cx_hash(&eddsa_context->data_hash_ctx.header, CX_LAST, NULL, 0,
           second_data_hash, 32);
-  if (os_memcmp(&tmp_ctx.signing_context.first_data_hash, &second_data_hash,
+  if (memcmp(&tmp_ctx.signing_context.first_data_hash, &second_data_hash,
                 32) != 0) {
     THROW(SW_SIGN_DATA_NOT_MATCH);
   }
@@ -291,8 +292,8 @@ int stream_eddsa_sign_step5(streamEddsaContext_t *eddsa_context,
                eddsa_context->r, domain->n, size);
   cx_encode_int(eddsa_context->sig + size, size);
 
-  os_memmove(sig, eddsa_context->sig, 64);
-  os_memset((unsigned char *)eddsa_context, 0, sizeof(streamEddsaContext_t));
+  memmove(sig, eddsa_context->sig, 64);
+  memset((unsigned char *)eddsa_context, 0, sizeof(streamEddsaContext_t));
 
   return 2 * size;
 }

@@ -18,6 +18,7 @@
  *  limitations under the License.
  ********************************************************************************/
 
+#include "string.h"
 #include "print_amount.h"
 
 bool print_amount(uint64_t amount, int decimals, unsigned char *out,
@@ -28,7 +29,7 @@ bool print_amount(uint64_t amount, int decimals, unsigned char *out,
   if (decimals == 0)
     decimals--;
 
-  os_memset(tmp_ctx.signing_context.ui.tmp, 0, len);
+  memset(tmp_ctx.signing_context.ui.tmp, 0, len);
   for (i = 0; dVal > 0 || i < decimals + 2; i++) {
     if (dVal > 0) {
       tmp_ctx.signing_context.ui.tmp[i] = (char)((dVal % 10) + '0');

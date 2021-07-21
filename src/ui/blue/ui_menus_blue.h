@@ -23,6 +23,7 @@
 
 #include "os.h"
 #include "cx.h"
+#include "ux.h"
 #include "../ui_logic.h"
 
 //////////////////////////////////////////////////////////////////////////////
@@ -900,6 +901,36 @@ const bagl_element_t ui_verify_issue_blue[] = {
       COLOR_BG_1,
       BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_RIGHT, 0},
      (const char *)tmp_ctx.signing_context.ui.line5,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+
+    {{BAGL_RECTANGLE, 0x31, 30, 231, 260, 1, 1, 0, 0, 0xEEEEEE, COLOR_BG_1, 0,
+      0},
+     NULL,
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+     {{BAGL_LABEL, 0x71, 30, 218, 100, 30, 0, 0, BAGL_FILL, 0x000000, COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_SEMIBOLD_8_11PX, 0},
+     "hasScript",
+     0,
+     0,
+     0,
+     NULL,
+     NULL,
+     NULL},
+    // x-18 when ...
+    {{BAGL_LABEL, 0x11, 130, 218, 160, 30, 0, 0, BAGL_FILL, 0x000000,
+      COLOR_BG_1,
+      BAGL_FONT_OPEN_SANS_REGULAR_10_13PX | BAGL_FONT_ALIGNMENT_RIGHT, 0},
+     (const char *)tmp_ctx.signing_context.ui.line6,
      0,
      0,
      0,

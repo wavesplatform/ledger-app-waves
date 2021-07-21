@@ -27,7 +27,7 @@ bool asset_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   PRINTF("Start asset callback\n");
   size_t length = 45;
   int len = stream->bytes_left;
-  os_memset(&G_io_apdu_buffer[150], 0, len);
+  memset(&G_io_apdu_buffer[150], 0, len);
   if (!pb_read(stream, &G_io_apdu_buffer[150], (size_t)stream->bytes_left)) {
     return false;
   }
@@ -37,19 +37,19 @@ bool asset_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
       return false;
     }
   } else {
-    os_memmove((char *)*arg, WAVES_CONST, 5);
+    memmove((char *)*arg, WAVES_CONST, 5);
   }
   PRINTF("End asset callback\n");
   return true;
 }
 
 bool from_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
-  os_memset(&G_io_apdu_buffer[150], 0, 32);
+  memset(&G_io_apdu_buffer[150], 0, 32);
   PRINTF("Start from callback\n");
   if (!pb_read(stream, &G_io_apdu_buffer[150], (size_t)stream->bytes_left)) {
     return false;
   }
-  os_memmove((char *)*arg, &G_io_apdu_buffer[150], 32);
+  memmove((char *)*arg, &G_io_apdu_buffer[150], 32);
   PRINTF("End from callback\n");
   return true;
 }
@@ -58,11 +58,11 @@ bool string_callback(pb_istream_t *stream, const pb_field_t *field,
                      void **arg) {
   PRINTF("Start string callback\n");
   int len = stream->bytes_left;
-  os_memset(&G_io_apdu_buffer[150], 0, len);
+  memset(&G_io_apdu_buffer[150], 0, len);
   if (!pb_read(stream, &G_io_apdu_buffer[150], (size_t)stream->bytes_left)) {
     return false;
   }
-  os_memmove((char *)*arg, &G_io_apdu_buffer[150], len);
+  memmove((char *)*arg, &G_io_apdu_buffer[150], len);
   PRINTF("End string callback\n");
   return true;
 }
@@ -72,35 +72,46 @@ bool text_callback(pb_istream_t *stream, const pb_field_t *field, void **arg) {
   PRINTF("Start text callback\n");
   if (len > 41) {
     size_t length = 41;
-    os_memset(&G_io_apdu_buffer[150], 0, 45);
+    memset(&G_io_apdu_buffer[150], 0, 45);
     size_t left = stream->bytes_left - length;
     if (!pb_read(stream, &G_io_apdu_buffer[150], length)) {
       return false;
     }
-    os_memmove((char *)&G_io_apdu_buffer[191], &"...\0", 4);
-    os_memmove((char *)*arg, &G_io_apdu_buffer[150], 45);
+    memmove((char *)&G_io_apdu_buffer[191], &"...\0", 4);
+    memmove((char *)*arg, &G_io_apdu_buffer[150], 45);
     if (!pb_read(stream, NULL, left)) {
       return false;
     }
   } else {
-    os_memset(&G_io_apdu_buffer[150], 0, len);
+    memset(&G_io_apdu_buffer[150], 0, len);
     if (!pb_read(stream, &G_io_apdu_buffer[150], (size_t)stream->bytes_left)) {
       return false;
     }
-    os_memmove((char *)*arg, &G_io_apdu_buffer[150], len);
+    memmove((char *)*arg, &G_io_apdu_buffer[150], len);
   }
   PRINTF("End text callback\n");
   return true;
+}
+
+bool issue_script_callback(pb_istream_t *stream, const pb_field_t *field,
+                            void **arg) {
+    PRINTF("Start issue script callback\n");
+    int len = stream->bytes_left;
+    if (!pb_read(stream, NULL, len)) { // read other data
+      return false;
+    }  
+    memmove((char *)*arg, &"True\0", 5);
+    PRINTF("End issue script callback\n");                   
 }
 
 bool function_call_callback(pb_istream_t *stream, const pb_field_t *field,
                             void **arg) {
   uint32_t name_len;
   PRINTF("Start function call callback\n");
-  os_memset(&G_io_apdu_buffer[150], 0, 45);
+  memset(&G_io_apdu_buffer[150], 0, 45);
   int len = stream->bytes_left;
   if (len <= 7) {
-    os_memmove((char *)*arg, &"default\0", 45);
+    memmove((char *)*arg, &"default\0", 45);
     return true;
   }
   if (!pb_read(stream, &G_io_apdu_buffer[150],
@@ -115,8 +126,8 @@ bool function_call_callback(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
     len -= 41;
-    os_memmove((char *)&G_io_apdu_buffer[191], &"...\0", 4);
-    os_memmove((char *)*arg, &G_io_apdu_buffer[150], 45);
+    memmove((char *)&G_io_apdu_buffer[191], &"...\0", 4);
+    memmove((char *)*arg, &G_io_apdu_buffer[150], 45);
     if (!pb_read(stream, NULL, len)) { // read last str to null
       return false;
     }
@@ -126,7 +137,7 @@ bool function_call_callback(pb_istream_t *stream, const pb_field_t *field,
       return false;
     }
     len -= name_len;
-    os_memmove((char *)*arg, &G_io_apdu_buffer[150], 45);
+    memmove((char *)*arg, &G_io_apdu_buffer[150], 45);
     if (!pb_read(stream, NULL, len)) { // read other data
       return false;
     }
@@ -190,16 +201,22 @@ void build_issue_protobuf(pb_istream_t *stream) {
   tx.name.arg = &tmp_ctx.signing_context.ui.line1;
   tx.description.funcs.decode = text_callback;
   tx.description.arg = &tmp_ctx.signing_context.ui.line2;
+  tx.script.funcs.decode = issue_script_callback;
+  tx.script.arg = &tmp_ctx.signing_context.ui.line6;
   pb_decode_child(stream, waves_IssueTransactionData_fields, &tx);
   snprintf((char *)tmp_ctx.signing_context.ui.line4,
            sizeof(tmp_ctx.signing_context.ui.line4), "%d", tx.decimals);
   print_amount(tx.amount, (unsigned char)tx.decimals,
                (unsigned char *)tmp_ctx.signing_context.ui.line3, 22);
   if (tx.reissuable == true) {
-    os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line5, &"True\0",
+    memmove((unsigned char *)&tmp_ctx.signing_context.ui.line5, &"True\0",
                5);
   } else {
-    os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line5, &"False\0",
+    memmove((unsigned char *)&tmp_ctx.signing_context.ui.line5, &"False\0",
+               6);
+  }
+  if(strlen((const char *)tmp_ctx.signing_context.ui.line6) == 0) {
+    memmove((unsigned char *)&tmp_ctx.signing_context.ui.line6, &"False\0",
                6);
   }
 }
@@ -218,11 +235,11 @@ void build_transfer_protobuf(pb_istream_t *stream) {
                                      tmp_ctx.signing_context.network_byte,
                                      tmp_ctx.signing_context.ui.line3);
   } else {
-    os_memmove(tmp_ctx.signing_context.ui.line3, tx.recipient.recipient.alias,
+    memmove(tmp_ctx.signing_context.ui.line3, tx.recipient.recipient.alias,
                31);
   }
   if (strlen((const char *)tmp_ctx.signing_context.ui.line2) == 0) {
-    os_memmove(tmp_ctx.signing_context.ui.line2, WAVES_CONST, 5);
+    memmove(tmp_ctx.signing_context.ui.line2, WAVES_CONST, 5);
   }
 }
 
@@ -234,10 +251,10 @@ void build_reissue_protobuf(pb_istream_t *stream) {
   print_amount(tx.asset_amount.amount, tmp_ctx.signing_context.amount_decimals,
                (unsigned char *)tmp_ctx.signing_context.ui.line1, 22);
   if (tx.reissuable == true) {
-    os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3, &"True\0",
+    memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3, &"True\0",
                5);
   } else {
-    os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3, &"False\0",
+    memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3, &"False\0",
                6);
   }
 }
@@ -261,7 +278,7 @@ void build_lease_protobuf(pb_istream_t *stream) {
                                      tmp_ctx.signing_context.network_byte,
                                      tmp_ctx.signing_context.ui.line3);
   } else {
-    os_memmove(tmp_ctx.signing_context.ui.line3, tx.recipient.recipient.alias,
+    memmove(tmp_ctx.signing_context.ui.line3, tx.recipient.recipient.alias,
                31);
   }
 }
@@ -291,7 +308,7 @@ void build_mass_transfer_protobuf(pb_istream_t *stream) {
   tx.attachment.arg = &tmp_ctx.signing_context.ui.line2;
   pb_decode_child(stream, waves_MassTransferTransactionData_fields, &tx);
   if (strlen((const char *)tmp_ctx.signing_context.ui.line1) == 0) {
-    os_memmove(tmp_ctx.signing_context.ui.line1, WAVES_CONST, 5);
+    memmove(tmp_ctx.signing_context.ui.line1, WAVES_CONST, 5);
   }
 }
 
@@ -338,14 +355,14 @@ void build_invoke_script_protobuf(pb_istream_t *stream) {
     print_amount(tx.payments[0].amount, tmp_ctx.signing_context.amount_decimals,
                  (unsigned char *)&tmp_ctx.signing_context.ui.line4, 22);
     if (strlen((const char *)tmp_ctx.signing_context.ui.line1) == 0) {
-      os_memmove(tmp_ctx.signing_context.ui.line1, WAVES_CONST, 5);
+      memmove(tmp_ctx.signing_context.ui.line1, WAVES_CONST, 5);
     }
   }
   if (tx.payments_count == 2) {
-    print_amount(tx.payments[1].amount, tmp_ctx.signing_context.amount_decimals,
+    print_amount(tx.payments[1].amount, tmp_ctx.signing_context.amount2_decimals,
                  (unsigned char *)&tmp_ctx.signing_context.ui.line6, 22);
     if (strlen((const char *)tmp_ctx.signing_context.ui.line5) == 0) {
-      os_memmove(tmp_ctx.signing_context.ui.line1, WAVES_CONST, 5);
+      memmove(tmp_ctx.signing_context.ui.line1, WAVES_CONST, 5);
     }
   }
   if (tx.d_app.which_recipient == waves_Recipient_public_key_hash_tag) {
@@ -353,7 +370,7 @@ void build_invoke_script_protobuf(pb_istream_t *stream) {
                                      tmp_ctx.signing_context.network_byte,
                                      tmp_ctx.signing_context.ui.line3);
   } else {
-    os_memmove(tmp_ctx.signing_context.ui.line3, tx.d_app.recipient.alias, 31);
+    memmove(tmp_ctx.signing_context.ui.line3, tx.d_app.recipient.alias, 31);
   }
 }
 
@@ -452,7 +469,7 @@ void build_protobuf_root_tx(uiProtobuf_t *ctx, uint8_t *init_buffer,
   print_amount(tx.fee.amount, tmp_ctx.signing_context.fee_decimals,
                (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 22);
   if (strlen((const char *)tmp_ctx.signing_context.ui.fee_asset) == 0) {
-    os_memmove(tmp_ctx.signing_context.ui.fee_asset, WAVES_CONST, 5);
+    memmove(tmp_ctx.signing_context.ui.fee_asset, WAVES_CONST, 5);
   }
   PRINTF("End decoding root msg\n");
   tmp_ctx.signing_context.step = 7;
@@ -488,14 +505,14 @@ void build_protobuf_order(uiProtobuf_t *ctx, uint8_t *init_buffer,
   print_amount(order.matcher_fee.amount, tmp_ctx.signing_context.fee_decimals,
                (unsigned char *)tmp_ctx.signing_context.ui.fee_amount, 22);
   if (order.order_side == waves_Order_Side_BUY) {
-    os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3,
+    memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3,
                &"Buy order\0", 10);
   } else {
-    os_memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3,
+    memmove((unsigned char *)&tmp_ctx.signing_context.ui.line3,
                &"Sell order\0", 11);
   }
   if (strlen((const char *)tmp_ctx.signing_context.ui.fee_asset) == 0) {
-    os_memmove(tmp_ctx.signing_context.ui.fee_asset, WAVES_CONST, 5);
+    memmove(tmp_ctx.signing_context.ui.fee_asset, WAVES_CONST, 5);
   }
   waves_public_key_to_address(tmp_ctx.signing_context.ui.line2,
                                           tmp_ctx.signing_context.network_byte,

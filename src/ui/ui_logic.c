@@ -21,6 +21,7 @@
 #include "ui_logic.h"
 #include "main.h"
 #include "ui.h"
+#include "ux.h"
 
 // UI
 unsigned int io_seproxyhal_touch_address_ok(const bagl_element_t *e) {

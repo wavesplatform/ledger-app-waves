@@ -23,7 +23,7 @@ include $(BOLOS_SDK)/Makefile.defines
 # Main app configuration
 
 APPVERSION_M=1
-APPVERSION_N=1
+APPVERSION_N=2
 APPVERSION_P=0
 
 APPNAME = "Waves"
@@ -81,7 +81,6 @@ DEFINES   += MAX_DATA_SIZE=128
 
 DEFINES   += HAVE_WEBUSB WEBUSB_URL_SIZE_B=0 WEBUSB_URL=""
 
-
 ifeq ($(TARGET_NAME),TARGET_NANOX)
 DEFINES   += IO_SEPROXYHAL_BUFFER_SIZE_B=300
 DEFINES       += HAVE_BLE BLE_COMMAND_TIMEOUT_MS=2000
@@ -103,6 +102,7 @@ ifneq ($(DEBUG),0)
 
         ifeq ($(TARGET_NAME),TARGET_NANOX)
                 DEFINES   += HAVE_PRINTF PRINTF=mcu_usb_printf
+                DEFINES   += HAVE_PRINTF_PB PRINTF_PB=mcu_usb_printf
         else
                 DEFINES   += HAVE_PRINTF PRINTF=screen_printf
         endif
@@ -155,7 +155,6 @@ include $(BOLOS_SDK)/Makefile.glyphs
 # Import generic rules from the SDK
 
 include $(BOLOS_SDK)/Makefile.rules
-
 
 listvariants:
 	@echo VARIANTS COIN waves

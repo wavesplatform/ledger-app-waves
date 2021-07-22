@@ -23,6 +23,7 @@
 
 #include "os.h"
 #include "cx.h"
+#include "ux.h"
 #include <stdbool.h>
 #include "../main.h"
 #include "../crypto/ledger_crypto.h"
@@ -46,8 +47,10 @@ extern int ux_step_count;
 
 void make_allowed_ui_steps(bool is_last);
 void show_sign_ui();
+void show_sign_protobuf_ui();
 void menu_address_init();
 void show_processing();
+int getMessageType();
 
 void try_to_fill_buffer(uint8_t chunk_data_start_index,
                         uint8_t chunk_data_size);

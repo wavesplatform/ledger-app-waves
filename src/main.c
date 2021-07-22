@@ -23,17 +23,16 @@
 #include "main.h"
 #include "crypto/waves.h"
 #include "crypto/ledger_crypto.h"
-#include "os_io_seproxyhal.h"
 
 // Ledger Stuff
 #include "ui/ui.h"
 #include "os.h"
 #include "cx.h"
-#include "os_io_seproxyhal.h"
+#include "ux.h"
 
+uint8_t G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 // Temporary area to store stuff and reuse the same memory
 tmpContext_t tmp_ctx;
-uiContext_t ui_context;
 
 // Non-volatile storage for the wallet app's stuff
 internal_storage_t const N_storage_real;
@@ -114,7 +113,6 @@ void hash_stream_data(uint8_t chunk_data_size, uint8_t chunk_data_start_index) {
 // from the button handler after the user verifies the transaction.
 
 void make_sign_step(uint8_t chunk_data_start_index, uint8_t chunk_data_size) {
-  PRINTF("make_sign_step start step: %d\n", tmp_ctx.signing_context.step);
   if (tmp_ctx.signing_context.step == 1) {
     cx_ecfp_public_key_t public_key;
     cx_ecfp_private_key_t private_key;
@@ -124,8 +122,8 @@ void make_sign_step(uint8_t chunk_data_start_index, uint8_t chunk_data_size) {
                             &private_key);
     public_key_le_to_be(&public_key);
     tmp_ctx.signing_context.sign_bit = public_key.W[31] & 0x80;
-    os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
-    os_memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
+    memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
+    memset(&public_key, 0, sizeof(cx_ecfp_public_key_t));
     tmp_ctx.signing_context.step = 2;
   } else if (tmp_ctx.signing_context.step == 2) {
     if (tmp_ctx.signing_context.data_read < tmp_ctx.signing_context.data_size) {
@@ -142,36 +140,43 @@ void make_sign_step(uint8_t chunk_data_start_index, uint8_t chunk_data_size) {
       // chunk_data_size will be false
       if (tmp_ctx.signing_context.data_read ==
           tmp_ctx.signing_context.data_size) {
-        os_memmove(ui_context.id,
-                   tmp_ctx.signing_context.eddsa_context.first_data_hash, 32);
         tmp_ctx.signing_context.step = 5;
+        return;
       }
     }
   }
-  PRINTF("make_sign_step end step: %d\n", tmp_ctx.signing_context.step);
 }
-
 void make_allowed_sign_steps() {
   uint8_t chunk_data_start_index = 5;
   uint8_t chunk_data_size = G_io_apdu_buffer[4];
 
   if (tmp_ctx.signing_context.chunk == 0) {
-    chunk_data_start_index += 28;
-    chunk_data_size -= 28;
+    chunk_data_start_index += 29;
+    chunk_data_size -= 29;
 
     // then there is the bip32 path in the first chunk - first 20 bytes of data
     read_path_from_bytes(G_io_apdu_buffer + 5,
                          (uint32_t *)tmp_ctx.signing_context.bip32);
 
     tmp_ctx.signing_context.amount_decimals = G_io_apdu_buffer[25];
-    tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[26];
-    tmp_ctx.signing_context.data_type = G_io_apdu_buffer[27];
-    tmp_ctx.signing_context.data_version = G_io_apdu_buffer[28];
+    tmp_ctx.signing_context.amount2_decimals = G_io_apdu_buffer[26];
+    tmp_ctx.signing_context.fee_decimals = G_io_apdu_buffer[27];
+    tmp_ctx.signing_context.data_type = G_io_apdu_buffer[28];
+    tmp_ctx.signing_context.data_version = G_io_apdu_buffer[29];
     tmp_ctx.signing_context.data_size =
-        deserialize_uint32_t(&G_io_apdu_buffer[29]);
+        deserialize_uint32_t(&G_io_apdu_buffer[30]); 
+    // getting message type based on tx type and varsion
+    tmp_ctx.signing_context.message_type = getMessageType();
+    if(tmp_ctx.signing_context.amount_decimals < 0 || tmp_ctx.signing_context.amount_decimals > 8 ) {
+      THROW(SW_INCORRECT_PRECISION_VALUE);
+    }
+    if(tmp_ctx.signing_context.amount2_decimals < 0 || tmp_ctx.signing_context.amount2_decimals > 8) {
+      THROW(SW_INCORRECT_PRECISION_VALUE);
+    }
   }
 
-  while (tmp_ctx.signing_context.chunk_used < chunk_data_size) {
+  while (tmp_ctx.signing_context.chunk_used < chunk_data_size &&
+         tmp_ctx.signing_context.step < 5) {
     make_sign_step(chunk_data_start_index, chunk_data_size);
   }
   // else wait for next chunk
@@ -180,14 +185,11 @@ void make_allowed_sign_steps() {
 // like
 // https://github.com/lenondupe/ledger-app-stellar/blob/master/src/main.c#L1784
 uint32_t set_result_sign() {
-  uint8_t signature[64];
+  tmp_ctx.signing_context.signature[63] |= tmp_ctx.signing_context.sign_bit;
+  memmove((char *)G_io_apdu_buffer, tmp_ctx.signing_context.signature,
+             sizeof(tmp_ctx.signing_context.signature));
 
-  stream_eddsa_sign_step5(&tmp_ctx.signing_context.eddsa_context, signature);
-
-  signature[63] |= tmp_ctx.signing_context.sign_bit;
-  os_memmove((char *)G_io_apdu_buffer, signature, sizeof(signature));
-
-  PRINTF("Signature:\n%.*H\n", 64, signature);
+  PRINTF("Signature:\n%.*H\n", 64, tmp_ctx.signing_context.signature);
 
   init_context();
 
@@ -195,9 +197,9 @@ uint32_t set_result_sign() {
 }
 
 uint32_t set_result_get_address() {
-  os_memmove((char *)G_io_apdu_buffer,
+  memmove((char *)G_io_apdu_buffer,
              (char *)tmp_ctx.address_context.public_key, 32);
-  os_memmove((char *)G_io_apdu_buffer + 32,
+  memmove((char *)G_io_apdu_buffer + 32,
              (char *)tmp_ctx.address_context.address, 35);
   init_context();
   return 67;
@@ -217,7 +219,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
   BEGIN_TRY {
     TRY {
 
-      if (os_global_pin_is_validated() == 0) {
+      if (os_global_pin_is_validated() != BOLOS_UX_OK) {
         THROW(SW_DEVICE_IS_LOCKED);
       }
 
@@ -236,37 +238,60 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
             (G_io_apdu_buffer[2] != P1_LAST)) {
           THROW(SW_INCORRECT_P1_P2);
         }
-
-        if (tmp_ctx.signing_context.step == 5) {
-          THROW(SW_INCORRECT_P1_P2);
-        }
-
-        if (tmp_ctx.signing_context.step > 0) {
-          tmp_ctx.signing_context.chunk += 1;
-        } else {
-          show_processing();
-          os_memset((unsigned char *)&ui_context, 0, sizeof(uiContext_t));
-          tmp_ctx.signing_context.step = 1;
-          tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
-        }
-
-        tmp_ctx.signing_context.chunk_used = 0;
-        ui_context.chunk_used = 0;
-        if (G_io_apdu_buffer[2] == P1_LAST) {
+        if (tmp_ctx.signing_context.step <= 5) {
+          if (tmp_ctx.signing_context.step > 0) {
+            tmp_ctx.signing_context.chunk += 1;
+          } else {
+            PRINTF("make_sign_steps start\n");
+            show_processing();
+            tmp_ctx.signing_context.step = 1;
+            tmp_ctx.signing_context.network_byte = G_io_apdu_buffer[3];
+          }
+          tmp_ctx.signing_context.chunk_used = 0;
           make_allowed_sign_steps();
           if (tmp_ctx.signing_context.step == 5) {
-            make_allowed_ui_steps(true);
-            show_sign_ui();
-            *flags |= IO_ASYNCH_REPLY;
+            stream_eddsa_sign_step5(&tmp_ctx.signing_context.eddsa_context,
+                                    tmp_ctx.signing_context.signature);
+            tmp_ctx.signing_context.step = 6;
+            PRINTF("make_sign_steps end\n");
+            memset(&tmp_ctx.signing_context.ui, 0,
+                      sizeof(tmp_ctx.signing_context.ui));
+            cx_blake2b_init(&tmp_ctx.signing_context.ui.hash_ctx, 256);
           } else {
+            THROW(SW_OK);
+            // wait for next chunk for sign
+          }
+        }
+        if (G_io_apdu_buffer[2] == P1_LAST) {
+          make_allowed_ui_steps(true);
+          if (tmp_ctx.signing_context.step != 8) {
             THROW(SW_DEPRECATED_SIGN_PROTOCOL);
           }
         } else {
-          make_allowed_sign_steps();
           make_allowed_ui_steps(false);
-          THROW(SW_OK);
         }
-
+        // all data parsed and prepeared to view
+        if (tmp_ctx.signing_context.step == 8) { 
+          size_t length = 45;
+          if (!b58enc((char *)tmp_ctx.signing_context.first_data_hash, &length,
+                      (const void *)&tmp_ctx.signing_context.first_data_hash,
+                      32)) {
+            THROW(SW_CONDITIONS_NOT_SATISFIED);
+          }
+          // convert sender public key to address
+          waves_public_key_to_address(tmp_ctx.signing_context.ui.from,
+                                      tmp_ctx.signing_context.network_byte,
+                                      tmp_ctx.signing_context.ui.from);
+          // if transaction has from field and it is pubkey hash will convert to
+          // address
+          if (tmp_ctx.signing_context.message_type == PROTOBUF_DATA) {
+            show_sign_protobuf_ui();
+          } else {
+            show_sign_ui();
+          }
+          *flags |= IO_ASYNCH_REPLY;
+        }
+        THROW(SW_OK);
       } break;
 
       case INS_GET_PUBLIC_KEY: {
@@ -291,9 +316,9 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
         unsigned char address[35];
         waves_public_key_to_address(public_key.W, G_io_apdu_buffer[3], address);
 
-        os_memmove((char *)tmp_ctx.address_context.public_key, public_key.W,
+        memmove((char *)tmp_ctx.address_context.public_key, public_key.W,
                    32);
-        os_memmove((char *)tmp_ctx.address_context.address, address, 35);
+        memmove((char *)tmp_ctx.address_context.address, address, 35);
         // term byte for string shown
         tmp_ctx.address_context.address[35] = '\0';
 
@@ -347,7 +372,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
   }
 }
 
-void init_context() { os_memset(&tmp_ctx, 0, sizeof(tmp_ctx)); }
+void init_context() { memset(&tmp_ctx, 0, sizeof(tmp_ctx)); }
 
 static void waves_main(void) {
   volatile unsigned int rx = 0;

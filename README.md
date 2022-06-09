@@ -10,9 +10,6 @@ For app APDU protocol and an integration manual please take a look at [this](htt
 
 # Building 👷
 
-You'll need a Ledger Nano S development environment.  More information can be
-found [here](https://github.com/wavesplatform/ledger-app-waves/wiki).
-
 Also there're [ledger docker image](https://github.com/LedgerHQ/ledger-app-builder), you can use it to build it.
 
 <details>

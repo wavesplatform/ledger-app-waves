@@ -41,7 +41,7 @@ internal_storage_t const N_storage_real;
 // SPI Buffer for io_event
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
-#if !defined(TARGET_NANOS) && !defined(TARGET_BLUE) && !defined(TARGET_NANOX)
+#if !defined(TARGET_NANOS) && !defined(TARGET_BLUE) && !defined(TARGET_NANOX) && !defined(TARGET_NANOS2)
 #error This application only supports the Ledger Nano S, Nano X and the Ledger Blue
 #endif
 
@@ -217,7 +217,7 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
   BEGIN_TRY {
     TRY {
 
-      if (os_global_pin_is_validated() == 0) {
+      if (os_global_pin_is_validated() != BOLOS_UX_OK) {
         THROW(SW_DEVICE_IS_LOCKED);
       }
 
@@ -479,10 +479,10 @@ __attribute__((section(".boot"))) int main(void) {
 
         io_seproxyhal_init();
 
-#ifdef TARGET_NANOX
+#ifdef HAVE_BLE
         // grab the current plane mode setting
         G_io_app.plane_mode = os_setting_get(OS_SETTING_PLANEMODE, NULL, 0);
-#endif // TARGET_NANOX
+#endif // HAVE_BLE
 
         init_context();
 
@@ -496,12 +496,12 @@ __attribute__((section(".boot"))) int main(void) {
         USB_power(0);
         USB_power(1);
 
-        ui_idle();
-
 #ifdef HAVE_BLE
         BLE_power(0, NULL);
         BLE_power(1, "Nano X");
 #endif // HAVE_BLE
+
+        ui_idle();
 
         // set menu bar colour for blue
 #if defined(TARGET_BLUE)

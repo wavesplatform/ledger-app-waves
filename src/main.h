@@ -22,6 +22,7 @@
 #define __MAIN_H__
 #include "os.h"
 #include "cx.h"
+#include "ux.h"
 #include "stream_eddsa_sign.h"
 #include <stdbool.h>
 

@@ -40,9 +40,6 @@ internal_storage_t const N_storage_real;
 // SPI Buffer for io_event
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
-#if !defined(TARGET_NANOS) && !defined(TARGET_BLUE) && !defined(TARGET_NANOX)
-#error This application only supports the Ledger Nano S, Nano X and the Ledger Blue
-#endif
 
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
   switch (channel & ~(IO_FLAGS)) {

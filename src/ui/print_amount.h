@@ -21,48 +21,10 @@
 #ifndef __PRINT_AMOUNT_H__
 #define __PRINT_AMOUNT_H__
 
+#include "../main.h"
+#include "os.h"
 // borrowed from the Stellar wallet code and modified
 bool print_amount(uint64_t amount, int decimals, unsigned char *out,
-                  uint8_t len) {
-  uint64_t dVal = amount;
-  int i, j;
-
-  if (decimals == 0)
-    decimals--;
-
-  memset(ui_context.tmp, 0, len);
-  for (i = 0; dVal > 0 || i < decimals + 2; i++) {
-    if (dVal > 0) {
-      ui_context.tmp[i] = (char)((dVal % 10) + '0');
-      dVal /= 10;
-    } else {
-      ui_context.tmp[i] = '0';
-    }
-    if (i == decimals - 1) {
-      i += 1;
-      ui_context.tmp[i] = '.';
-    }
-    if (i >= len) {
-      return false;
-    }
-  }
-  // reverse order
-  for (i -= 1, j = 0; i >= 0 && j < len - 1; i--, j++) {
-    out[j] = ui_context.tmp[i];
-  }
-  if (decimals > 0) {
-    // strip trailing 0s
-    for (j -= 1; j > 0; j--) {
-      if (out[j] != '0')
-        break;
-    }
-    j += 1;
-    if (out[j - 1] == '.')
-      j -= 1;
-  }
-
-  out[j] = '\0';
-  return true;
-}
+                  uint8_t len);
 
 #endif

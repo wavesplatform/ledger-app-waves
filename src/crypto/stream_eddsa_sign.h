@@ -38,7 +38,6 @@ typedef struct streamEddsaContext_t {
   } u;
   cx_sha512_t hash_ctx;
   cx_blake2b_t data_hash_ctx;
-  unsigned char first_data_hash[32];
 } streamEddsaContext_t;
 
 void stream_eddsa_sign_step1(streamEddsaContext_t *eddsa_context,

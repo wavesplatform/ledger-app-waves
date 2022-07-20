@@ -1,0 +1,2 @@
+waves.Recipient.public_key_hash                     max_size:20 fixed_length:true
+waves.Recipient.alias                               max_size:31

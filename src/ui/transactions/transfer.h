@@ -23,6 +23,6 @@
 
 #include <stdbool.h>
 
-void build_transfer_ui_step(bool is_last);
+void build_transfer_ui_step();
 
 #endif

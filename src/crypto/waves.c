@@ -17,10 +17,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ********************************************************************************/
-
+#include "main.h"
 #include "waves.h"
 #include "ledger_crypto.h"
 #include "stream_eddsa_sign.h"
+#include "string.h"
 
 void waves_secure_hash(const uint8_t *message, size_t message_len,
                        uint8_t hash[32]) {
@@ -29,7 +30,7 @@ void waves_secure_hash(const uint8_t *message, size_t message_len,
 }
 
 // Build waves address from the curve25519 public key, check
-// https://github.com/wavesplatform/Waves/wiki/Data-Structures#address
+// https://docs.wavesprotocol.org/ru/blockchain/binary-format/address-binary-format
 void waves_public_key_to_address(const ed25519_public_key public_key,
                                  const unsigned char network_byte,
                                  unsigned char *output) {
@@ -40,12 +41,26 @@ void waves_public_key_to_address(const ed25519_public_key public_key,
 
   address[0] = 0x01;
   address[1] = network_byte;
-  os_memmove(&address[2], public_key_hash, 20);
+  memmove(&address[2], public_key_hash, 20);
 
   waves_secure_hash(address, 22, checksum);
 
-  os_memmove(&address[22], checksum, 4);
+  memmove(&address[22], checksum, 4);
 
+  size_t length = 36;
+  b58enc((char *)output, &length, address, 26);
+}
+
+void waves_public_key_hash_to_address(
+    const ed25519_public_key_hash public_key_hash,
+    const unsigned char network_byte, unsigned char *output) {
+  uint8_t address[26];
+  uint8_t checksum[32];
+  address[0] = 0x01;
+  address[1] = network_byte;
+  memmove(&address[2], public_key_hash, 20);
+  waves_secure_hash(address, 22, checksum);
+  memmove(&address[22], checksum, 4);
   size_t length = 36;
   b58enc((char *)output, &length, address, 26);
 }

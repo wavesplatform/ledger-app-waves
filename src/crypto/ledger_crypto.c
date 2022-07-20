@@ -37,8 +37,8 @@ void public_key_le_to_be(cx_ecfp_public_key_t *public_key) {
   if ((public_key->W[32] & 1) != 0) {
     public_key_be[31] |= 0x80;
   }
-  os_memset(public_key->W, 0, 65);
-  os_memmove(public_key->W, public_key_be, 32);
+  memset(public_key->W, 0, 65);
+  memmove(public_key->W, public_key_be, 32);
 }
 
 void get_keypair_by_path(const uint32_t *path, cx_ecfp_public_key_t *public_key,
@@ -63,7 +63,7 @@ bool get_curve25519_public_key_for_path(const uint32_t *path,
   // derive the ed25519 keys by that BIP32 path from the device
   get_keypair_by_path(path, public_key, &private_key);
   // clean private key
-  os_memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
+  memset(&private_key, 0, sizeof(cx_ecfp_private_key_t));
 
   public_key_le_to_be(public_key);
 

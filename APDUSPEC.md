@@ -141,7 +141,7 @@ The first packet/chunk includes only the derivation path
 
 All other packets/chunks contain data chunks that are described below
 
-##### First Packet
+<!-- #####   
 
 | Field   | Type     | Content              | Expected |
 | ------- | -------- | -------------------- | -------- |
@@ -149,7 +149,7 @@ All other packets/chunks contain data chunks that are described below
 | Path[1] | byte (4) | Derivation Path Data | 354      |
 | Path[2] | byte (4) | Derivation Path Data | ?        |
 | Path[3] | byte (4) | Derivation Path Data | ?        |
-| Path[4] | byte (4) | Derivation Path Data | ?        |
+| Path[4] | byte (4) | Derivation Path Data | ?        | -->
 
 ##### Other Chunks/Packets
 
@@ -157,28 +157,27 @@ All other packets/chunks contain data chunks that are described below
 | ------- | -------- | --------------- | -------- |
 | Message | bytes... | Message to Sign |          |
 
-#### Response
+#### Response 
 
 | Field   | Type      | Content     | Note                     |
 | ------- | --------- | ----------- | ------------------------ |
-| SIG     | byte (65) | Signature   |                          |
+| SIG     | byte (64) | Signature   |                          |
 | SW1-SW2 | byte (2)  | Return code | see list of return codes |
 
 ---
-
-### INS_SIGN_SR25519
+### INS_SIGN_SR25519 
 
 #### Command
 
-| Field | Type     | Content                | Expected  |
-| ----- | -------- | ---------------------- | --------- |
-| CLA   | byte (1) | Application Identifier | 0x90      |
-| INS   | byte (1) | Instruction ID         | 0x12      |
-| P1    | byte (1) | Payload desc           | 0 = init  |
-|       |          |                        | 1 = add   |
-|       |          |                        | 2 = last  |
-| P2    | byte (1) | ----                   | not used  |
-| L     | byte (1) | Bytes in payload       | (depends) |
+| Field         | Type     | Content                | Expected  |
+| ------------- | -------- | ---------------------- | --------- |
+| CLA           | byte (1) | Application Identifier | 0x80      |
+| INS_SIGN      | byte (1) | Sign Instruction       | 0x02      |
+| P1_CONFIRM    | byte (1) | Payload desc           | 0x01      |
+|               |          |                        | 1 = add   |
+|               |          |                        | 2 = last  |
+| P2            | byte (1) | ----                   | not used  |
+| L             | byte (1) | Bytes in payload       | (depends) |
 
 The first packet/chunk includes only the derivation path
 
@@ -189,7 +188,7 @@ All other packets/chunks contain data chunks that are described below
 | Field   | Type     | Content              | Expected |
 | ------- | -------- | -------------------- | -------- |
 | Path[0] | byte (4) | Derivation Path Data | 44       |
-| Path[1] | byte (4) | Derivation Path Data | 354      |
+| Path[1] | byte (4) | Derivation Path Data | 5741564  |
 | Path[2] | byte (4) | Derivation Path Data | ?        |
 | Path[3] | byte (4) | Derivation Path Data | ?        |
 | Path[4] | byte (4) | Derivation Path Data | ?        |
@@ -204,5 +203,5 @@ All other packets/chunks contain data chunks that are described below
 
 | Field   | Type      | Content     | Note                     |
 | ------- | --------- | ----------- | ------------------------ |
-| SIG     | byte (65) | Signature   |                          |
-| SW1-SW2 | byte (2)  | Return code | see list of return codes | -->
+| SIG     | byte (64) | Signature   |                          |
+| SW1-SW2 | byte (2)  | Return code | see list of return codes |

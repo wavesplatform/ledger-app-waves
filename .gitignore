@@ -55,3 +55,10 @@ dkms.conf
 debug/
 .DS_Store
 *.pyc
+
+# Glyphs gen files
+src/glyphs.c
+src/glyphs.h
+
+# Build dir
+bin

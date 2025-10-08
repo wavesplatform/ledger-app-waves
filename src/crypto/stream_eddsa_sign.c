@@ -103,7 +103,7 @@ static void cx_compress(unsigned char *P, int size) {
 /* ----------------------------------------------------------------------- */
 /*                                                                         */
 /* ----------------------------------------------------------------------- */
-static void cx_eddsa_get_public_key_internal(
+static void l_cx_eddsa_get_public_key_internal(
     const cx_ecfp_private_key_t *pv_key, cx_md_t hashID,
     cx_ecfp_public_key_t *pu_key, unsigned char *a, unsigned int a_len,
     unsigned char *h, unsigned int h_len, unsigned char *scal /*tmp*/) {
@@ -169,7 +169,7 @@ void stream_eddsa_sign_step1(streamEddsaContext_t *eddsa_context,
 
   unsigned char scal[64];
   // retrieve public key,private scalar a, and private prefix h (stored in r)
-  cx_eddsa_get_public_key_internal(
+  l_cx_eddsa_get_public_key_internal(
       pv_key, CX_SHA512,
       (cx_ecfp_public_key_t *)&eddsa_context->u.internal_pu_key,
       eddsa_context->a, sizeof(eddsa_context->a), eddsa_context->r,

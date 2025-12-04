@@ -15,27 +15,39 @@
 #  limitations under the License.
 #*******************************************************************************
 
-ifeq ($(BOLOS_SDK),)
+ifeq ($(BOLOS_SDK),) 
 $(error BOLOS_SDK is not set)
 endif
 include $(BOLOS_SDK)/Makefile.defines
-
+include $(BOLOS_SDK)/Makefile.target
 # Main app configuration
 
 APPVERSION_M=1
 APPVERSION_N=2
-APPVERSION_P=0
+APPVERSION_P=2
 
-APPNAME = "Waves"
+APPNAME="Waves"
 APPVERSION = $(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)
 
 ifeq ($(TARGET_NAME),TARGET_BLUE)
-ICONNAME=blue_app_waves.gif
+ICONNAME=icons/blue_app_waves.gif
 else ifeq ($(TARGET_NAME),TARGET_NANOS)
-ICONNAME=nanos_app_waves.gif
+ICONNAME=icons/nanos_app_waves.gif
 else
-ICONNAME = nanox_app_waves.gif
+ICONNAME = icons/nanox_app_waves.gif
 endif
+
+ifeq ($(TARGET_NAME),$(filter $(TARGET_NAME),TARGET_NANOX TARGET_NANOS2))
+    # With the Nano NBGL Design, the Home Screen icon is the reverse of the App icon:
+    # It should be on white background, with rounded corners.
+    # This definition allows SDK Makefiles to automatically generate it based on the App icon.
+    # Please note that the icon is dynamically generated, and declared in the .gitignore to avoid storing it.
+    ICON_HOME_NANO = glyphs/icon_waves.gif
+endif
+
+ICON_NANOX = icons/nanox_app_waves.gif
+ICON_NANOSP = icons/nanox_app_waves.gif
+
 
 APP_LOAD_PARAMS = --appFlags 0x240 --path "44'/5741564'" --curve secp256k1 --curve ed25519 $(COMMON_LOAD_PARAMS)
 
@@ -53,14 +65,14 @@ ifeq ($(TARGET_NAME),TARGET_NANOX)
 SDK_SOURCE_PATH  += lib_blewbxx lib_blewbxx_impl
 endif
 
-DEFINES += APPVERSION=\"$(APPVERSION)\"
+DEFINES += APPNAME=\"$(APPNAME)\"
 
 #for debug only
 DEFINES += OS_IO_SEPROXYHAL
 DEFINES += HAVE_BAGL HAVE_SPRINTF HAVE_SNPRINTF_FORMAT_U
 DEFINES += HAVE_IO_USB HAVE_L4_USBLIB IO_USB_MAX_ENDPOINTS=7 IO_HID_EP_LENGTH=64 HAVE_USB_APDU TCS_LOADER_PATCH_VERSION=0
 DEFINES += LEDGER_MAJOR_VERSION=$(APPVERSION_M) LEDGER_MINOR_VERSION=$(APPVERSION_N) LEDGER_PATCH_VERSION=$(APPVERSION_P)
-
+DEFINES += 
 DEFINES += BLAKE_SDK
 
 # U2F Support
@@ -154,3 +166,5 @@ include $(BOLOS_SDK)/Makefile.rules
 
 listvariants:
 	@echo VARIANTS COIN waves
+
+

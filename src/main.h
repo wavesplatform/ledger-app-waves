@@ -30,6 +30,7 @@
 #define INS_SIGN 0x02                  // Sign Instruction
 #define INS_GET_PUBLIC_KEY 0x04        // Get Public Key Instruction
 #define INS_GET_APP_CONFIGURATION 0x06 // Get App Version
+#define INS_GET_APP_NAME 0x08 // Get App Name
 #define P1_CONFIRM 0x01                // Show address confirmation
 #define P1_NON_CONFIRM 0x00            // Don't show address confirmation
 #define P1_LAST 0x80 // Parameter 1 = End of Bytes to Sign (finalize)
@@ -157,6 +158,7 @@ void init_context();
 void init_sign();
 void make_allowed_sign_steps();
 uint32_t set_result_get_address();
+uint32_t set_result_get_name();
 uint32_t set_result_sign();
 uint32_t deserialize_uint32_t(unsigned char *buffer);
 

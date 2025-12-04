@@ -55,3 +55,11 @@ dkms.conf
 debug/
 .DS_Store
 *.pyc
+
+tests/standalone/venv/
+__pycache__/
+.idea/
+.vscode/    
+tests/standalone/snapshots-tmp/
+tests/standalone/.pytest_cache/
+tests/application_client/__pycache__/

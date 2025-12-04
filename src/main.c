@@ -202,6 +202,13 @@ uint32_t set_result_get_address() {
   return 67;
 }
 
+uint32_t set_result_get_name() {
+  memmove((char *)G_io_apdu_buffer,
+             (char *)APPNAME, strlen(APPNAME));
+  init_context();
+  return strlen(APPNAME);
+}
+
 uint32_t set_result_get_app_configuration() {
   G_io_apdu_buffer[0] = LEDGER_MAJOR_VERSION;
   G_io_apdu_buffer[1] = LEDGER_MINOR_VERSION;
@@ -330,6 +337,11 @@ void handle_apdu(volatile unsigned int *flags, volatile unsigned int *tx,
 
       case INS_GET_APP_CONFIGURATION:
         *tx = set_result_get_app_configuration();
+        THROW(SW_OK);
+        break;
+
+      case INS_GET_APP_NAME:
+        *tx = set_result_get_name();
         THROW(SW_OK);
         break;
 

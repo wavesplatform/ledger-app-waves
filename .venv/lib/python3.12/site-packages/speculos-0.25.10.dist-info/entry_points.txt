@@ -1,0 +1,2 @@
+[console_scripts]
+speculos = speculos.main:main

@@ -1,0 +1,158 @@
+Metadata-Version: 2.4
+Name: speculos
+Version: 0.25.10
+Summary: Ledger Stax, Flex, Apex+ and Nano S+/X application emulator
+Author-email: Ledger <hello@ledger.fr>
+Project-URL: Homepage, https://github.com/LedgerHQ/speculos
+Project-URL: Bug Tracker, https://github.com/LedgerHQ/speculos/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Programming Language :: Python :: 3.13
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Operating System :: MacOS :: MacOS X
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: COPYING
+License-File: COPYING.LESSER
+Requires-Dist: construct<3.0.0,>=2.10.56
+Requires-Dist: flask<3.0.0,>=2.0.0
+Requires-Dist: flask-restful<1.0,>=0.3.9
+Requires-Dist: flask-cors<7.0.0,>=5.0.0
+Requires-Dist: jsonschema<4.18.0,>=3.2.0
+Requires-Dist: mnemonic<1.0,>=0.19
+Requires-Dist: pillow<11.0.0,>=8.0.0
+Requires-Dist: pyelftools<1.0,>=0.27
+Requires-Dist: pyqt6<7.0.0,>=6.4.0
+Requires-Dist: requests<3.0.0,>=2.25.1
+Requires-Dist: ledgered>=0.14.0
+Requires-Dist: pygame>=2.6.1
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Dynamic: license-file
+
+# Speculos
+
+[![codecov](https://codecov.io/gh/LedgerHQ/speculos/branch/master/graph/badge.svg)](https://codecov.io/gh/LedgerHQ/speculos)
+
+![screenshot btc nano s](https://raw.githubusercontent.com/LedgerHQ/speculos/master/docs/_static/screenshot-api-nanos-btc.png)
+
+The goal of this project is to emulate Ledger Nano S+, Nano X, Apex+, Flex and Stax apps on
+standard desktop computers, without any hardware device. More information can
+be found here in the
+[documentation website](https://ledgerhq.github.io/speculos) (or in the
+[docs/ folder](docs/) directly).
+
+Usage example:
+
+```shell
+./speculos.py apps/btc.elf --model nanosp
+# ... and open a browser on http://127.0.0.1:5000
+```
+
+## Installation
+
+### From Python `pypi` packages
+
+The easiest, stable way to install Speculos is with `pip`:
+
+```
+pip install speculos
+```
+
+It is advised to use Python virtualenv, otherwise admin rights will probably be
+necessary.
+
+
+### From sources
+
+Installing Speculos from sources is a bit heavier and, depending on the platform,
+complex, due to all the dependency needed for compiling the emulator.
+
+On Debian (10 or later) or Ubuntu (18.04 or later):
+
+```
+sudo apt install \
+    git cmake gcc-arm-linux-gnueabihf libc6-dev-armhf-cross gdb-multiarch \
+    python3-pyqt6 python3-construct python3-flask-restful python3-jsonschema \
+    python3-mnemonic python3-pil python3-pyelftools python3-requests \
+    qemu-user-static libvncserver-dev
+
+# from the root directory of the source repository
+pip install .
+```
+
+Dependency management will vary on other platforms; using Docker images and/or WSL
+should facilitate the installation.
+
+## Bugs and contributions
+
+Feel free to open issues and create pull requests on this GitHub repository.
+
+The `master` branch is protected to disable force pushing. Contributions should
+be made through pull requests, which are reviewed by @LedgerHQ members before
+being merged to `master`:
+
+- @LedgerHQ members can create branches directly on the repository (if member of
+  a team with write access to the repository)
+- External contributors should fork the repository
+
+
+## Limitations
+
+There is absolutely no guarantee that apps will have the same behavior on
+hardware devices and Speculos, though the differences are limited.
+
+### Syscalls
+
+The emulator handles only a few syscalls made by common apps. For instance,
+syscalls related to app install, firmware update or OS info can't be
+implemented.
+
+### Memory alignment
+
+Attempts to perform unaligned accesses when not allowed (eg. dereferencing a
+misaligned pointer) will cause an alignment fault on a Ledger Nano S+ device but
+not on Speculos. Note that such unaligned accesses are supported by other
+Ledger devices.
+
+Following code crashes on LNS device, but not on Speculos nor on other devices.
+```
+uint8_t buffer[20];
+for (int i = 0; i < 20; i++) {
+    buffer[i] = i;
+}
+uint32_t display_value = *((uint32_t*) (buffer + 1));
+PRINTF("display_value: %d\n", display_value);
+```
+
+### Watchdog
+
+NanoX, Flex, Apex+ and Stax devices use an internal watchdog enforcing usage of regular
+calls to `io_seproxyhal_io_heartbeat();`. This watchdog is not emulated on
+Speculos.
+
+
+## Security
+
+Apps can make arbitrary Linux system calls (and use QEMU
+[semihosting](docs/user/semihosting.md) features), thus don't run Speculos on
+untrusted apps.
+
+It's worth noting that the syscall implementation (`src/`) doesn't expect
+malicious input. By the way, in Speculos, there is no privilege separation
+between the app and the syscalls. This doesn't reflect the security of the
+firmware on hardware devices where app and OS isolation is enforced.
+
+Speculos is not part of Ledger bug bounty program.
+
+
+## Are you developing a Nano App as an external developer?
+
+For a smooth and quick integration:
+- Follow the developers documentation on the [Developer Portal](https://developers.ledger.com/docs/nano-app/introduction/) and
+- [Go on Discord](https://developers.ledger.com/discord-pro/) to chat with developer support and the developer community.

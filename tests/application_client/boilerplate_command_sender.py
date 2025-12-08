@@ -47,6 +47,7 @@ class Errors(IntEnum):
     SW_SIGNATURE_FAIL          = 0xB008
     SW_WRONG_AMOUNT            = 0xC000
     SW_WRONG_ADDRESS           = 0xC000
+    SW_CONDITIONS_NOT_SATISFIED = 0x6985
 
 
 def split_message(message: bytes, max_size: int) -> List[bytes]:
@@ -134,3 +135,27 @@ class BoilerplateCommandSender:
         rapdu = self.get_async_response()
         assert isinstance(rapdu, RAPDU)
         return rapdu
+    
+    def pack_derivation_path(self, path: str) -> bytes:
+        """
+        Returns the packed derivation path.
+        """
+        return pack_derivation_path(path)[1:]
+
+    def parse_pk_response(self, response: bytes):
+        if len(response) < 32 + 35:
+            raise ValueError(f"Response too short {len(response)}")
+
+        public_key = response[:32]
+        address_bytes = response[32:32+35]
+
+        return public_key, address_bytes
+
+    def sign_data(self, data: bytes = b"") -> RAPDU:
+        return self.backend.exchange(cla=CLA,
+                                    ins=InsType.SIGN_TX,
+                                    p1=P1.P1_START,
+                                    p2=P2.P2_LAST,
+                                    data=data)
+    
+    

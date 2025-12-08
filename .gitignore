@@ -56,7 +56,7 @@ debug/
 .DS_Store
 *.pyc
 
-tests/standalone/venv/
+venv/
 __pycache__/
 .idea/
 .vscode/    

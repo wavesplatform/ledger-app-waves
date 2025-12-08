@@ -1,0 +1,3 @@
+[console_scripts]
+ledger-binary = ledgered.binary:main
+ledger-manifest = ledgered.manifest.cli:main

@@ -1,3 +1,0 @@
-from bip_utils.brainwallet.brainwallet import Brainwallet, BrainwalletCoins
-from bip_utils.brainwallet.brainwallet_algo import BrainwalletAlgos
-from bip_utils.brainwallet.ibrainwallet_algo import IBrainwalletAlgo

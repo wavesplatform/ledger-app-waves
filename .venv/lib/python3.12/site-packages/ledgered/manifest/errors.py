@@ -1,2 +1,0 @@
-class MissingField(ValueError):
-    pass

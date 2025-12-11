@@ -1,0 +1,7 @@
+pytest
+ragger[speculos,ledgerwallet]>=1.36.1
+ecdsa>=0.16.1,<0.17.0
+pycryptodome
+pynacl
+base58
+pywaves-curve25519
